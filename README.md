@@ -1,70 +1,92 @@
-# CodeIgniter 4 Application Starter
+# CV Maker
 
-## What is CodeIgniter?
+Aplikasi CV Maker berbasis CodeIgniter 4, PHP 8.2+, PostgreSQL Supabase, Tailwind CSS CLI, Alpine.js, dan Dompdf.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Prasyarat
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+- PHP 8.2 atau lebih baru dengan ekstensi `intl`, `mbstring`, `dom`, `pgsql`, dan `gd`. Ekstensi `sqlite3` diperlukan untuk menjalankan seluruh test bawaan.
+- Composer 2.
+- Node.js dan npm.
+- Project Supabase dengan akses ke Supavisor Session pooler.
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+Ekstensi `pgsql` dipakai driver Postgre bawaan CodeIgniter. Ekstensi `gd` diperlukan untuk pemrosesan gambar. `pdo_pgsql` tidak dibutuhkan oleh driver ini.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+## Setup lokal
 
-## Installation & updates
+1. Pasang dependency PHP:
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+   ```powershell
+   composer install
+   ```
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+2. Jika `.env` belum ada, salin `.env.example` ke `.env`. Jika sudah ada, pertahankan file tersebut dan tambahkan atau perbarui nilai yang diperlukan. Jangan commit `.env`.
 
-## Setup
+   ```powershell
+   if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+   ```
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+3. Di Supabase, buka **Project Settings > Database > Connection string**, pilih **Session pooler** dari Supavisor, lalu salin host, username, dan password ke `.env`. Gunakan port `5432`, database `postgres`, serta `sslmode = require`. Ganti nilai contoh `region` dan `project-ref`.
 
-## Important Change with index.php
+4. Aktifkan ekstensi `pgsql` dan `gd` di `php.ini` yang digunakan PHP CLI. Di instalasi XAMPP, pastikan `php_pgsql.dll` dan `php_gd.dll` tersedia di folder ekstensi, lalu aktifkan `extension=pgsql` dan `extension=gd`. Mulai ulang terminal setelah mengubah konfigurasi PHP.
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+5. Pastikan runtime dan koneksi:
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+   ```powershell
+   php -v
+   php -m
+   php spark db:check-supabase
+   ```
 
-**Please** read the user guide for a better explanation of how CI4 works!
+   Perintah koneksi hanya bekerja saat `CI_ENVIRONMENT = development`. Hasil berhasil berarti query `SELECT 1` dapat dijalankan melalui koneksi yang dikonfigurasi.
 
-## Repository Management
+6. Jalankan migration Shield dan skema CV. Shield menyediakan tabel `users` bawaan dengan ID integer, sehingga `cvs.user_id` memakai integer dan tidak ada tabel `users` kedua.
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+   ```powershell
+   php spark migrate --all
+   ```
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+   Migration CV memakai UUID dengan default `gen_random_uuid()`, timestamp PostgreSQL `timestamptz`, JSONB, foreign key cascade, indeks, dan RLS tanpa policy. RLS juga diaktifkan pada tabel autentikasi Shield. Untuk rollback batch terakhir:
 
-## Server Requirements
+   ```powershell
+   php spark migrate:rollback
+   ```
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+   Setelah rollback, jalankan kembali `php spark migrate --all`.
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+7. Untuk mengisi satu CV contoh dan akun Shield khusus development:
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+   ```powershell
+   php spark db:seed App\\Database\\Seeds\\CvExampleSeeder
+   ```
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+   Seeder menolak environment production. Akun contoh memakai email `cv-contoh@example.test` dan kata sandi acak yang tidak disimpan.
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
-# CI4
+8. Pasang dan bangun aset frontend:
+
+   ```powershell
+   npm install
+   npm run build
+   ```
+
+9. Jalankan aplikasi:
+
+   ```powershell
+   php spark serve --host 127.0.0.1 --port 8080
+   ```
+
+   Buka `http://localhost:8080/`.
+
+## Dependency utama
+
+- `codeigniter4/shield`: autentikasi resmi CodeIgniter, digunakan untuk fondasi alur akun.
+- `dompdf/dompdf`: render dokumen PDF. Dependency ini sudah menjadi bagian dari starter project dan dipertahankan.
+- `tailwindcss` dan `@tailwindcss/cli`: compile utility CSS secara lokal.
+- `alpinejs`: interaksi kecil pada UI, dibundel sebagai aset lokal agar halaman tidak bergantung pada CDN.
+
+## Pengujian
+
+```powershell
+composer test
+```
+
+Tes memakai konfigurasi database pengujian CodeIgniter dan tidak memerlukan kredensial Supabase.

@@ -1,0 +1,20 @@
+{
+  "name": "cv-maker",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:css && npm run build:js",
+    "build:css": "tailwindcss -i resources/css/app.css -o public/assets/css/app.css",
+    "build:js": "node scripts/copy-alpine.cjs",
+    "watch:css": "tailwindcss -i resources/css/app.css -o public/assets/css/app.css --watch"
+  },
+  "dependencies": {
+    "alpinejs": "^3.14.9"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "tailwindcss": "^4.1.18"
+  },
+  "overrides": {
+    "@parcel/watcher": "^2.6.0"
+  }
+}
