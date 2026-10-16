@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CodeIgniter\Test\CIUnitTestCase;
+use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
 
 /**
@@ -11,6 +12,9 @@ use CodeIgniter\Test\FeatureTestTrait;
 final class HomeLayoutTest extends CIUnitTestCase
 {
     use FeatureTestTrait;
+    use DatabaseTestTrait;
+
+    protected $namespace = ['CodeIgniter\\Settings', 'CodeIgniter\\Shield', 'App'];
 
     public function testHomePageRendersResponsiveBaseLayout(): void
     {

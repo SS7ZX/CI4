@@ -29,10 +29,29 @@
                     id="main-navigation"
                     x-bind:class="menuOpen ? 'block' : 'hidden md:block'"
                 >
-                    <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
-                        href="<?= esc(site_url('/')) ?>">
-                        <?= esc(lang('App.home')) ?>
-                    </a>
+                    <?php if (auth()->loggedIn()): ?>
+                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                            href="<?= esc(url_to('dashboard')) ?>">
+                            <?= esc(lang('Dashboard.title')) ?>
+                        </a>
+                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                            href="<?= esc(url_to('password-edit')) ?>">
+                            <?= esc(lang('Auth.changePassword')) ?>
+                        </a>
+                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                            href="<?= esc(url_to('logout')) ?>">
+                            <?= esc(lang('Auth.logout')) ?>
+                        </a>
+                    <?php else: ?>
+                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                            href="<?= esc(url_to('login')) ?>">
+                            <?= esc(lang('Auth.login')) ?>
+                        </a>
+                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                            href="<?= esc(url_to('register')) ?>">
+                            <?= esc(lang('Auth.register')) ?>
+                        </a>
+                    <?php endif; ?>
                 </nav>
             </div>
         </header>
