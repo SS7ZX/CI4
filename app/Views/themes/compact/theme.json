@@ -1,0 +1,9 @@
+{
+    "key": "compact",
+    "name_key": "Themes.compact_name",
+    "description_key": "Themes.compact_description",
+    "ats_friendly": true,
+    "layout": "compact",
+    "font_family": "CVMaker Sans",
+    "accent_palette": ["#245B65", "#1D4ED8", "#7C2D12", "#166534"]
+}

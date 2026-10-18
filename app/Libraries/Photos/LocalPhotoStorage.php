@@ -37,6 +37,19 @@ final class LocalPhotoStorage implements PhotoStorageInterface
         if ($contents === false) {
             throw new RuntimeException(lang('CvBuilder.photo_invalid'));
         }
+        $metadata = @getimagesizefromstring($contents);
+        if (
+            $metadata === false
+            || ! isset($metadata[0], $metadata[1], $metadata['mime'])
+            || ! in_array($metadata['mime'], ['image/jpeg', 'image/png', 'image/webp'], true)
+            || $metadata[0] < 1
+            || $metadata[1] < 1
+            || $metadata[0] > self::MAX_DIMENSION
+            || $metadata[1] > self::MAX_DIMENSION
+            || $metadata[0] * $metadata[1] > self::MAX_PIXELS
+        ) {
+            throw new RuntimeException(lang('CvBuilder.photo_dimensions_invalid'));
+        }
         $image = @imagecreatefromstring($contents);
         if ($image === false) {
             throw new RuntimeException(lang('CvBuilder.photo_invalid'));

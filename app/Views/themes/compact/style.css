@@ -1,0 +1,58 @@
+.cv-document {
+    color: #1f2933;
+    font-family: "CVMaker Sans", "DejaVu Sans", Arial, sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.28;
+}
+.cv-header {
+    border-bottom: 2px solid #334e68;
+    margin-bottom: 3mm;
+    padding-bottom: 3mm;
+}
+.cv-header h1 {
+    color: #102a43;
+    font-size: 21pt;
+    font-weight: 700;
+}
+.cv-headline {
+    color: #334e68;
+    font-size: 11pt;
+}
+.cv-contact,
+.cv-meta {
+    color: #486581;
+    font-size: 8.5pt;
+    margin-top: 1mm;
+}
+.cv-section {
+    margin-top: 2.5mm;
+    page-break-inside: auto;
+    break-inside: auto;
+}
+.cv-section h2 {
+    background: #edf2f7;
+    color: #102a43;
+    font-size: 10.5pt;
+    font-weight: 700;
+    margin-bottom: 1.5mm;
+    padding: 1mm 2mm;
+}
+.cv-entry {
+    margin: 0 0 2mm;
+    page-break-inside: avoid;
+}
+.cv-entry h3 {
+    font-size: 9.5pt;
+    font-weight: 700;
+}
+.cv-list {
+    list-style: disc;
+    margin: 0.5mm 0 0 5mm;
+}
+.cv-list li {
+    margin-bottom: 0.5mm;
+}
+.cv-document a {
+    color: #334e68;
+    text-decoration: underline;
+}

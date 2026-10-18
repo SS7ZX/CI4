@@ -1,0 +1,9 @@
+{
+    "key": "editorial",
+    "name_key": "Themes.editorial_name",
+    "description_key": "Themes.editorial_description",
+    "ats_friendly": false,
+    "layout": "editorial",
+    "font_family": "CVMaker Sans",
+    "accent_palette": ["#5B3A29", "#245B65", "#1D4ED8", "#166534"]
+}

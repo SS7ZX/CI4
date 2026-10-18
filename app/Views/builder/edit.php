@@ -13,9 +13,15 @@
             editUrl: <?= esc(json_encode(url_to('cv-step', $cvId, $step), JSON_THROW_ON_ERROR), 'attr') ?>,
             photoUrl: <?= esc(json_encode($photoUrl, JSON_THROW_ON_ERROR), 'attr') ?>,
             photoView: <?= esc(json_encode($photoView, JSON_THROW_ON_ERROR), 'attr') ?>,
+            themePreviewUrl: <?= esc(json_encode($themePreviewUrl, JSON_THROW_ON_ERROR), 'attr') ?>,
+            previewUrl: <?= esc(json_encode($previewUrl, JSON_THROW_ON_ERROR), 'attr') ?>,
+            pageCountUrl: <?= esc(json_encode($pageCountUrl, JSON_THROW_ON_ERROR), 'attr') ?>,
+            downloadUrl: <?= esc(json_encode($downloadUrl, JSON_THROW_ON_ERROR), 'attr') ?>,
+            themes: <?= esc(json_encode($themes, JSON_THROW_ON_ERROR), 'attr') ?>,
             tokenName: <?= esc(json_encode($tokenName, JSON_THROW_ON_ERROR), 'attr') ?>,
             token: <?= esc(json_encode($tokenValue, JSON_THROW_ON_ERROR), 'attr') ?>,
-            sectionLabels: <?= esc(json_encode($sectionLabels, JSON_THROW_ON_ERROR), 'attr') ?>
+            sectionLabels: <?= esc(json_encode($sectionLabels, JSON_THROW_ON_ERROR), 'attr') ?>,
+            messages: <?= esc(json_encode($messages, JSON_THROW_ON_ERROR), 'attr') ?>
         })"
         x-on:input="scheduleSave()"
         x-on:change="scheduleSave()"
@@ -29,7 +35,7 @@
             <a class="inline-flex min-h-10 items-center rounded-md border border-neutral-400 px-3 text-sm font-medium hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('CvBuilder.back')) ?></a>
         </div>
 
-        <nav aria-label="<?= esc(lang('CvBuilder.title')) ?>" class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <nav aria-label="<?= esc(lang('CvBuilder.title')) ?>" class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
             <?php foreach (lang('CvBuilder.steps') as $index => $stepName): ?>
                 <button
                     class="min-h-11 rounded-md border px-3 text-left text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
@@ -48,7 +54,7 @@
             <span x-text="status === 'saving' ? '<?= esc(lang('CvBuilder.saving'), 'js') ?>' : (status === 'saved' ? '<?= esc(lang('CvBuilder.saved'), 'js') ?>' : (status === 'error' ? '<?= esc(lang('CvBuilder.save_error'), 'js') ?>' : ''))"></span>
         </p>
 
-        <?php for ($stepNumber = 1; $stepNumber <= 6; $stepNumber++): ?>
+        <?php for ($stepNumber = 1; $stepNumber <= 8; $stepNumber++): ?>
             <section x-cloak x-show="step === <?= $stepNumber ?>" class="rounded-md border border-neutral-200 bg-white p-5 sm:p-7">
                 <?= $this->include('builder/steps/step' . $stepNumber) ?>
             </section>
@@ -65,7 +71,7 @@
                 class="min-h-11 rounded-md bg-accent-700 px-4 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-60"
                 type="button"
                 x-on:click="navigate(step + 1)"
-                x-bind:disabled="step >= 6 || busy"
+                x-bind:disabled="step >= 8 || busy"
             ><?= esc(lang('CvBuilder.next')) ?></button>
         </div>
     </div>

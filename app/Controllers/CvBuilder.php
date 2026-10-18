@@ -7,7 +7,9 @@ namespace App\Controllers;
 use App\Libraries\Photos\LocalPhotoStorage;
 use App\Libraries\Photos\PhotoStorageInterface;
 use App\Services\CvBuilderService;
+use App\Services\MatchService;
 use App\Services\CvValidationException;
+use App\Services\ThemeRegistry;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Shield\Entities\User;
@@ -17,17 +19,19 @@ final class CvBuilder extends BaseController
 {
     private CvBuilderService $builder;
     private PhotoStorageInterface $photoStorage;
+    private ThemeRegistry $themes;
 
     public function __construct()
     {
-        $this->builder      = new CvBuilderService();
+        $this->themes       = new ThemeRegistry();
+        $this->builder      = new CvBuilderService(themeRegistry: $this->themes);
         $this->photoStorage = new LocalPhotoStorage();
     }
 
     public function edit(string $cvId, string $step = '1'): string
     {
         $stepNumber = filter_var($step, FILTER_VALIDATE_INT);
-        if ($stepNumber === false || $stepNumber < 1 || $stepNumber > 6) {
+        if ($stepNumber === false || $stepNumber < 1 || $stepNumber > 8) {
             throw PageNotFoundException::forPageNotFound();
         }
 
@@ -72,7 +76,17 @@ final class CvBuilder extends BaseController
             'saveUrl'    => url_to('cv-autosave', $cvId, $stepNumber),
             'photoUrl'   => url_to('cv-photo-upload', $cvId),
             'photoView'  => url_to('cv-photo', $cvId),
+            'themePreviewUrl' => url_to('cv-theme-preview', $cvId, '__theme__'),
+            'previewUrl' => url_to('cv-preview', $cvId),
+            'pageCountUrl' => url_to('cv-page-count', $cvId),
+            'downloadUrl' => url_to('cv-download', $cvId),
+            'themes'     => $this->themes->all(),
             'sectionLabels' => $sectionLabels,
+            'messages' => [
+                'pageCountLoading' => lang('CvBuilder.page_count_loading'),
+                'pageCountError' => lang('CvBuilder.page_count_error'),
+                'pageCount' => lang('CvBuilder.page_count'),
+            ],
             'tokenName'  => csrf_token(),
             'tokenValue' => csrf_hash(),
         ]);
@@ -90,8 +104,30 @@ final class CvBuilder extends BaseController
             ]);
         }
 
+        $userId = $this->currentUser()->id;
+        if (! service('throttler')->check('cv-autosave-' . $userId, 60, 60)) {
+            return $this->response->setStatusCode(429)->setJSON([
+                'status' => 'error',
+                'error' => lang('CvBuilder.rate_limited'),
+                'csrf' => csrf_hash(),
+            ]);
+        }
+
         try {
-            $this->builder->saveStep($this->currentUser()->id, $cvId, $stepNumber, $payload);
+            $this->builder->saveStep($userId, $cvId, $stepNumber, $payload);
+            if ($stepNumber <= 6) {
+                try {
+                    (new MatchService())->recomputeForCv($userId, $cvId);
+                } catch (\RuntimeException) {
+                    log_message('error', 'Skor kecocokan lowongan tidak dapat diperbarui setelah CV disimpan.');
+
+                    return $this->response->setStatusCode(503)->setJSON([
+                        'status' => 'saved_with_scoring_error',
+                        'message' => lang('CvBuilder.saved_scoring_error'),
+                        'csrf' => csrf_hash(),
+                    ]);
+                }
+            }
 
             return $this->response->setJSON([
                 'status' => 'saved',
@@ -109,8 +145,16 @@ final class CvBuilder extends BaseController
 
     public function uploadPhoto(string $cvId): ResponseInterface
     {
-        $this->builder->findOwned($this->currentUser()->id, $cvId)
+        $userId = $this->currentUser()->id;
+        $this->builder->findOwned($userId, $cvId)
             ?? throw PageNotFoundException::forPageNotFound();
+        if (! service('throttler')->check('cv-photo-' . $userId, 10, 60)) {
+            return $this->response->setStatusCode(429)->setJSON([
+                'status' => 'error',
+                'error' => lang('CvBuilder.rate_limited'),
+                'csrf' => csrf_hash(),
+            ]);
+        }
 
         $photo = $this->request->getFile('photo');
         if ($photo === null) {
@@ -124,7 +168,7 @@ final class CvBuilder extends BaseController
         try {
             $newPath = $this->photoStorage->store($photo, $cvId);
             try {
-                $oldPath = $this->builder->updatePhotoPath($this->currentUser()->id, $cvId, $newPath);
+                $oldPath = $this->builder->updatePhotoPath($userId, $cvId, $newPath);
             } catch (\Throwable $exception) {
                 try {
                     $this->photoStorage->delete($newPath);

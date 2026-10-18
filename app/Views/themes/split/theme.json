@@ -1,0 +1,9 @@
+{
+    "key": "split",
+    "name_key": "Themes.split_name",
+    "description_key": "Themes.split_description",
+    "ats_friendly": false,
+    "layout": "split",
+    "font_family": "CVMaker Sans",
+    "accent_palette": ["#1F2937", "#245B65", "#1D4ED8", "#7C2D12"]
+}

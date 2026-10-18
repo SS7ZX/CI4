@@ -3,6 +3,23 @@ use CodeIgniter\HTTP\Header;
 use CodeIgniter\CodeIgniter;
 
 $errorId = uniqid('error', true);
+$redactSensitive = static function (mixed $value, string $key = '') use (&$redactSensitive): mixed {
+    if (preg_match('/(?:password|passwd|secret|token|authorization|cookie|(?:api|access|private)[_-]?key|credential)/i', $key) === 1) {
+        return '[REDACTED]';
+    }
+    if (is_array($value)) {
+        foreach ($value as $childKey => $childValue) {
+            $value[$childKey] = $redactSensitive($childValue, (string) $childKey);
+        }
+
+        return $value;
+    }
+    if (is_object($value)) {
+        return '[OBJECT ' . $value::class . ']';
+    }
+
+    return $value;
+};
 ?>
 <!doctype html>
 <html>
@@ -15,17 +32,18 @@ $errorId = uniqid('error', true);
         <?= preg_replace('#[\r\n\t ]+#', ' ', file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'debug.css')) ?>
     </style>
 
-    <script>
+    <script {csp-script-nonce}>
         <?= file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'debug.js') ?>
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </head>
-<body onload="init()">
+<body>
 
     <!-- Header -->
     <div class="header">
         <div class="environment">
-            Displayed at <?= esc(date('H:i:s')) ?> &mdash;
-            PHP: <?= esc(PHP_VERSION) ?>  &mdash;
+            Displayed at <?= esc(date('H:i:s')) ?> -
+            PHP: <?= esc(PHP_VERSION) ?> -
             CodeIgniter: <?= esc(CodeIgniter::CI_VERSION) ?> --
             Environment: <?= ENVIRONMENT ?>
         </div>
@@ -34,7 +52,7 @@ $errorId = uniqid('error', true);
             <p>
                 <?= nl2br(esc($exception->getMessage())) ?>
                 <a href="https://www.duckduckgo.com/?q=<?= urlencode($title . ' ' . preg_replace('#\'.*\'|".*"#Us', '', $exception->getMessage())) ?>"
-                   rel="noreferrer" target="_blank">search &rarr;</a>
+                   rel="noopener noreferrer nofollow" target="_blank">search &rarr;</a>
             </p>
         </div>
     </div>
@@ -64,7 +82,7 @@ $errorId = uniqid('error', true);
 
     <?= nl2br(esc($prevException->getMessage())) ?>
     <a href="https://www.duckduckgo.com/?q=<?= urlencode($prevException::class . ' ' . preg_replace('#\'.*\'|".*"#Us', '', $prevException->getMessage())) ?>"
-       rel="noreferrer" target="_blank">search &rarr;</a>
+       rel="noopener noreferrer nofollow" target="_blank">search &rarr;</a>
     <?= esc(clean_path($prevException->getFile()) . ':' . $prevException->getLine()) ?>
     </pre>
 
@@ -110,10 +128,10 @@ $errorId = uniqid('error', true);
 
                             <!-- Class/Method -->
                             <?php if (isset($row['class'])) : ?>
-                                &nbsp;&nbsp;&mdash;&nbsp;&nbsp;<?= esc($row['class'] . $row['type'] . $row['function']) ?>
+                                &nbsp;&nbsp;-&nbsp;&nbsp;<?= esc($row['class'] . $row['type'] . $row['function']) ?>
                                 <?php if (! empty($row['args'])) : ?>
                                     <?php $argsId = $errorId . 'args' . $index ?>
-                                    ( <a href="#" onclick="return toggle('<?= esc($argsId, 'attr') ?>');">arguments</a> )
+                                    ( <button type="button" class="debug-toggle" data-debug-toggle="<?= esc($argsId, 'attr') ?>">arguments</button> )
                                     <div class="args" id="<?= esc($argsId, 'attr') ?>">
                                         <table cellspacing="0">
 
@@ -126,9 +144,10 @@ $errorId = uniqid('error', true);
                                         }
 
                                         foreach ($row['args'] as $key => $value) : ?>
+                                            <?php $parameterName = isset($params[$key]) ? $params[$key]->name : "#{$key}"; ?>
                                             <tr>
-                                                <td><code><?= esc(isset($params[$key]) ? '$' . $params[$key]->name : "#{$key}") ?></code></td>
-                                                <td><pre><?= esc(print_r($value, true)) ?></pre></td>
+                                                <td><code><?= esc('$' . $parameterName) ?></code></td>
+                                                <td><pre><?= esc(print_r($redactSensitive($value, $parameterName), true)) ?></pre></td>
                                             </tr>
                                         <?php endforeach ?>
 
@@ -140,7 +159,7 @@ $errorId = uniqid('error', true);
                             <?php endif; ?>
 
                             <?php if (! isset($row['class']) && isset($row['function'])) : ?>
-                                &nbsp;&nbsp;&mdash;&nbsp;&nbsp;    <?= esc($row['function']) ?>()
+                                &nbsp;&nbsp;-&nbsp;&nbsp;    <?= esc($row['function']) ?>()
                             <?php endif; ?>
                         </p>
 
@@ -176,6 +195,7 @@ $errorId = uniqid('error', true);
                         </thead>
                         <tbody>
                         <?php foreach ($GLOBALS[$var] as $key => $value) : ?>
+                            <?php $value = $redactSensitive($value, (string) $key); ?>
                             <tr>
                                 <td><?= esc($key) ?></td>
                                 <td>

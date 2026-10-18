@@ -10,6 +10,7 @@
 </head>
 <body class="min-h-screen bg-neutral-50 font-sans text-neutral-900 antialiased">
     <div class="flex min-h-screen flex-col" x-data="{ menuOpen: false }">
+        <a class="sr-only rounded-md bg-white px-4 py-2 text-accent-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:outline-2 focus:outline-offset-2 focus:outline-accent-700" href="#content"><?= esc(lang('App.skip_content')) ?></a>
         <header class="border-b border-neutral-200 bg-white">
             <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
                 <a class="text-lg font-semibold text-accent-700" href="<?= esc(site_url('/')) ?>">
@@ -38,10 +39,12 @@
                             href="<?= esc(url_to('password-edit')) ?>">
                             <?= esc(lang('Auth.changePassword')) ?>
                         </a>
-                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
-                            href="<?= esc(url_to('logout')) ?>">
-                            <?= esc(lang('Auth.logout')) ?>
-                        </a>
+                        <form action="<?= esc(url_to('logout')) ?>" method="post" class="inline-flex">
+                            <?= csrf_field() ?>
+                            <button class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit">
+                                <?= esc(lang('Auth.logout')) ?>
+                            </button>
+                        </form>
                     <?php else: ?>
                         <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
                             href="<?= esc(url_to('login')) ?>">

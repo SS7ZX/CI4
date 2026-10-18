@@ -15,6 +15,7 @@ use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use CodeIgniter\Shield\Filters\AuthRates;
+use App\Filters\AdditionalSecurityHeaders;
 
 class Filters extends BaseFilters
 {
@@ -38,6 +39,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'auth-rates'    => AuthRates::class,
+        'securityheaders' => AdditionalSecurityHeaders::class,
     ];
 
     /**
@@ -56,12 +58,11 @@ class Filters extends BaseFilters
     public array $required = [
         'before' => [
             'forcehttps', // Force Global Secure Requests
-            'pagecache',  // Web Page Caching
         ],
         'after' => [
-            'pagecache',   // Web Page Caching
             'performance', // Performance Metrics
             'secureheaders',
+            'securityheaders',
             'toolbar',     // Debug Toolbar
         ],
     ];

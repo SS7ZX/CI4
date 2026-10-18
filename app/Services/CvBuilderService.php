@@ -42,6 +42,8 @@ final class CvBuilderService
         'custom_sections',
     ];
 
+    private readonly ThemeRegistry $themeRegistry;
+
     /**
      * @var array<string, array{class: class-string<Model>, fields: array<string, array{required: bool, max: int|null, type: string}>}>
      */
@@ -144,7 +146,9 @@ final class CvBuilderService
     public function __construct(
         private readonly Cv $cvModel = new Cv(),
         private readonly ?BaseConnection $database = null,
+        ?ThemeRegistry $themeRegistry = null,
     ) {
+        $this->themeRegistry = $themeRegistry ?? new ThemeRegistry();
     }
 
     public function load(int|string $userId, string $cvId): array
@@ -156,16 +160,106 @@ final class CvBuilderService
 
         $data = ['cv' => $cv];
         foreach (self::COLLECTIONS as $key => $definition) {
-            $model       = new $definition['class']();
-            $data[$key]  = $model->where('cv_id', $cvId)->orderBy('sort_order')->findAll();
+            $data[$key] = [];
         }
+        $data['profile'] = null;
+        $data['sections'] = [];
 
-        $profileModel = new CvProfile();
-        $data['profile'] = $profileModel->where('cv_id', $cvId)->first();
-        $sectionModel = new CvSectionSetting();
-        $data['sections'] = $sectionModel->where('cv_id', $cvId)->orderBy('sort_order')->findAll();
+        $this->loadChildren($cvId, $data);
 
         return $data;
+    }
+
+    /**
+     * Load all heterogeneous child records in one bound UNION query.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function loadChildren(string $cvId, array &$data): void
+    {
+        $database = $this->database ?? db_connect();
+        $tables = [
+            'profile' => [
+                'model' => CvProfile::class,
+                'fields' => ['full_name', 'headline', 'email', 'phone', 'city', 'country', 'summary', 'photo_path'],
+                'sort' => false,
+            ],
+            'sections' => [
+                'model' => CvSectionSetting::class,
+                'fields' => ['section_key', 'is_visible', 'sort_order'],
+                'sort' => true,
+            ],
+        ];
+        foreach (self::COLLECTIONS as $key => $definition) {
+            $tables[$key] = [
+                'model' => $definition['class'],
+                'fields' => array_keys($definition['fields']),
+                'sort' => isset($definition['fields']['sort_order']),
+            ];
+        }
+
+        $queries = [];
+        $bindings = [];
+        foreach ($tables as $collection => $definition) {
+            $modelClass = $definition['model'];
+            $model = new $modelClass();
+            $table = $database->protectIdentifiers(
+                $database->prefixTable($model->builder()->getTable()),
+                false,
+                true,
+            );
+            $columns = ['id', 'cv_id', ...$definition['fields'], 'created_at', 'updated_at'];
+            $columns = array_values(array_unique($columns));
+            if ($database->DBDriver === 'Postgre') {
+                $payload = 'to_jsonb(child)::text';
+            } else {
+                $jsonPairs = [];
+                foreach ($columns as $column) {
+                    $jsonPairs[] = "'" . $column . "'";
+                    $jsonPairs[] = 'child.' . $database->protectIdentifiers($column);
+                }
+                $payload = 'json_object(' . implode(', ', $jsonPairs) . ')';
+            }
+            $sortOrder = $definition['sort']
+                ? 'child.' . $database->protectIdentifiers('sort_order')
+                : 'NULL';
+            $queries[] = sprintf(
+                "SELECT '%s' AS collection, %s AS sort_order, %s AS payload FROM %s child WHERE %s = ?",
+                $collection,
+                $sortOrder,
+                $payload,
+                $table,
+                'child.' . $database->protectIdentifiers('cv_id'),
+            );
+            $bindings[] = $cvId;
+        }
+
+        $result = $database->query(
+            implode(' UNION ALL ', $queries) . ' ORDER BY collection, sort_order',
+            $bindings,
+        );
+
+        foreach ($result->getResultArray() as $record) {
+            $collection = $record['collection'];
+            $row = json_decode((string) $record['payload'], true, 512, JSON_THROW_ON_ERROR);
+            if (! is_array($row)) {
+                throw new DatabaseException('Data bagian CV tidak valid.');
+            }
+
+            if ($collection === 'profile') {
+                $data['profile'] = new \App\Entities\CvProfile($row);
+                continue;
+            }
+            if ($collection === 'sections') {
+                $data['sections'][] = new \App\Entities\CvSectionSetting($row);
+                continue;
+            }
+
+            $modelClass = self::COLLECTIONS[$collection]['class'];
+            $entityClass = 'App\\Entities\\' . substr($modelClass, strrpos($modelClass, '\\') + 1);
+            $entity = new $entityClass($row);
+            $data[$collection][] = $entity;
+        }
     }
 
     /**
@@ -179,7 +273,7 @@ final class CvBuilderService
             throw PageNotFoundException::forPageNotFound();
         }
 
-        if ($step < 1 || $step > 6) {
+        if ($step < 1 || $step > 8) {
             throw new CvValidationException(['step' => lang('CvBuilder.invalid_step')]);
         }
 
@@ -190,6 +284,9 @@ final class CvBuilderService
             4 => $this->validateRows($payload, 'educations'),
             5 => $this->validateRows($payload, 'skill_groups'),
             6 => $this->validateAdditional($payload),
+            7 => $this->validateTheme($payload),
+            8 => $this->validateDocumentSettings($cvId, $payload),
+            default => ['step' => lang('CvBuilder.invalid_step')],
         };
 
         if ($errors !== []) {
@@ -219,9 +316,17 @@ final class CvBuilderService
                 case 6:
                     $this->saveAdditionalStep($cvId, $payload);
                     break;
+                case 7:
+                    $this->saveThemeStep($cvId, $payload);
+                    break;
+                case 8:
+                    $this->saveDocumentSettings($cvId, $payload);
+                    break;
             }
 
-            $this->cvModel->update($cvId, ['last_step' => $step]);
+            if (! $this->cvModel->update($cvId, ['last_step' => $step])) {
+                throw new DatabaseException('Langkah terakhir CV tidak dapat disimpan.');
+            }
 
             if ($database->transStatus() === false) {
                 throw new DatabaseException('Autosave CV gagal disimpan.');
@@ -508,6 +613,91 @@ final class CvBuilderService
                 throw new DatabaseException('Pengaturan bagian CV tidak dapat disimpan.');
             }
         }
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     *
+     * @return array<string, string>
+     */
+    private function validateTheme(array $payload): array
+    {
+        $themeKey = $payload['theme_key'] ?? null;
+
+        return is_string($themeKey) && $this->themeRegistry->has($themeKey)
+            ? []
+            : ['theme_key' => lang('Themes.invalid_theme')];
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function saveThemeStep(string $cvId, array $payload): void
+    {
+        $theme = $this->themeRegistry->get($payload['theme_key']);
+        $cv = $this->findById($cvId);
+        $accentColor = $cv?->accent_color;
+        if (! is_string($accentColor) || ! in_array(strtolower($accentColor), array_map('strtolower', $theme['accent_palette']), true)) {
+            $accentColor = $theme['accent_palette'][0];
+        }
+
+        if (! $this->cvModel->update($cvId, [
+            'theme_key' => $payload['theme_key'],
+            'accent_color' => strtoupper($accentColor),
+        ])) {
+            throw new DatabaseException('Tema CV tidak dapat disimpan.');
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     *
+     * @return array<string, string>
+     */
+    private function validateDocumentSettings(string $cvId, array $payload): array
+    {
+        $errors = [];
+        if (! in_array($payload['paper_size'] ?? null, ['a4', 'letter'], true)) {
+            $errors['paper_size'] = lang('CvBuilder.invalid_paper_size');
+        }
+        if (! in_array($payload['font_scale'] ?? null, ['small', 'medium', 'large'], true)) {
+            $errors['font_scale'] = lang('CvBuilder.invalid_font_scale');
+        }
+
+        $accentColor = $payload['accent_color'] ?? null;
+        if (! is_string($accentColor)) {
+            $errors['accent_color'] = lang('CvBuilder.invalid_accent_color');
+
+            return $errors;
+        }
+
+        $cv = $this->findById($cvId);
+        if ($cv === null || ! in_array(strtolower($accentColor), array_map('strtolower', $this->themeRegistry->get($cv->theme_key)['accent_palette']), true)) {
+            $errors['accent_color'] = lang('CvBuilder.invalid_accent_color');
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function saveDocumentSettings(string $cvId, array $payload): void
+    {
+        if (! $this->cvModel->update($cvId, [
+            'paper_size'   => $payload['paper_size'],
+            'font_scale'   => $payload['font_scale'],
+            'accent_color' => strtoupper($payload['accent_color']),
+        ])) {
+            throw new DatabaseException('Pengaturan dokumen CV tidak dapat disimpan.');
+        }
+    }
+
+    private function findById(string $cvId): ?CvEntity
+    {
+        $cv = $this->cvModel->find($cvId);
+
+        return $cv instanceof CvEntity ? $cv : null;
     }
 
     /**

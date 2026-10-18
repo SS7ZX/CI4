@@ -200,7 +200,7 @@ class App extends BaseConfig
      * @see http://www.html5rocks.com/en/tutorials/security/content-security-policy/
      * @see http://www.w3.org/TR/CSP/
      */
-    public bool $CSPEnabled = false;
+    public bool $CSPEnabled = true;
 
     public function __construct()
     {
@@ -208,5 +208,9 @@ class App extends BaseConfig
 
         $this->baseURL      = env('app.baseURL', $this->baseURL);
         $this->appTimezone = env('app.appTimezone', $this->appTimezone);
+        $this->forceGlobalSecureRequests = filter_var(
+            env('app.forceGlobalSecureRequests', $this->forceGlobalSecureRequests),
+            FILTER_VALIDATE_BOOLEAN,
+        );
     }
 }

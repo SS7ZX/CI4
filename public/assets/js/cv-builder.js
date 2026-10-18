@@ -6,12 +6,23 @@ document.addEventListener('alpine:init', () => {
         editUrl: config.editUrl,
         photoUrl: config.photoUrl,
         photoView: config.photoView,
+        themePreviewUrl: config.themePreviewUrl,
+        previewUrl: config.previewUrl,
+        pageCountUrl: config.pageCountUrl,
+        downloadUrl: config.downloadUrl,
+        themes: config.themes,
         sectionLabels: config.sectionLabels,
+        messages: config.messages,
         tokenName: config.tokenName,
         token: config.token,
         status: '',
         errors: {},
         photoMessage: '',
+        selectedTheme: '',
+        previewOpen: false,
+        previewTrigger: null,
+        previewFrameUrl: '',
+        pageCountMessage: '',
         busy: false,
         dirty: false,
         timer: null,
@@ -31,10 +42,19 @@ document.addEventListener('alpine:init', () => {
             this.state.projects = this.state.projects.map((row) => ({ ...row, tech_stack_text: (row.tech_stack ?? []).join('\n') }));
             this.state.custom_sections = this.state.custom_sections.map((row) => ({ ...row, items_text: (row.items ?? []).join('\n') }));
             this.state.cv.title ??= '';
+            this.state.cv.paper_size ??= 'a4';
+            this.state.cv.font_scale ??= 'medium';
+            this.selectedTheme = this.state.cv.theme_key ?? '';
             this.state.sections = this.state.sections.length
                 ? this.state.sections
                 : ['profile', 'summary', 'experience', 'education', 'skills', 'links', 'projects', 'certifications', 'organizations', 'awards', 'languages', 'custom_sections']
                     .map((section_key, sort_order) => ({ section_key, is_visible: true, sort_order }));
+            if (this.step === 8) {
+                const palette = this.selectedPalette();
+                this.state.cv.accent_color ??= palette[0];
+                this.previewFrameUrl = `${this.previewUrl}?v=${Date.now()}`;
+                this.refreshPageCount();
+            }
         },
 
         lines(value) {
@@ -57,6 +77,14 @@ document.addEventListener('alpine:init', () => {
             if (this.step === 3) return { experiences: this.rowsWith(this.state.experiences, 'bullets', (row) => this.lines(row.bullets_text ?? '')) };
             if (this.step === 4) return { educations: this.state.educations };
             if (this.step === 5) return { skill_groups: this.rowsWith(this.state.skill_groups, 'items', (row) => this.lines(row.items_text ?? '')) };
+            if (this.step === 7) return { theme_key: this.selectedTheme };
+            if (this.step === 8) {
+                return {
+                    paper_size: this.state.cv.paper_size,
+                    font_scale: this.state.cv.font_scale,
+                    accent_color: this.state.cv.accent_color,
+                };
+            }
 
             return {
                 projects: this.rowsWith(this.rowsWith(this.state.projects, 'bullets', (row) => this.lines(row.bullets_text ?? '')), 'tech_stack', (row) => this.lines(row.tech_stack_text ?? '')),
@@ -109,6 +137,10 @@ document.addEventListener('alpine:init', () => {
                 } while (this.dirty);
 
                 this.status = 'saved';
+                if (this.step === 8) {
+                    this.previewFrameUrl = `${this.previewUrl}?v=${Date.now()}`;
+                    await this.refreshPageCount();
+                }
                 return true;
             } catch {
                 this.status = 'error';
@@ -122,6 +154,82 @@ document.addEventListener('alpine:init', () => {
             if (this.busy) return;
             if (await this.save()) {
                 window.location.assign(this.editUrl.replace(/\/step\/\d+$/, `/step/${step}`));
+            }
+        },
+
+        async downloadPdf() {
+            if (this.busy) return;
+            if (await this.save()) {
+                window.location.assign(this.downloadUrl);
+            }
+        },
+
+        previewTheme(themeKey) {
+            this.previewFrameUrl = this.themePreviewUrl.replace('__theme__', encodeURIComponent(themeKey));
+            this.previewTrigger = document.activeElement;
+            this.previewOpen = true;
+            this.$nextTick(() => this.$refs.previewClose?.focus());
+        },
+
+        closePreview() {
+            this.previewOpen = false;
+            this.$nextTick(() => this.previewTrigger?.focus());
+        },
+
+        trapPreviewFocus(event) {
+            if (!this.previewOpen || event.key !== 'Tab') return;
+            const focusable = [...this.$refs.previewDialog.querySelectorAll('button:not([disabled]), iframe')];
+            if (focusable.length === 0) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        },
+
+        configurePreviewFrame(event) {
+            const frame = event.target;
+            const previewDocument = frame.contentDocument;
+            if (!previewDocument) return;
+            previewDocument.addEventListener('keydown', (keyEvent) => {
+                if (keyEvent.key !== 'Tab') return;
+                const focusable = [...previewDocument.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')];
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (keyEvent.shiftKey && (!first || previewDocument.activeElement === first || previewDocument.activeElement === previewDocument.body)) {
+                    keyEvent.preventDefault();
+                    this.$refs.previewClose.focus();
+                } else if (!keyEvent.shiftKey && (!last || previewDocument.activeElement === last)) {
+                    keyEvent.preventDefault();
+                    this.$refs.previewClose.focus();
+                }
+            });
+        },
+
+        selectedPalette() {
+            const selected = this.themes.find((theme) => theme.key === this.selectedTheme);
+            return selected?.accent_palette ?? [];
+        },
+
+        async refreshPageCount() {
+            this.pageCountMessage = this.messages.pageCountLoading;
+            try {
+                const response = await fetch(this.pageCountUrl, {
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' },
+                });
+                const result = await response.json();
+                if (!response.ok || result.status !== 'ok' || !Number.isInteger(result.page_count) || result.page_count < 1) {
+                    this.pageCountMessage = this.messages.pageCountError;
+                    return;
+                }
+                this.pageCountMessage = this.messages.pageCount.replace('{0}', result.page_count);
+            } catch {
+                this.pageCountMessage = this.messages.pageCountError;
             }
         },
 

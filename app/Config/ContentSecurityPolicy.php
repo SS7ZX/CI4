@@ -40,7 +40,7 @@ class ContentSecurityPolicy extends BaseConfig
      * HTTP to HTTPS. This directive is for websites with
      * large numbers of old URLs that need to be rewritten.
      */
-    public bool $upgradeInsecureRequests = false;
+    public bool $upgradeInsecureRequests = ENVIRONMENT === 'production';
 
     // -------------------------------------------------------------------------
     // CSP DIRECTIVES SETTINGS
@@ -52,14 +52,14 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $defaultSrc;
+    public array|string|null $defaultSrc = 'self';
 
     /**
      * Lists allowed scripts' URLs.
      *
      * @var list<string>|string
      */
-    public $scriptSrc = 'self';
+    public array|string $scriptSrc = ['self', 'unsafe-eval'];
 
     /**
      * Specifies valid sources for JavaScript <script> elements.
@@ -74,21 +74,21 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public array|string $scriptSrcAttr = 'self';
+    public array|string $scriptSrcAttr = 'none';
 
     /**
      * Lists allowed stylesheets' URLs.
      *
      * @var list<string>|string
      */
-    public $styleSrc = 'self';
+    public array|string $styleSrc = ['self', 'unsafe-inline'];
 
     /**
      * Specifies valid sources for stylesheets <link> elements.
      *
      * @var list<string>|string
      */
-    public array|string $styleSrcElem = 'self';
+    public array|string $styleSrcElem = ['self', 'unsafe-inline'];
 
     /**
      * Specifies valid sources for stylesheets inline
@@ -96,14 +96,14 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public array|string $styleSrcAttr = 'self';
+    public array|string $styleSrcAttr = ['self', 'unsafe-inline'];
 
     /**
      * Defines the origins from which images can be loaded.
      *
      * @var list<string>|string
      */
-    public $imageSrc = 'self';
+    public array|string $imageSrc = ['self', 'data:'];
 
     /**
      * Restricts the URLs that can appear in a page's `<base>` element.
@@ -112,14 +112,14 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $baseURI;
+    public array|string|null $baseURI = 'self';
 
     /**
      * Lists the URLs for workers and embedded frame contents
      *
      * @var list<string>|string
      */
-    public $childSrc = 'self';
+    public array|string $childSrc = 'self';
 
     /**
      * Limits the origins that you can connect to (via XHR,
@@ -127,21 +127,21 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public $connectSrc = 'self';
+    public array|string $connectSrc = 'self';
 
     /**
      * Specifies the origins that can serve web fonts.
      *
      * @var list<string>|string
      */
-    public $fontSrc;
+    public array|string|null $fontSrc = ['self', 'data:'];
 
     /**
      * Lists valid endpoints for submission from `<form>` tags.
      *
      * @var list<string>|string
      */
-    public $formAction = 'self';
+    public array|string $formAction = 'self';
 
     /**
      * Specifies the sources that can embed the current page.
@@ -151,7 +151,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $frameAncestors;
+    public array|string|null $frameAncestors = 'self';
 
     /**
      * The frame-src directive restricts the URLs which may
@@ -159,7 +159,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string|null
      */
-    public $frameSrc;
+    public array|string|null $frameSrc = 'self';
 
     /**
      * Restricts the origins allowed to deliver video and audio.
@@ -173,7 +173,7 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public $objectSrc = 'self';
+    public array|string $objectSrc = 'none';
 
     /**
      * @var list<string>|string|null

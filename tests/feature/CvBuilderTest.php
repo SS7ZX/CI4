@@ -32,22 +32,26 @@ final class CvBuilderTest extends CIUnitTestCase
         $editor->assertSee('aria-live="polite"');
 
         $this->withSession($_SESSION);
-        $response = $this->withBodyFormat('json')
-            ->withHeaders(['X-CSRF-TOKEN' => csrf_hash(), 'Accept' => 'application/json'])
-            ->post('/dashboard/cv/' . $cvId . '/autosave/1', [
-                'title'   => 'CV tersimpan lewat autosave',
-                'profile' => ['full_name' => 'Nama dari autosave'],
-                'links'   => [],
-            ]);
+        try {
+            $response = $this->withBodyFormat('json')
+                ->withHeaders(['X-CSRF-TOKEN' => csrf_hash(), 'Accept' => 'application/json'])
+                ->post('/dashboard/cv/' . $cvId . '/autosave/1', [
+                    'title'   => 'CV tersimpan lewat autosave',
+                    'profile' => ['full_name' => 'Nama dari autosave'],
+                    'links'   => [],
+                ]);
 
-        $response->assertOK();
-        $this->assertSame('saved', $response->getJSON()->status);
-        $this->assertSame('CV tersimpan lewat autosave', (new CvService())->findOwned($userId, $cvId)?->title);
-        $this->assertSame(
-            'Nama dari autosave',
-            $this->db->table('cv_profiles')->where('cv_id', $cvId)->get()->getRowArray()['full_name'],
-        );
-        auth()->logout();
+            $response->assertOK();
+            $payload = json_decode($response->getJSON(), true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame('saved', $payload['status']);
+            $this->assertSame('CV tersimpan lewat autosave', (new CvService())->findOwned($userId, $cvId)?->title);
+            $this->assertSame(
+                'Nama dari autosave',
+                $this->db->table('cv_profiles')->where('cv_id', $cvId)->get()->getRowArray()['full_name'],
+            );
+        } finally {
+            auth()->logout();
+        }
     }
 
     private function createUser(string $email, string $username): int

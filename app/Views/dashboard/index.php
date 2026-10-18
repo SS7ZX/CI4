@@ -37,11 +37,12 @@
                     <p class="mt-1 text-sm text-neutral-700"><?= esc(lang('Dashboard.updated')) ?>: <?= esc((string) $cv->updated_at) ?></p>
                     <div class="mt-auto flex flex-wrap gap-2 pt-5">
                         <a class="inline-flex min-h-10 items-center rounded-md border border-neutral-400 px-3 text-sm font-medium hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-show', $cv->id)) ?>"><?= esc(lang('Dashboard.open')) ?></a>
+                        <a class="inline-flex min-h-10 items-center rounded-md border border-accent-700 px-3 text-sm font-medium text-accent-900 hover:bg-accent-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-jobs', $cv->id)) ?>"><?= esc(lang('Jobs.find_jobs')) ?></a>
                         <form action="<?= esc(url_to('cv-duplicate', $cv->id)) ?>" method="post">
                             <?= csrf_field() ?>
                             <button class="min-h-10 rounded-md border border-neutral-400 px-3 text-sm font-medium hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit"><?= esc(lang('Dashboard.duplicate')) ?></button>
                         </form>
-                        <form action="<?= esc(url_to('cv-delete', $cv->id)) ?>" method="post" onsubmit="return window.confirm('<?= esc(lang('Dashboard.confirm_delete'), 'js') ?>')">
+                        <form action="<?= esc(url_to('cv-delete', $cv->id)) ?>" method="post" x-on:submit.prevent="window.confirm(<?= esc(json_encode(lang('Dashboard.confirm_delete'), JSON_THROW_ON_ERROR), 'attr') ?>) && $el.submit()">
                             <?= csrf_field() ?>
                             <button class="min-h-10 rounded-md border border-red-700 px-3 text-sm font-medium text-red-800 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700" type="submit"><?= esc(lang('Dashboard.delete')) ?></button>
                         </form>

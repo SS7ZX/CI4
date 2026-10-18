@@ -4,7 +4,12 @@ var contentDivs = new Array();
 function init()
 {
     // Grab the tab links and content divs from the page
-    var tabListItems = document.getElementById('tabs').childNodes;
+    var tabs = document.getElementById('tabs');
+    if (!tabs)
+    {
+        return;
+    }
+    var tabListItems = tabs.childNodes;
     console.log(tabListItems);
     for (var i = 0; i < tabListItems.length; i ++)
     {
@@ -46,6 +51,14 @@ function init()
         }
         i ++;
     }
+
+    document.addEventListener('click', function (event) {
+        var toggleButton = event.target.closest('[data-debug-toggle]');
+        if (toggleButton)
+        {
+            toggle(toggleButton.getAttribute('data-debug-toggle'));
+        }
+    });
 }
 
 function showTab()
