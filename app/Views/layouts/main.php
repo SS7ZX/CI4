@@ -57,7 +57,7 @@
         </header>
 
         <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10" id="content">
-            <?php foreach (['success', 'error', 'warning', 'info'] as $type): ?>
+            <?php foreach (['success', 'error', 'warning', 'info', 'message'] as $type): ?>
                 <?php $message = session()->getFlashdata($type); ?>
                 <?php if (is_string($message) && $message !== ''): ?>
                     <?php
@@ -66,6 +66,7 @@
                         'error'   => 'border-red-700 bg-red-50 text-red-900',
                         'warning' => 'border-amber-700 bg-amber-50 text-amber-900',
                         'info'    => 'border-accent-700 bg-accent-50 text-accent-900',
+                        'message' => 'border-green-700 bg-green-50 text-green-900',
                     ];
                     ?>
                     <div class="mb-4 rounded-md border px-4 py-3 text-sm <?= esc($flashStyles[$type]) ?>" role="status">

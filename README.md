@@ -83,10 +83,21 @@ Ekstensi `pgsql` dipakai driver Postgre bawaan CodeIgniter. Ekstensi `gd` diperl
 - `tailwindcss` dan `@tailwindcss/cli`: compile utility CSS secara lokal.
 - `alpinejs`: interaksi kecil pada UI, dibundel sebagai aset lokal agar halaman tidak bergantung pada CDN.
 
+## Autentikasi dan dashboard
+
+- Halaman masuk, pendaftaran, tautan masuk untuk pemulihan akun, dan ubah kata sandi tersedia dalam bahasa Indonesia.
+- Atur kredensial SMTP pada `.env` untuk mengirim tautan masuk. Nilai SMTP disimpan di environment, bukan di source code.
+- Tautan pemulihan berlaku satu jam. Permintaan dengan alamat yang tidak terdaftar menampilkan konfirmasi umum yang sama tanpa mengungkap status akun.
+- Dashboard tersedia di `/dashboard`. Setiap daftar, pembukaan, duplikasi, dan penghapusan CV dibatasi berdasarkan `user_id` pemilik.
+- Penghapusan CV menggunakan soft delete. Data anak CV ikut terhapus secara cascade hanya saat CV dihapus permanen.
+- Form mutasi memakai CSRF session; filter Shield melindungi dashboard; filter auth rate membatasi permintaan login, daftar, dan pemulihan maksimal 10 per menit per alamat IP.
+
+Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendaftaran dan masuk mengarahkan ke dashboard.
+
 ## Pengujian
 
 ```powershell
-composer test
+php -d extension=php_sqlite3.dll vendor\bin\phpunit --no-coverage
 ```
 
-Tes memakai konfigurasi database pengujian CodeIgniter dan tidak memerlukan kredensial Supabase.
+Tes memakai konfigurasi SQLite database pengujian CodeIgniter dan tidak memerlukan kredensial Supabase. Aktifkan ekstensi `sqlite3` untuk menjalankannya.

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Config;
 
 use CodeIgniter\Config\Filters as BaseFilters;
@@ -12,6 +14,7 @@ use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
+use CodeIgniter\Shield\Filters\AuthRates;
 
 class Filters extends BaseFilters
 {
@@ -34,7 +37,7 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
-        'auth-rates'    => \CodeIgniter\Shield\Filters\AuthRates::class,
+        'auth-rates'    => AuthRates::class,
     ];
 
     /**

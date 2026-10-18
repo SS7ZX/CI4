@@ -16,6 +16,14 @@
         </form>
     </div>
 
+    <?php if (is_array(session('errors'))): ?>
+        <ul class="mb-4 rounded-md border border-red-700 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+            <?php foreach (session('errors') as $error): ?>
+                <li><?= esc($error) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+
     <?php if ($cvs === []): ?>
         <section class="rounded-md border border-neutral-200 bg-white px-5 py-10 text-center">
             <h2 class="text-lg font-semibold"><?= esc(lang('Dashboard.empty_title')) ?></h2>

@@ -4,7 +4,7 @@
   "scripts": {
     "build": "npm run build:css && npm run build:js",
     "build:css": "tailwindcss -i resources/css/app.css -o public/assets/css/app.css",
-    "build:js": "node scripts/copy-alpine.cjs",
+    "build:js": "node scripts/copy-alpine.cjs && node scripts/copy-builder.cjs",
     "watch:css": "tailwindcss -i resources/css/app.css -o public/assets/css/app.css --watch"
   },
   "dependencies": {

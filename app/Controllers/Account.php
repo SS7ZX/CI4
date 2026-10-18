@@ -27,16 +27,15 @@ final class Account extends BaseController
 
         $rules = new ValidationRules();
         $data  = $this->request->getPost();
+        $passwordRules           = $rules->getPasswordRules();
+        $passwordRules['rules'][] = 'strong_password[]';
         $validation = [
             'current_password' => [
                 'label'  => 'Auth.currentPassword',
                 'rules'  => 'required',
                 'errors' => ['required' => 'Auth.currentPasswordRequired'],
             ],
-            'password' => [
-                ...$rules->getPasswordRules(),
-                'rules' => [...$rules->getPasswordRules()['rules'], 'strong_password[]'],
-            ],
+            'password'         => $passwordRules,
             'password_confirm' => $rules->getPasswordConfirmRules(),
         ];
 
