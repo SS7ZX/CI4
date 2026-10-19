@@ -5,7 +5,9 @@ declare(strict_types=1);
 return [
     'title'                   => 'Editor CV',
     'description'             => 'Lengkapi informasi CV. Perubahan disimpan otomatis.',
+    'step_progress'           => 'Langkah {0} dari {1}',
     'steps'                   => ['Data pribadi', 'Ringkasan', 'Pengalaman', 'Pendidikan', 'Keahlian', 'Bagian tambahan', 'Pilih tema', 'Tinjau dan unduh'],
+    'steps_title'             => 'Tahapan CV',
     'previous'                => 'Sebelumnya',
     'next'                    => 'Selanjutnya',
     'back'                    => 'Kembali ke dashboard',
@@ -33,6 +35,7 @@ return [
     'download_pdf'            => 'Unduh PDF',
     'pdf_preview_title'       => 'Pratinjau dokumen',
     'pdf_review_help'         => 'Periksa tampilan dokumen, pilih pengaturan, lalu unduh sebagai PDF.',
+    'preview_changes_note'    => 'Pratinjau mengikuti perubahan yang tersimpan.',
     'download_throttled'      => 'Batas unduhan tercapai. Coba lagi dalam satu menit.',
     'rate_limited'            => 'Batas permintaan tercapai. Coba lagi sebentar.',
     'invalid_profile'        => 'Data pribadi tidak valid.',

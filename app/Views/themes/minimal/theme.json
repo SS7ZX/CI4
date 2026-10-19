@@ -1,0 +1,9 @@
+{
+    "key": "minimal",
+    "name_key": "Themes.minimal_name",
+    "description_key": "Themes.minimal_description",
+    "ats_friendly": true,
+    "layout": "single-column",
+    "font_family": "CVMaker Sans",
+    "accent_palette": ["#303A3A", "#245B65", "#1D4ED8", "#7C2D12"]
+}

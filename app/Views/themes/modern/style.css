@@ -1,0 +1,41 @@
+.cv-document--theme-modern {
+    color: #24322c;
+    font-size: 10pt;
+    line-height: 1.5;
+}
+.cv-document--theme-modern .cv-header {
+    border-bottom: 2px solid #1b4332;
+    margin-bottom: 7mm;
+    padding-bottom: 5mm;
+}
+.cv-document--theme-modern .cv-header h1 {
+    color: #1b4332;
+    font-size: 25pt;
+    letter-spacing: -0.4pt;
+}
+.cv-document--theme-modern .cv-headline {
+    color: #486258;
+    font-size: 11.5pt;
+    margin-top: 2mm;
+}
+.cv-document--theme-modern .cv-section {
+    margin-top: 5mm;
+}
+.cv-document--theme-modern .cv-section h2 {
+    border-left: 2px solid #1b4332;
+    color: #1b4332;
+    font-size: 10.5pt;
+    margin-bottom: 2mm;
+    padding-left: 2.5mm;
+}
+.cv-document--theme-modern .cv-entry {
+    margin-bottom: 3mm;
+}
+.cv-document--theme-modern .cv-entry h3 {
+    font-size: 10.5pt;
+}
+.cv-document--theme-modern .cv-contact,
+.cv-document--theme-modern .cv-meta {
+    color: #52635b;
+    font-size: 9pt;
+}

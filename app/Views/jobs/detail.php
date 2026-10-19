@@ -74,6 +74,40 @@
             <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.score_snippet_note')) ?></p>
         </header>
 
+        <section class="mt-4 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" aria-labelledby="application-tracking-heading">
+            <h2 class="text-lg font-semibold" id="application-tracking-heading"><?= esc(lang('Jobs.application_tracking_title')) ?></h2>
+            <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.application_tracking_intro')) ?></p>
+            <form class="mt-4 space-y-4" action="<?= esc($applicationUrl) ?>" method="post">
+                <?= csrf_field() ?>
+                <label class="block text-sm font-medium" for="application-status"><?= esc(lang('Jobs.application_status')) ?>
+                    <select class="mt-1 min-h-11 w-full rounded-md border border-neutral-400 bg-white px-3 font-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="application-status" name="application_status">
+                        <?php foreach ($applicationStatuses as $status): ?>
+                            <option value="<?= esc($status) ?>" <?= $applicationTracking['application_status'] === $status ? 'selected' : '' ?>><?= esc(lang('Jobs.application_status_' . $status)) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <label class="block text-sm font-medium" for="application-notes"><?= esc(lang('Jobs.application_notes')) ?>
+                    <textarea class="mt-1 min-h-28 w-full rounded-md border border-neutral-400 px-3 py-2 font-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="application-notes" name="application_notes" maxlength="2000"><?= esc((string) ($applicationTracking['notes'] ?? '')) ?></textarea>
+                </label>
+                <button class="min-h-11 rounded-md bg-accent-800 px-4 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit"><?= esc(lang('Jobs.update_application')) ?></button>
+            </form>
+            <?php if (! empty($applicationTracking['status_changed_at'])): ?>
+                <p class="mt-3 text-sm text-neutral-700"><?= esc(lang('Jobs.application_last_changed', [(string) $applicationTracking['status_changed_at']])) ?></p>
+            <?php endif; ?>
+            <?php if ($applicationEvents !== []): ?>
+                <h3 class="mt-5 font-semibold"><?= esc(lang('Jobs.application_history')) ?></h3>
+                <ol class="mt-2 space-y-2 border-l border-neutral-300 pl-4">
+                    <?php foreach ($applicationEvents as $event): ?>
+                        <li class="text-sm">
+                            <p class="font-medium"><?= esc(lang('Jobs.application_status_' . $event['application_status'])) ?>, <?= esc((string) $event['changed_at']) ?></p>
+                            <?php if (! empty($event['notes'])): ?><p class="mt-1 text-neutral-700"><?= esc((string) $event['notes']) ?></p><?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ol>
+            <?php endif; ?>
+            <a class="mt-4 inline-flex min-h-10 items-center font-medium text-accent-800 underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-jobs-applications', $cvId)) ?>"><?= esc(lang('Jobs.view_application_tracker')) ?></a>
+        </section>
+
         <section class="mt-4 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" aria-labelledby="score-breakdown-heading">
             <h2 class="text-lg font-semibold" id="score-breakdown-heading"><?= esc(lang('Jobs.score_details')) ?></h2>
             <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.score_weight_note')) ?></p>
@@ -130,6 +164,27 @@
                     </ul>
                 </section>
             <?php endif; ?>
+        </section>
+
+        <section class="mt-4 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" aria-labelledby="keyword-check-heading">
+            <h2 class="text-lg font-semibold" id="keyword-check-heading"><?= esc(lang('Jobs.keyword_check_title')) ?></h2>
+            <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.keyword_check_intro')) ?></p>
+            <?php if ($keywordChecks === []): ?>
+                <p class="mt-3 text-sm text-neutral-700"><?= esc(lang('Jobs.keyword_check_empty')) ?></p>
+            <?php else: ?>
+                <ul class="mt-3 space-y-3">
+                    <?php foreach ($keywordChecks as $check): ?>
+                        <li class="rounded-md border border-neutral-200 p-4">
+                            <p class="font-semibold"><?= esc($check['keyword']) ?>: <?= esc(lang($check['present'] ? 'Jobs.keyword_present' : 'Jobs.keyword_missing')) ?></p>
+                            <?php if (! $check['present']): ?>
+                                <?php $sectionLabels = array_map(static fn (string $section): string => lang('Jobs.cv_section_' . $section), $check['sections']); ?>
+                                <p class="mt-1 text-sm text-neutral-700"><?= esc(lang('Jobs.keyword_section_suggestions', [implode(', ', $sectionLabels)])) ?></p>
+                            <?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+            <p class="mt-3 rounded-md border border-amber-700 bg-amber-50 p-3 text-sm text-amber-900"><?= esc(lang('Jobs.keyword_ethics_notice')) ?></p>
         </section>
 
         <section class="mt-4 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" aria-labelledby="snippet-heading">

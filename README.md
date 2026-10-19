@@ -96,8 +96,8 @@ Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendafta
 
 ## Tema dan pratinjau CV
 
-- Editor CV menyediakan lima tema: ATS Klasik, Profesional, Ringkas, Editorial, dan Dua Kolom. Pilihan tema disimpan pada CV tanpa mengubah bagian CV lainnya.
-- ATS Klasik dan Ringkas memakai satu kolom dan elemen HTML semantik. Tiga tema lainnya memakai tata letak visual yang tidak dioptimalkan untuk sistem ATS.
+- Editor CV menyediakan sembilan tema: Akademik, ATS Klasik, Ringkas, Minimalis, Modern, Editorial, Eksekutif, Profesional, dan Dua Kolom. Pilihan tema disimpan pada CV tanpa mengubah bagian CV lainnya.
+- Akademik, ATS Klasik, Ringkas, Minimalis, dan Modern memakai struktur satu kolom dengan elemen HTML semantik. Editorial, Eksekutif, Profesional, dan Dua Kolom memakai tata letak visual. Label ramah ATS menjelaskan struktur, bukan menjamin hasil pembacaan atau kelulusan seleksi.
 - Pratinjau tema dibuka di iframe bersandbox dan tidak menyimpan pilihan tema sampai pengguna memilihnya di editor.
 - Render HTML untuk pratinjau dan `DompdfRenderer` memakai template serta stylesheet tema yang sama. Font CV Maker didaftarkan dari font DejaVu Sans lokal yang disediakan oleh Dompdf; akses font dan gambar jarak jauh dinonaktifkan.
 - Konfigurasi tiap tema berada pada `app/Views/themes/<theme_key>/theme.json`, dengan template dan stylesheet di folder yang sama. Format tidak valid ditolak oleh `ThemeRegistry`.
@@ -124,6 +124,9 @@ Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendafta
 - Setelah menyimpan preferensi, buka hasil untuk memulai atau memperbarui pencarian. Daftar hasil memiliki filter kota dengan kecocokan persis, jenis kerja, mode kerja, status tersimpan, skor minimum, pengurutan, dan paginasi.
 - Detail lowongan menampilkan rincian skor dan cuplikan, serta tindakan simpan atau sembunyikan. Status hasil tersimpan pada `job_matches` dan tidak tertimpa saat skor dihitung ulang. Tautan keluar hanya ditampilkan untuk URL HTTP atau HTTPS dan membuka halaman penyedia di tab baru.
 - Hasil dan detail mengatribusikan penyedia serta menjelaskan bahwa penilaian memakai cuplikan yang disediakan, bukan uraian lengkap. Aplikasi tidak mengklaim mendukung apply langsung. Jalankan migration dan seeder kamus sebelum mengaktifkan pencarian.
+- Pelacak lamaran menyimpan status, waktu perubahan, catatan user, dan riwayat perubahan. Lowongan tersembunyi dikecualikan dari daftar aktif. Migration 040 membuat tracker terpisah; saat posting kedaluwarsa, data penyedia dihapus sesuai masa simpan dan tracker hanya menyimpan penanda bahwa lowongan tersimpan mungkin sudah ditutup, tanpa judul atau tautan sumber.
+- Halaman Insight menghitung skill yang sering diminta dari hasil relevan teratas, mengkanonisasi alias dan mengeluarkan skill yang sudah tercatat di CV. Ringkasan gaji baru ditampilkan saat jumlah sampel mencapai `minimumSalarySamplesForSummary`. Batas skor dan jumlah lowongan ditentukan oleh `minimumScoreForSkillGap` dan `topJobsForSkillGap` di `app/Config/JobMatching.php`.
+- Pemeriksaan kata kunci membandingkan skill yang kurang dengan teks CV dan memberi lokasi bagian yang mungkin sesuai. Ini hanya petunjuk pengeditan; UI secara eksplisit mengingatkan agar user tidak menambah atau mengklaim skill tanpa bukti nyata.
 
 ## Pengujian
 

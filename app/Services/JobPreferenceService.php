@@ -42,7 +42,7 @@ final class JobPreferenceService
     }
 
     /**
-     * @return array{cv: object, preference: array<string, mixed>|null, suggestedPreferences: array<string, mixed>, searchPreferences: array<string, mixed>, profile: CvSearchProfile, hasConsent: bool}
+     * @return array{cv: object, cvData: array<string, mixed>, preference: array<string, mixed>|null, suggestedPreferences: array<string, mixed>, searchPreferences: array<string, mixed>, profile: CvSearchProfile, hasConsent: bool}
      */
     public function workflow(int|string $userId, string $cvId): array
     {
@@ -64,6 +64,7 @@ final class JobPreferenceService
 
         return [
             'cv'         => $cvData['cv'],
+            'cvData'     => $cvData,
             'preference' => $preference,
             'suggestedPreferences' => $suggestedPreferences,
             'searchPreferences' => $searchPreferences,

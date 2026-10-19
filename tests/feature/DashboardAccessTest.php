@@ -125,6 +125,10 @@ final class DashboardAccessTest extends CIUnitTestCase
         $dashboard = $this->get('/dashboard');
         $dashboard->assertOK();
         $dashboard->assertSee('CV Operasional');
+        $dashboard->assertSee('Lanjutkan');
+        $dashboard->assertSee('Pratinjau');
+        $dashboard->assertSee('Posisi terakhir: langkah 1 dari 8.');
+        $dashboard->assertSee('Struktur ramah ATS');
         $dashboard->assertSee('Duplikat');
         $dashboard->assertSee('Hapus');
 

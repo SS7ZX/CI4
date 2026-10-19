@@ -1,0 +1,9 @@
+{
+    "key": "executive",
+    "name_key": "Themes.executive_name",
+    "description_key": "Themes.executive_description",
+    "ats_friendly": false,
+    "layout": "sidebar",
+    "font_family": "CVMaker Sans",
+    "accent_palette": ["#183A37", "#245B65", "#243E62", "#704F38"]
+}

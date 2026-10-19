@@ -35,7 +35,7 @@ $renderBullets = static function (mixed $values): void {
     <?php
 };
 ?>
-<article class="cv-sheet cv-document cv-document--<?= esc($theme['layout'], 'attr') ?>">
+<article class="cv-sheet cv-document cv-document--<?= esc($theme['layout'], 'attr') ?> cv-document--theme-<?= esc($theme['key'], 'attr') ?>">
     <?php if (($profileSection['visible'] ?? true) && ($document['profile']['full_name'] ?? '') !== ''): ?>
         <header class="cv-header">
             <h1><?= esc($document['profile']['full_name']) ?></h1>

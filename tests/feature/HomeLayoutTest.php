@@ -25,7 +25,12 @@ final class HomeLayoutTest extends CIUnitTestCase
         $this->assertStringContainsString('<html lang="id">', $result->getBody());
         $result->assertSee('assets/css/app.css');
         $result->assertSee('assets/js/alpine.min.js');
-        $result->assertSee('Buat CV secara bertahap');
+        $result->assertSee('CV profesional, disusun dari pengalaman Anda.');
+        $result->assertSee('Mulai buat CV');
+        $result->assertSee('Pilih format yang sesuai dengan posisi.');
+        $result->assertSee('Struktur ramah ATS');
+        preg_match_all('/class="theme-preview(?:\\s|")/', $result->getBody(), $matches);
+        $this->assertSame(10, count($matches[0]));
         $result->assertSee('Lewati ke konten utama');
         $response = $result->response();
         $response->getCSP()->finalize($response);

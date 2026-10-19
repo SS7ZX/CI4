@@ -43,6 +43,9 @@ $routes->group('dashboard', ['filter' => 'session'], static function (RouteColle
     $routes->post('cv/(:segment)/jobs/match/(:segment)/save', 'Jobs::saveMatch/$1/$2', ['as' => 'cv-jobs-save']);
     $routes->post('cv/(:segment)/jobs/match/(:segment)/hide', 'Jobs::hideMatch/$1/$2', ['as' => 'cv-jobs-hide']);
     $routes->post('cv/(:segment)/jobs/match/(:segment)/restore', 'Jobs::restoreMatch/$1/$2', ['as' => 'cv-jobs-restore']);
+    $routes->post('cv/(:segment)/jobs/match/(:segment)/application', 'Jobs::updateApplication/$1/$2', ['as' => 'cv-jobs-application-update']);
+    $routes->get('cv/(:segment)/jobs/applications', 'Jobs::applications/$1', ['as' => 'cv-jobs-applications']);
+    $routes->get('cv/(:segment)/jobs/insights', 'Jobs::insights/$1', ['as' => 'cv-jobs-insights']);
     $routes->get('password', 'Account::editPassword', ['as' => 'password-edit']);
     $routes->post('password', 'Account::updatePassword', ['as' => 'password-update']);
 });

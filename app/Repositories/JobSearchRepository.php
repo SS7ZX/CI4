@@ -410,13 +410,196 @@ final class JobSearchRepository
             throw new RuntimeException('Status hasil lowongan tidak valid.');
         }
 
-        return $this->db()->table('job_matches')
+        $database = $this->db();
+        $database->transBegin();
+        try {
+            $updated = $database->table('job_matches')
+                ->where('cv_id', $cvId)
+                ->where('id', $matchId)
+                ->update([
+                    'status' => $status,
+                    'status_changed_at' => gmdate('Y-m-d H:i:s'),
+                ]);
+            if (! $updated) {
+                $database->transRollback();
+
+                return false;
+            }
+
+            $tracker = $database->table('job_application_trackers')->where('match_id', $matchId)->get()->getRowArray();
+            if ($status === 'saved' && $tracker === null) {
+                $database->table('job_application_trackers')->insert([
+                    'id' => $this->uuid(),
+                    'cv_id' => $cvId,
+                    'match_id' => $matchId,
+                    'application_status' => 'not_applied',
+                    'status_changed_at' => gmdate('Y-m-d H:i:s'),
+                    'saved_expired' => false,
+                    'created_at' => gmdate('Y-m-d H:i:s'),
+                    'updated_at' => gmdate('Y-m-d H:i:s'),
+                ]);
+            } elseif ($status === 'new' && $tracker !== null) {
+                $hasApplicationActivity = $tracker['application_status'] !== 'not_applied'
+                    || trim((string) ($tracker['notes'] ?? '')) !== '';
+                if (! $hasApplicationActivity) {
+                    $database->table('job_application_trackers')->where('id', $tracker['id'])->delete();
+                }
+            }
+
+            if ($database->transStatus() === false) {
+                throw new RuntimeException('Status lowongan tersimpan tidak dapat diperbarui.');
+            }
+            $database->transCommit();
+
+            return true;
+        } catch (\Throwable $exception) {
+            $database->transRollback();
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function applicationTrackingForMatch(string $cvId, string $matchId): array
+    {
+        $tracker = $this->db()->table('job_application_trackers')
             ->where('cv_id', $cvId)
-            ->where('id', $matchId)
-            ->update([
-                'status' => $status,
-                'status_changed_at' => gmdate('Y-m-d H:i:s'),
-            ]);
+            ->where('match_id', $matchId)
+            ->get()
+            ->getRowArray();
+
+        return $tracker ?? [
+            'id' => null,
+            'cv_id' => $cvId,
+            'match_id' => $matchId,
+            'application_status' => 'not_applied',
+            'status_changed_at' => null,
+            'notes' => '',
+            'saved_expired' => false,
+        ];
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function applicationEventsForTracker(?string $trackerId): array
+    {
+        if ($trackerId === null) {
+            return [];
+        }
+
+        return $this->db()->table('job_application_events')
+            ->where('tracker_id', $trackerId)
+            ->orderBy('changed_at', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
+
+    public function updateApplicationTracking(
+        string $cvId,
+        string $matchId,
+        string $status,
+        string $notes,
+    ): bool {
+        $allowedStatuses = ['not_applied', 'applied', 'interviewing', 'offer', 'rejected', 'withdrawn'];
+        if (! in_array($status, $allowedStatuses, true) || mb_strlen($notes, 'UTF-8') > 2000) {
+            throw new RuntimeException('Status atau catatan lamaran tidak valid.');
+        }
+
+        $database = $this->db();
+        $database->transBegin();
+        try {
+            $match = $database->table('job_matches')
+                ->select('id')
+                ->where('cv_id', $cvId)
+                ->where('id', $matchId)
+                ->get()
+                ->getRowArray();
+            if ($match === null) {
+                $database->transRollback();
+
+                return false;
+            }
+
+            $now = gmdate('Y-m-d H:i:s');
+            $tracker = $database->table('job_application_trackers')
+                ->where('cv_id', $cvId)
+                ->where('match_id', $matchId)
+                ->get()
+                ->getRowArray();
+            if ($tracker === null) {
+                $trackerId = $this->uuid();
+                $database->table('job_application_trackers')->insert([
+                    'id' => $trackerId,
+                    'cv_id' => $cvId,
+                    'match_id' => $matchId,
+                    'application_status' => 'not_applied',
+                    'status_changed_at' => $now,
+                    'notes' => null,
+                    'saved_expired' => false,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+                $previousStatus = 'not_applied';
+                $previousNotes = '';
+            } else {
+                $trackerId = (string) $tracker['id'];
+                $previousStatus = (string) $tracker['application_status'];
+                $previousNotes = (string) ($tracker['notes'] ?? '');
+            }
+
+            if ($status !== $previousStatus || $notes !== $previousNotes) {
+                $updates = [
+                    'notes' => $notes !== '' ? $notes : null,
+                    'updated_at' => $now,
+                ];
+                if ($status !== $previousStatus) {
+                    $updates['application_status'] = $status;
+                    $updates['status_changed_at'] = $now;
+                }
+                $database->table('job_application_trackers')->where('id', $trackerId)->update($updates);
+                $database->table('job_application_events')->insert([
+                    'id' => $this->uuid(),
+                    'tracker_id' => $trackerId,
+                    'application_status' => $status,
+                    'notes' => $notes !== '' ? $notes : null,
+                    'changed_at' => $now,
+                ]);
+            }
+
+            if ($database->transStatus() === false) {
+                throw new RuntimeException('Riwayat lamaran tidak dapat disimpan.');
+            }
+            $database->transCommit();
+
+            return true;
+        } catch (\Throwable $exception) {
+            $database->transRollback();
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function trackedApplicationsForCv(string $cvId): array
+    {
+        return $this->db()->table('job_application_trackers')
+            ->select('job_application_trackers.*, job_matches.id AS current_match_id, job_matches.status AS listing_status, job_postings.title, job_postings.company, job_postings.link, job_postings.source_name, job_postings.expires_at')
+            ->join('job_matches', 'job_matches.id = job_application_trackers.match_id', 'left')
+            ->join('job_postings', 'job_postings.id = job_matches.job_posting_id', 'left')
+            ->where('job_application_trackers.cv_id', $cvId)
+            ->groupStart()
+                ->where('job_application_trackers.application_status !=', 'not_applied')
+                ->orWhere('job_application_trackers.saved_expired', true)
+                ->orWhere('job_matches.status', 'saved')
+            ->groupEnd()
+            ->orderBy('job_application_trackers.updated_at', 'DESC')
+            ->get()
+            ->getResultArray();
     }
 
     /**
@@ -460,12 +643,49 @@ final class JobSearchRepository
     public function deleteExpired(): array
     {
         $now = gmdate('Y-m-d H:i:s');
-        $postings = $this->db()->table('job_postings')->where('expires_at <=', $now)->delete();
-        $postingCount = $this->db()->affectedRows();
-        $this->db()->table('job_query_cache')->where('expires_at <=', $now)->delete();
-        $cacheCount = $this->db()->affectedRows();
+        $database = $this->db();
+        $database->transBegin();
+        try {
+            $expiredMatches = $database->table('job_matches')
+                ->select('job_matches.id AS match_id, job_matches.status, job_application_trackers.id AS tracker_id')
+                ->join('job_postings', 'job_postings.id = job_matches.job_posting_id')
+                ->join('job_application_trackers', 'job_application_trackers.match_id = job_matches.id', 'left')
+                ->where('job_postings.expires_at <=', $now)
+                ->get()
+                ->getResultArray();
+            foreach ($expiredMatches as $expiredMatch) {
+                if ($expiredMatch['tracker_id'] === null) {
+                    continue;
+                }
+                if (! $database->table('job_application_trackers')
+                    ->where('id', $expiredMatch['tracker_id'])
+                    ->update([
+                        'match_id' => null,
+                        'saved_expired' => $expiredMatch['status'] === 'saved',
+                        'updated_at' => $now,
+                    ])) {
+                    throw new RuntimeException('Penanda pelacakan lowongan kedaluwarsa tidak dapat diperbarui.');
+                }
+            }
+            if (! $database->table('job_postings')->where('expires_at <=', $now)->delete()) {
+                throw new RuntimeException('Lowongan kedaluwarsa tidak dapat dihapus.');
+            }
+            $postingCount = $database->affectedRows();
+            if (! $database->table('job_query_cache')->where('expires_at <=', $now)->delete()) {
+                throw new RuntimeException('Cache pencarian kedaluwarsa tidak dapat dihapus.');
+            }
+            $cacheCount = $database->affectedRows();
+            if ($database->transStatus() === false) {
+                throw new RuntimeException('Pembersihan lowongan kedaluwarsa gagal.');
+            }
+            $database->transCommit();
 
-        return ['postings' => $postingCount, 'cache' => $cacheCount];
+            return ['postings' => $postingCount, 'cache' => $cacheCount];
+        } catch (\Throwable $exception) {
+            $database->transRollback();
+
+            throw $exception;
+        }
     }
 
     public function deleteOldCache(int $olderThanSeconds): int

@@ -31,7 +31,7 @@ final class CreateJobApplicationTracking extends Migration
         $this->forge->addKey('cv_id');
         $this->forge->addKey('application_status');
         $this->forge->addForeignKey('cv_id', 'cvs', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('match_id', 'job_matches', 'id', 'SET NULL', 'CASCADE');
+        $this->forge->addForeignKey('match_id', 'job_matches', 'id', 'CASCADE', 'SET NULL');
         $this->forge->createTable('job_application_trackers');
 
         $this->forge->addField([

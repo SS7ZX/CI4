@@ -29,6 +29,7 @@ final class CvBuilderTest extends CIUnitTestCase
         $editor->assertOK();
         $editor->assertSee('Tampilan dan urutan bagian CV');
         $editor->assertSee('Nama sertifikasi');
+        $editor->assertSee('Langkah 6 dari 8');
         $editor->assertSee('aria-live="polite"');
 
         $this->withSession($_SESSION);

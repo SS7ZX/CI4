@@ -6,6 +6,8 @@ require_once APPPATH . 'Database' . DIRECTORY_SEPARATOR . 'Migrations' . DIRECTO
     . '2026-10-19-020000_CreateJobSearchTables.php';
 require_once APPPATH . 'Database' . DIRECTORY_SEPARATOR . 'Migrations' . DIRECTORY_SEPARATOR
     . '2026-10-19-030000_AddScoresToJobMatches.php';
+require_once APPPATH . 'Database' . DIRECTORY_SEPARATOR . 'Migrations' . DIRECTORY_SEPARATOR
+    . '2026-10-19-040000_CreateJobApplicationTracking.php';
 
 use CodeIgniter\Database\Config as DatabaseConfig;
 use PHPUnit\Framework\TestCase;
@@ -37,13 +39,19 @@ final class JobSearchMigrationTest extends TestCase
         $forge->createTable('cvs');
         $migration = new \App\Database\Migrations\CreateJobSearchTables($forge);
         $scoringMigration = new \App\Database\Migrations\AddScoresToJobMatches($forge);
+        $trackingMigration = new \App\Database\Migrations\CreateJobApplicationTracking($forge);
 
         try {
             $migration->up();
             $scoringMigration->up();
+            $trackingMigration->up();
             foreach (['job_query_cache', 'job_postings', 'job_refresh_log', 'job_matches'] as $table) {
                 $this->assertTrue($database->tableExists($table));
             }
+            $this->assertTrue($database->tableExists('job_application_trackers'));
+            $this->assertTrue($database->tableExists('job_application_events'));
+            $this->assertContains('saved_expired', $database->getFieldNames('job_application_trackers'));
+            $this->assertContains('application_status', $database->getFieldNames('job_application_events'));
             foreach ([
                 'score',
                 'label',
@@ -60,6 +68,7 @@ final class JobSearchMigrationTest extends TestCase
                 $this->assertContains($column, $database->getFieldNames('job_matches'));
             }
 
+            $trackingMigration->down();
             $scoringMigration->down();
             $migration->down();
 

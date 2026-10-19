@@ -54,6 +54,9 @@ final class CvThemeTest extends CIUnitTestCase
         $editor->assertOK();
         $editor->assertSee('ATS Klasik');
         $editor->assertSee('Tidak dioptimalkan untuk ATS');
+        preg_match_all('/class="theme-preview(?:\\s|")/', $editor->getBody(), $matches);
+        $this->assertSame(9, count($matches[0]));
+        $editor->assertSee('Label ramah ATS menjelaskan struktur dokumen, bukan jaminan lolos seleksi.');
 
         $preview = $this->get('/dashboard/cv/' . $cvId . '/preview/ats-classic');
         $preview->assertOK();

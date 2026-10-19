@@ -5,7 +5,9 @@
     <legend class="sr-only"><?= esc(lang('Themes.step_title')) ?></legend>
     <?php foreach ($themes as $theme): ?>
         <?php $themeInputId = 'theme-' . $theme['key']; ?>
-        <div class="rounded-md border border-neutral-300 p-4 hover:bg-neutral-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent-700" x-bind:class="selectedTheme === <?= esc(json_encode($theme['key'], JSON_THROW_ON_ERROR), 'attr') ?> ? 'border-accent-700 bg-accent-50' : ''">
+        <div class="overflow-hidden rounded-md border border-neutral-300 hover:bg-neutral-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent-700" x-bind:class="selectedTheme === <?= esc(json_encode($theme['key'], JSON_THROW_ON_ERROR), 'attr') ?> ? 'border-accent-700 bg-accent-50' : ''">
+            <?= view('themes/thumbnail', ['theme' => $theme]) ?>
+            <div class="p-4">
             <span class="flex items-start gap-3">
                 <input class="mt-1 size-4 shrink-0 accent-accent-700" id="<?= esc($themeInputId, 'attr') ?>" type="radio" name="theme_key" value="<?= esc($theme['key'], 'attr') ?>" x-model="selectedTheme">
                 <span class="min-w-0 flex-1">
@@ -16,16 +18,18 @@
                             <span class="mt-3 inline-flex rounded-md border border-green-700 px-2 py-1 text-xs font-semibold text-green-900"><?= esc(lang('Themes.ats_badge')) ?></span>
                         <?php else: ?>
                             <span class="mt-3 inline-flex rounded-md border border-amber-700 px-2 py-1 text-xs font-semibold text-amber-900"><?= esc(lang('Themes.non_ats_badge')) ?></span>
-                            <span class="mt-2 block text-xs text-amber-900"><?= esc(lang('Themes.ats_warning')) ?></span>
+                            <span class="mt-2 block text-xs text-amber-900"><?= esc(lang('Themes.ats_visual_warning')) ?></span>
                         <?php endif; ?>
                     </label>
                     <span class="mt-3 block text-sm font-medium text-accent-700" x-show="selectedTheme === <?= esc(json_encode($theme['key'], JSON_THROW_ON_ERROR), 'attr') ?>"><?= esc(lang('Themes.selected')) ?></span>
                     <button class="mt-3 min-h-10 rounded-md border border-neutral-400 px-3 text-sm font-medium hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="button" x-on:click.stop="previewTheme(<?= esc(json_encode($theme['key'], JSON_THROW_ON_ERROR), 'attr') ?>)"><?= esc(lang('Themes.preview')) ?></button>
                 </span>
             </span>
+            </div>
         </div>
     <?php endforeach; ?>
 </fieldset>
+<p class="mt-4 text-sm leading-6 text-neutral-700"><?= esc(lang('Themes.ats_scope_note')) ?></p>
 <p class="mt-3 text-sm text-red-800" x-show="errors.theme_key" x-text="errors.theme_key" role="alert"></p>
 
 <div

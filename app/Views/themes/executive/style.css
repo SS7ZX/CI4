@@ -1,0 +1,52 @@
+.cv-document--theme-executive {
+    color: #24312f;
+    display: grid;
+    font-size: 9.75pt;
+    gap: 6mm;
+    grid-template-columns: 0.7fr 1.5fr;
+    line-height: 1.45;
+}
+.cv-document--theme-executive .cv-header {
+    background: #183a37;
+    border-left: 4px solid #b08a5b;
+    grid-column: 1 / -1;
+    margin: -17mm -17mm 0;
+    padding: 11mm 17mm 8mm;
+}
+.cv-document--theme-executive .cv-header h1 {
+    color: #fffefa;
+    font-size: 25pt;
+    letter-spacing: -0.3pt;
+}
+.cv-document--theme-executive .cv-headline {
+    color: #e0e8e4;
+    font-size: 11.5pt;
+    margin-top: 2mm;
+}
+.cv-document--theme-executive .cv-contact,
+.cv-document--theme-executive .cv-header .cv-meta {
+    color: #e0e8e4;
+    font-size: 8.75pt;
+}
+.cv-document--theme-executive .cv-sections {
+    display: contents;
+}
+.cv-document--theme-executive .cv-section {
+    border-bottom: 1px solid #d9dfdc;
+    padding-bottom: 3mm;
+}
+.cv-document--theme-executive .cv-section h2 {
+    color: #183a37;
+    font-size: 10.5pt;
+    font-weight: 700;
+    margin-bottom: 2mm;
+}
+.cv-document--theme-executive .cv-entry {
+    margin-bottom: 3mm;
+}
+.cv-document--theme-executive .cv-entry h3 {
+    font-size: 9.75pt;
+}
+.cv-document--theme-executive .cv-contact {
+    margin-top: 2mm;
+}

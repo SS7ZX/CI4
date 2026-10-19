@@ -96,4 +96,14 @@ return [
     'currentPasswordRequired'       => 'Kata sandi saat ini wajib diisi.',
     'incorrectCurrentPassword'      => 'Kata sandi saat ini tidak sesuai.',
     'logout'                        => 'Keluar',
+    'workspace_kicker'              => 'Akun CV Maker',
+    'form_kicker'                   => 'Akun CV Maker',
+    'workspace_title'               => 'Kelola CV dari satu ruang kerja.',
+    'workspace_description'         => 'Masuk untuk melanjutkan dokumen, memilih tema, dan mengunduh pratinjau PDF.',
+    'workspace_items'               => [
+        'Simpan beberapa dokumen CV.',
+        'Lanjutkan pengisian dari langkah terakhir.',
+        'Ganti tema tanpa mengisi ulang data.',
+    ],
+    'backToCvMaker'                 => 'Kembali ke CV Maker',
 ];

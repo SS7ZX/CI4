@@ -1,0 +1,9 @@
+{
+    "key": "academic",
+    "name_key": "Themes.academic_name",
+    "description_key": "Themes.academic_description",
+    "ats_friendly": true,
+    "layout": "single-column",
+    "font_family": "CVMaker Sans",
+    "accent_palette": ["#463B33", "#245B65", "#1D4ED8", "#166534"]
+}

@@ -20,6 +20,8 @@
             </div>
             <div class="flex flex-wrap gap-2">
                 <a class="inline-flex min-h-11 items-center rounded-md border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc($preferencesUrl) ?>"><?= esc(lang('Jobs.edit_preferences')) ?></a>
+                <a class="inline-flex min-h-11 items-center rounded-md border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc($applicationsUrl) ?>"><?= esc(lang('Jobs.applications_title')) ?></a>
+                <a class="inline-flex min-h-11 items-center rounded-md border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc($insightsUrl) ?>"><?= esc(lang('Jobs.insights_title')) ?></a>
                 <form action="<?= esc($refreshUrl) ?>" method="post" x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
                     <?= csrf_field() ?>
                     <button class="min-h-11 rounded-md bg-accent-800 px-4 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit" x-bind:disabled="pending">

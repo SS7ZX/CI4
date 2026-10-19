@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Models\Cv;
 use App\Services\CvService;
+use App\Services\ThemeRegistry;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\Shield\Entities\User;
@@ -21,8 +22,9 @@ final class Dashboard extends BaseController
             ->findAll();
 
         return view('dashboard/index', [
-            'title' => lang('Dashboard.title'),
-            'cvs'   => $cvs,
+            'title'  => lang('Dashboard.title'),
+            'cvs'    => $cvs,
+            'themes' => array_column((new ThemeRegistry())->all(), null, 'key'),
         ]);
     }
 

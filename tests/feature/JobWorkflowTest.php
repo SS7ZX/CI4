@@ -132,7 +132,7 @@ final class JobWorkflowTest extends CIUnitTestCase
                 'skill' => ['score' => 76, 'weight' => 35, 'normalized_weight' => 50, 'reason' => 'Keahlian cocok.'],
             ], JSON_THROW_ON_ERROR),
             'matched_skills' => json_encode(['Microsoft Excel'], JSON_THROW_ON_ERROR),
-            'missing_skills' => json_encode(['Pengarsipan'], JSON_THROW_ON_ERROR),
+            'missing_skills' => json_encode(['Pengarsipan', 'SQL'], JSON_THROW_ON_ERROR),
             'reasons' => json_encode(['Judul sesuai.', 'Keahlian cocok.'], JSON_THROW_ON_ERROR),
             'status' => 'new',
             'status_changed_at' => $now,
@@ -163,10 +163,28 @@ final class JobWorkflowTest extends CIUnitTestCase
         $detailPage->assertOK();
         $detailPage->assertSee('Bobot awal 30, bobot yang dinormalisasi 50 persen.');
         $detailPage->assertSee('Pengarsipan');
+        $detailPage->assertSee('SQL: belum ditemukan di CV');
+        $detailPage->assertSee('Saran ini bukan ajakan untuk mengklaim kemampuan.');
         $detailPage->assertSee('Buka lowongan asli');
         $this->assertStringContainsString('Sumber lowongan: &lt;b&gt;Sumber&lt;/b&gt;.', $detailPage->getBody());
         $this->assertStringNotContainsString('<script>', $detailPage->getBody());
         $this->assertStringNotContainsString('<svg', $detailPage->getBody());
+        $applicationUpdate = $this->post('/dashboard/cv/' . $cvId . '/jobs/match/' . $matchId . '/application', [
+            'csrf_test_name' => $this->csrfTokenFrom('/dashboard/cv/' . $cvId . '/jobs/match/' . $matchId),
+            'application_status' => 'applied',
+            'application_notes' => 'Lamaran dikirim melalui situs perusahaan.',
+        ]);
+        $applicationUpdate->assertRedirectTo('/dashboard/cv/' . $cvId . '/jobs/match/' . $matchId);
+        $tracking = $this->db->table('job_application_trackers')->where('match_id', $matchId)->get()->getRowArray();
+        $this->assertSame('applied', $tracking['application_status']);
+        $this->assertSame('Lamaran dikirim melalui situs perusahaan.', $tracking['notes']);
+        $this->assertSame(1, $this->db->table('job_application_events')->where('tracker_id', $tracking['id'])->countAllResults());
+        $applicationDetail = $this->get('/dashboard/cv/' . $cvId . '/jobs/match/' . $matchId);
+        $applicationDetail->assertSee('Sudah melamar');
+        $applicationDetail->assertSee('Lamaran dikirim melalui situs perusahaan.');
+        $trackerPage = $this->get('/dashboard/cv/' . $cvId . '/jobs/applications');
+        $trackerPage->assertOK();
+        $trackerPage->assertSee('Sudah melamar');
         $this->db->table('job_postings')->where('id', $postingId)->update(['link' => 'javascript:alert(1)']);
         $unsafeLinkPage = $this->get('/dashboard/cv/' . $cvId . '/jobs/match/' . $matchId);
         $unsafeLinkPage->assertSee('Tautan asli tidak tersedia.');
@@ -193,6 +211,8 @@ final class JobWorkflowTest extends CIUnitTestCase
         ]);
         $hidden->assertRedirectTo('/dashboard/cv/' . $cvId . '/jobs/match/' . $matchId);
         $this->assertSame('hidden', $this->db->table('job_matches')->where('id', $matchId)->get()->getRowArray()['status']);
+        $activePage = $this->get('/dashboard/cv/' . $cvId . '/jobs/results');
+        $activePage->assertSee('0 hasil ditemukan.');
         $hiddenPage = $this->get('/dashboard/cv/' . $cvId . '/jobs/results?status=hidden');
         $hiddenPage->assertSee('1 hasil ditemukan.');
         $restored = $this->post('/dashboard/cv/' . $cvId . '/jobs/match/' . $matchId . '/restore', [
@@ -231,6 +251,7 @@ final class JobWorkflowTest extends CIUnitTestCase
         $this->assertSame(0, (int) $stored['search_enabled']);
         $this->assertNull($stored['consent_at']);
         $this->assertSame(0, $this->db->table('job_matches')->where('cv_id', $cvId)->countAllResults());
+        $this->assertSame(0, $this->db->table('job_application_trackers')->where('cv_id', $cvId)->countAllResults());
         $this->assertSame(
             1,
             $this->db->table('job_matches')->where('cv_id', $otherCvId)->countAllResults(),
@@ -319,6 +340,127 @@ final class JobWorkflowTest extends CIUnitTestCase
         } catch (PageNotFoundException $exception) {
             $this->assertSame(404, $exception->getCode());
         }
+        try {
+            $this->post('/dashboard/cv/' . $otherCvId . '/jobs/match/' . $matchId . '/application', [
+                'csrf_test_name' => $this->csrfTokenFrom('/dashboard/cv/' . $otherCvId . '/jobs/preferences'),
+                'application_status' => 'applied',
+                'application_notes' => 'Akses lintas CV',
+            ]);
+            $this->fail('Pengguna lain tidak boleh mengubah status lamaran match tersebut.');
+        } catch (PageNotFoundException $exception) {
+            $this->assertSame(404, $exception->getCode());
+        }
+
+        auth()->logout();
+    }
+
+    public function testInsightsSummarizeFixtureSkillsAndSalarySamples(): void
+    {
+        $this->seeder->call(JobDictionarySeeder::class);
+        [$userId, $cvId] = $this->createUserAndCv('insights@example.test', 'insightsuser');
+        (new JobPreferenceService())->grantConsent($userId, $cvId);
+
+        $now = date('Y-m-d H:i:s');
+        for ($index = 0; $index < 5; $index++) {
+            $postingId = $this->uuid();
+            $this->db->table('job_postings')->insert([
+                'id' => $postingId,
+                'provider' => 'fixture',
+                'dedupe_hash' => hash('sha256', $postingId),
+                'title' => 'Staf Administrasi',
+                'snippet' => 'Lowongan administrasi untuk pengujian insight.',
+                'link' => 'https://example.test/insight/' . $index,
+                'salary_min_idr' => (5 + $index) * 1_000_000,
+                'salary_max_idr' => (10 + $index) * 1_000_000,
+                'fetched_at' => $now,
+                'expires_at' => date('Y-m-d H:i:s', strtotime('+1 day')),
+                'raw' => '{}',
+            ]);
+            $this->db->table('job_matches')->insert([
+                'id' => $this->uuid(),
+                'cv_id' => $cvId,
+                'job_posting_id' => $postingId,
+                'matched_at' => $now,
+                'score' => 80,
+                'label' => 'good',
+                'confidence' => 'sedang',
+                'breakdown' => '{}',
+                'matched_skills' => '[]',
+                'missing_skills' => json_encode(['SQL', 'Pengarsipan'], JSON_THROW_ON_ERROR),
+                'reasons' => '[]',
+                'status' => 'new',
+                'status_changed_at' => $now,
+                'computed_at' => $now,
+                'excluded_keyword_match' => false,
+                'is_hidden_by_score' => false,
+            ]);
+        }
+
+        auth()->loginById($userId);
+        $this->withSession($_SESSION);
+        $page = $this->get('/dashboard/cv/' . $cvId . '/jobs/insights');
+        $page->assertOK();
+        $page->assertSee('SQL');
+        $page->assertSee('Diminta pada 5 lowongan');
+        $page->assertDontSee('Pengarsipan');
+        $page->assertSee('Sampel gaji tersedia: 5.');
+        $page->assertSee('Rp 7.000.000');
+        $page->assertSee('Rp 12.000.000');
+        $page->assertSee('bukan jaminan atau estimasi tawaran');
+
+        auth()->logout();
+    }
+
+    public function testSavedExpiredPostingKeepsOnlyEthicalTrackerMarkerAfterCleanup(): void
+    {
+        $this->seeder->call(JobDictionarySeeder::class);
+        [$userId, $cvId] = $this->createUserAndCv('expired-saved@example.test', 'expiredsaved');
+        (new JobPreferenceService())->grantConsent($userId, $cvId);
+        $now = date('Y-m-d H:i:s');
+        $postingId = $this->uuid();
+        $matchId = $this->uuid();
+        $this->db->table('job_postings')->insert([
+            'id' => $postingId,
+            'provider' => 'fixture',
+            'dedupe_hash' => hash('sha256', $postingId),
+            'title' => 'Lowongan lama yang sudah dihapus',
+            'snippet' => 'Data ini harus dibersihkan.',
+            'link' => 'https://example.test/expired',
+            'fetched_at' => date('Y-m-d H:i:s', strtotime('-8 days')),
+            'expires_at' => date('Y-m-d H:i:s', strtotime('-1 day')),
+            'raw' => '{}',
+        ]);
+        $this->db->table('job_matches')->insert([
+            'id' => $matchId,
+            'cv_id' => $cvId,
+            'job_posting_id' => $postingId,
+            'matched_at' => $now,
+            'score' => 75,
+            'label' => 'very_good',
+            'confidence' => 'rendah',
+            'breakdown' => '{}',
+            'matched_skills' => '[]',
+            'missing_skills' => '[]',
+            'reasons' => '[]',
+            'status' => 'saved',
+            'status_changed_at' => $now,
+            'computed_at' => $now,
+            'excluded_keyword_match' => false,
+            'is_hidden_by_score' => false,
+        ]);
+        $this->assertTrue((new \App\Repositories\JobSearchRepository())->updateMatchStatus($cvId, $matchId, 'saved'));
+        $this->assertSame(1, (new \App\Repositories\JobSearchRepository())->deleteExpired()['postings']);
+        $tracker = $this->db->table('job_application_trackers')->where('cv_id', $cvId)->get()->getRowArray();
+        $this->assertSame(1, (int) $tracker['saved_expired']);
+        $this->assertNull($tracker['match_id']);
+        $this->assertSame(0, $this->db->table('job_postings')->where('id', $postingId)->countAllResults());
+
+        auth()->loginById($userId);
+        $this->withSession($_SESSION);
+        $page = $this->get('/dashboard/cv/' . $cvId . '/jobs/applications');
+        $page->assertOK();
+        $page->assertSee('Lowongan ini mungkin sudah ditutup.');
+        $this->assertStringNotContainsString('Lowongan lama yang sudah dihapus', $page->getBody());
 
         auth()->logout();
     }

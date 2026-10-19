@@ -25,54 +25,70 @@
         })"
         x-on:input="scheduleSave()"
         x-on:change="scheduleSave()"
-        class="space-y-6"
+        class="space-y-8"
     >
-        <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
             <div>
-                <h1 class="text-2xl font-semibold"><?= esc(lang('CvBuilder.title')) ?></h1>
-                <p class="mt-1 text-sm text-neutral-700"><?= esc(lang('CvBuilder.description')) ?></p>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('CvBuilder.title')) ?></p>
+                <h1 class="mt-2 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl"><?= esc($state['cv']['title']) ?></h1>
+                <p class="mt-2 text-sm text-muted"><?= esc(lang('CvBuilder.description')) ?></p>
             </div>
-            <a class="inline-flex min-h-10 items-center rounded-md border border-neutral-400 px-3 text-sm font-medium hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('CvBuilder.back')) ?></a>
+            <a class="inline-flex min-h-10 items-center rounded-md border border-line bg-paper px-3 text-sm font-medium text-ink hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('CvBuilder.back')) ?></a>
         </div>
 
-        <nav aria-label="<?= esc(lang('CvBuilder.title')) ?>" class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
-            <?php foreach (lang('CvBuilder.steps') as $index => $stepName): ?>
-                <button
-                    class="min-h-11 rounded-md border px-3 text-left text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
-                    x-bind:class="step === <?= $index + 1 ?> ? 'border-accent-700 bg-accent-50 text-accent-900' : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100'"
-                    type="button"
-                    x-on:click="navigate(<?= $index + 1 ?>)"
-                    x-bind:aria-current="step === <?= $index + 1 ?> ? 'step' : null"
-                >
-                    <span class="mr-1"><?= $index + 1 ?>.</span><?= esc($stepName) ?>
-                </button>
-            <?php endforeach; ?>
-        </nav>
+        <div class="grid items-start gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+            <aside class="min-w-0 rounded-md border border-line bg-paper p-3 lg:sticky lg:top-4">
+                <div class="flex items-baseline justify-between px-2 pb-3">
+                    <h2 class="text-sm font-semibold text-ink"><?= esc(lang('CvBuilder.steps_title')) ?></h2>
+                    <span class="text-xs text-muted"><?= esc(lang('CvBuilder.step_progress', [$step, 8])) ?></span>
+                </div>
+                <nav aria-label="<?= esc(lang('CvBuilder.title')) ?>">
+                    <ol class="flex snap-x gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+                        <?php foreach (lang('CvBuilder.steps') as $index => $stepName): ?>
+                            <li class="min-w-40 snap-start lg:min-w-0">
+                                <button
+                                    class="flex min-h-11 w-full items-center gap-3 rounded-md border px-3 py-2 text-left text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                                    x-bind:class="step === <?= $index + 1 ?> ? 'border-accent-700 bg-accent-50 text-accent-900' : 'border-transparent text-muted hover:border-line hover:bg-canvas'"
+                                    type="button"
+                                    x-on:click="navigate(<?= $index + 1 ?>)"
+                                    x-bind:aria-current="step === <?= $index + 1 ?> ? 'step' : null"
+                                >
+                                    <span class="flex size-7 shrink-0 items-center justify-center rounded-sm border text-xs" x-bind:class="step === <?= $index + 1 ?> ? 'border-accent-700 bg-paper font-semibold' : 'border-line bg-canvas'"><?= $index + 1 ?></span>
+                                    <span><?= esc($stepName) ?></span>
+                                </button>
+                            </li>
+                        <?php endforeach; ?>
+                    </ol>
+                </nav>
+                <p class="mt-3 min-h-12 border-t border-line px-2 pt-3 text-xs leading-5 text-muted" aria-live="polite" role="status"
+                    x-bind:class="status === 'error' ? 'text-red-800' : (status === 'saved' ? 'text-accent-900' : '')">
+                    <span><?= esc(lang('CvBuilder.save_status')) ?>:</span>
+                    <span x-text="status === 'saving' ? '<?= esc(lang('CvBuilder.saving'), 'js') ?>' : (status === 'saved' ? '<?= esc(lang('CvBuilder.saved'), 'js') ?>' : (status === 'error' ? '<?= esc(lang('CvBuilder.save_error'), 'js') ?>' : ''))"></span>
+                </p>
+            </aside>
 
-        <p class="min-h-6 text-sm text-neutral-700" aria-live="polite" role="status">
-            <span><?= esc(lang('CvBuilder.save_status')) ?>:</span>
-            <span x-text="status === 'saving' ? '<?= esc(lang('CvBuilder.saving'), 'js') ?>' : (status === 'saved' ? '<?= esc(lang('CvBuilder.saved'), 'js') ?>' : (status === 'error' ? '<?= esc(lang('CvBuilder.save_error'), 'js') ?>' : ''))"></span>
-        </p>
+            <div class="min-w-0 space-y-5">
+                <?php for ($stepNumber = 1; $stepNumber <= 8; $stepNumber++): ?>
+                    <section x-cloak x-show="step === <?= $stepNumber ?>" class="min-w-0 rounded-md border border-line bg-paper p-5 sm:p-7">
+                        <?= $this->include('builder/steps/step' . $stepNumber) ?>
+                    </section>
+                <?php endfor; ?>
 
-        <?php for ($stepNumber = 1; $stepNumber <= 8; $stepNumber++): ?>
-            <section x-cloak x-show="step === <?= $stepNumber ?>" class="rounded-md border border-neutral-200 bg-white p-5 sm:p-7">
-                <?= $this->include('builder/steps/step' . $stepNumber) ?>
-            </section>
-        <?php endfor; ?>
-
-        <div class="flex justify-between gap-3">
-            <button
-                class="min-h-11 rounded-md border border-neutral-400 px-4 text-sm font-medium hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700 disabled:cursor-not-allowed disabled:opacity-50"
-                type="button"
-                x-on:click="navigate(step - 1)"
-                x-bind:disabled="step <= 1 || busy"
-            ><?= esc(lang('CvBuilder.previous')) ?></button>
-            <button
-                class="min-h-11 rounded-md bg-accent-700 px-4 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-60"
-                type="button"
-                x-on:click="navigate(step + 1)"
-                x-bind:disabled="step >= 8 || busy"
-            ><?= esc(lang('CvBuilder.next')) ?></button>
+                <div class="flex justify-between gap-3">
+                    <button
+                        class="min-h-11 rounded-md border border-line bg-paper px-4 text-sm font-medium text-ink hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        type="button"
+                        x-on:click="navigate(step - 1)"
+                        x-bind:disabled="step <= 1 || busy"
+                    ><?= esc(lang('CvBuilder.previous')) ?></button>
+                    <button
+                        class="min-h-11 rounded-md bg-accent-700 px-4 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-60"
+                        type="button"
+                        x-on:click="navigate(step + 1)"
+                        x-bind:disabled="step >= 8 || busy"
+                    ><?= esc(lang('CvBuilder.next')) ?></button>
+                </div>
+            </div>
         </div>
     </div>
 <?= $this->endSection() ?>

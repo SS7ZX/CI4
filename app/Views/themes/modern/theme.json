@@ -1,0 +1,9 @@
+{
+    "key": "modern",
+    "name_key": "Themes.modern_name",
+    "description_key": "Themes.modern_description",
+    "ats_friendly": true,
+    "layout": "single-column",
+    "font_family": "CVMaker Sans",
+    "accent_palette": ["#1B4332", "#245B65", "#1D4ED8", "#7C2D12"]
+}

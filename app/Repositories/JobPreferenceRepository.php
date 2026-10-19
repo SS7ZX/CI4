@@ -68,6 +68,9 @@ final class JobPreferenceRepository
     public function deleteMatchesForCv(string $cvId): void
     {
         $database = $this->database ?? db_connect();
+        if ($database->tableExists('job_application_trackers')) {
+            $database->table('job_application_trackers')->where('cv_id', $cvId)->delete();
+        }
         if ($database->tableExists('job_matches')) {
             $database->table('job_matches')->where('cv_id', $cvId)->delete();
         }

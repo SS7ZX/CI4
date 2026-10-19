@@ -10,7 +10,10 @@ use App\Services\JobPreferenceValidationException;
 use App\Libraries\Jobs\JobIngestService;
 use App\Libraries\Jobs\JobProviderException;
 use App\Libraries\Jobs\JobSearchLimitException;
+use App\Repositories\JobDictionaryRepository;
 use App\Repositories\JobSearchRepository;
+use App\Services\KeywordCheckService;
+use App\Services\SkillGapService;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\Shield\Entities\User;
@@ -101,6 +104,8 @@ final class Jobs extends BaseController
                 || $sort !== 'relevance',
             'jobTypes' => $allowedTypes,
             'preferencesUrl' => url_to('cv-jobs-preferences', $cvId),
+            'applicationsUrl' => url_to('cv-jobs-applications', $cvId),
+            'insightsUrl' => url_to('cv-jobs-insights', $cvId),
             'refreshUrl' => url_to('cv-jobs-refresh', $cvId),
             'resultsUrl' => url_to('cv-jobs-results', $cvId),
         ]);
@@ -116,6 +121,15 @@ final class Jobs extends BaseController
         if ($job === null) {
             throw PageNotFoundException::forPageNotFound();
         }
+        $repository = new JobSearchRepository();
+        $tracking = $repository->applicationTrackingForMatch($cvId, $matchId);
+        $missingSkills = json_decode((string) ($job['missing_skills'] ?? '[]'), true);
+        $missingSkills = is_array($missingSkills) ? array_values(array_filter($missingSkills, 'is_string')) : [];
+        $keywordChecks = (new KeywordCheckService())->check(
+            $workflow['cvData'],
+            $missingSkills,
+            (new JobDictionaryRepository())->skills(),
+        );
 
         return view('jobs/detail', [
             'title' => lang('Jobs.detail_title'),
@@ -126,7 +140,78 @@ final class Jobs extends BaseController
             'saveUrl' => url_to('cv-jobs-save', $cvId, $matchId),
             'hideUrl' => url_to('cv-jobs-hide', $cvId, $matchId),
             'restoreUrl' => url_to('cv-jobs-restore', $cvId, $matchId),
+            'applicationUrl' => url_to('cv-jobs-application-update', $cvId, $matchId),
+            'applicationTracking' => $tracking,
+            'applicationEvents' => $repository->applicationEventsForTracker(
+                is_string($tracking['id'] ?? null) ? $tracking['id'] : null,
+            ),
+            'applicationStatuses' => ['not_applied', 'applied', 'interviewing', 'offer', 'rejected', 'withdrawn'],
+            'keywordChecks' => $keywordChecks,
             'externalUrl' => $this->safeExternalUrl((string) ($job['link'] ?? '')),
+        ]);
+    }
+
+    public function updateApplication(string $cvId, string $matchId): RedirectResponse
+    {
+        $workflow = $this->service()->workflow($this->currentUser()->id, $cvId);
+        if (! $workflow['hasConsent']) {
+            return redirect()->route('cv-jobs', [$cvId])->with('error', lang('Jobs.consent_required'));
+        }
+
+        $status = $this->request->getPost('application_status');
+        $notes = $this->request->getPost('application_notes');
+        $allowedStatuses = ['not_applied', 'applied', 'interviewing', 'offer', 'rejected', 'withdrawn'];
+        if (
+            ! is_string($status)
+            || ! in_array($status, $allowedStatuses, true)
+            || ! is_string($notes)
+            || mb_strlen($notes, 'UTF-8') > 2000
+        ) {
+            return redirect()->route('cv-jobs-detail', [$cvId, $matchId])
+                ->with('error', lang('Jobs.application_validation_error'));
+        }
+
+        if (! (new JobSearchRepository())->updateApplicationTracking($cvId, $matchId, $status, trim($notes))) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        return redirect()->route('cv-jobs-detail', [$cvId, $matchId])
+            ->with('success', lang('Jobs.application_updated'));
+    }
+
+    public function applications(string $cvId): string|RedirectResponse
+    {
+        $workflow = $this->service()->workflow($this->currentUser()->id, $cvId);
+        if (! $workflow['hasConsent']) {
+            return redirect()->route('cv-jobs', [$cvId])->with('error', lang('Jobs.consent_required'));
+        }
+
+        return view('jobs/applications', [
+            'title' => lang('Jobs.applications_title'),
+            'cv' => $workflow['cv'],
+            'cvId' => $cvId,
+            'applications' => (new JobSearchRepository())->trackedApplicationsForCv($cvId),
+        ]);
+    }
+
+    public function insights(string $cvId): string|RedirectResponse
+    {
+        $workflow = $this->service()->workflow($this->currentUser()->id, $cvId);
+        if (! $workflow['hasConsent']) {
+            return redirect()->route('cv-jobs', [$cvId])->with('error', lang('Jobs.consent_required'));
+        }
+
+        $insights = (new SkillGapService())->analyze(
+            $workflow['profile'],
+            (new JobSearchRepository())->matchesForCv($cvId),
+            (new JobDictionaryRepository())->skills(),
+        );
+
+        return view('jobs/insights', [
+            'title' => lang('Jobs.insights_title'),
+            'cv' => $workflow['cv'],
+            'cvId' => $cvId,
+            'insights' => $insights,
         ]);
     }
 
