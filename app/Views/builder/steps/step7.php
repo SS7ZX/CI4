@@ -6,7 +6,7 @@
     <?php foreach ($themes as $theme): ?>
         <?php $themeInputId = 'theme-' . $theme['key']; ?>
         <div class="overflow-hidden rounded-md border border-neutral-300 hover:bg-neutral-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent-700" x-bind:class="selectedTheme === <?= esc(json_encode($theme['key'], JSON_THROW_ON_ERROR), 'attr') ?> ? 'border-accent-700 bg-accent-50' : ''">
-            <?= view('themes/thumbnail', ['theme' => $theme]) ?>
+            <?= view('themes/thumbnail', ['theme' => $theme, 'featured' => false, 'compact' => false]) ?>
             <div class="p-4">
             <span class="flex items-start gap-3">
                 <input class="mt-1 size-4 shrink-0 accent-accent-700" id="<?= esc($themeInputId, 'attr') ?>" type="radio" name="theme_key" value="<?= esc($theme['key'], 'attr') ?>" x-model="selectedTheme">

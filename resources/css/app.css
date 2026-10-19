@@ -407,6 +407,25 @@
     font-size: 0.24rem;
 }
 
+@media (max-width: 639px) {
+    .home-hero__art {
+        min-height: 18rem;
+        padding-bottom: 2rem;
+        padding-top: 2.5rem;
+    }
+
+    .theme-preview--featured .theme-preview__page {
+        max-width: 10.75rem;
+        min-height: 14rem;
+        padding: 0.8rem;
+    }
+
+    .theme-preview--featured .theme-preview__page[data-theme="executive"] .theme-preview__header {
+        margin: -0.8rem -0.8rem 0;
+        padding: 0.8rem 0.8rem 0.55rem;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

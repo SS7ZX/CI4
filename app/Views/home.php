@@ -12,7 +12,7 @@ $featuredTheme = array_values(array_filter($themes, static fn (array $theme): bo
                 <span class="h-px w-8 bg-accent-700" aria-hidden="true"></span>
                 <?= esc(lang('App.home_kicker')) ?>
             </p>
-            <h1 class="home-hero__title mt-6 max-w-xl text-4xl font-medium leading-[1.08] tracking-tight text-ink sm:text-5xl">
+            <h1 class="home-hero__title mt-6 max-w-xl text-3xl font-medium leading-[1.08] tracking-tight text-ink sm:text-5xl">
                 <?= esc(lang('App.home_title')) ?>
             </h1>
             <p class="mt-5 max-w-lg text-base leading-7 text-muted">
@@ -39,7 +39,7 @@ $featuredTheme = array_values(array_filter($themes, static fn (array $theme): bo
                 <span class="home-hero__caption-mark" aria-hidden="true"></span>
                 <?= esc(lang('App.home_preview_label')) ?>
             </div>
-            <?= view('themes/thumbnail', ['theme' => $featuredTheme, 'featured' => true]) ?>
+            <?= view('themes/thumbnail', ['theme' => $featuredTheme, 'featured' => true, 'compact' => false]) ?>
             <p class="home-hero__preview-note absolute bottom-5 left-5 right-5 text-center text-xs leading-5 text-muted sm:bottom-8"><?= esc(lang('App.home_preview_note')) ?></p>
         </div>
     </div>
@@ -68,7 +68,7 @@ $featuredTheme = array_values(array_filter($themes, static fn (array $theme): bo
     <ul class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <?php foreach ($themes as $theme): ?>
             <li class="theme-card flex flex-col overflow-hidden border border-line bg-paper">
-                <?= view('themes/thumbnail', ['theme' => $theme, 'compact' => true]) ?>
+                <?= view('themes/thumbnail', ['theme' => $theme, 'featured' => false, 'compact' => true]) ?>
                 <div class="flex flex-1 flex-col px-4 py-4 sm:px-5">
                     <div class="flex flex-wrap items-baseline justify-between gap-2">
                         <h3 class="text-lg font-semibold tracking-tight text-ink"><?= esc(lang($theme['name_key'])) ?></h3>

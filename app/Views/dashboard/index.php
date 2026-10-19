@@ -38,7 +38,7 @@
                 <p class="mt-3 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.empty_description')) ?></p>
                 <p class="mt-3 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.empty_theme_description')) ?></p>
             </div>
-            <?= view('themes/thumbnail', ['theme' => reset($themes), 'compact' => true]) ?>
+            <?= view('themes/thumbnail', ['theme' => reset($themes), 'featured' => false, 'compact' => true]) ?>
         </section>
     <?php else: ?>
         <div class="mb-4 flex items-baseline justify-between gap-3">
@@ -51,7 +51,7 @@
                 <?php $theme = $themes[$cv->theme_key] ?? null; ?>
                 <li class="flex min-w-0 flex-col overflow-hidden rounded-md border border-line bg-paper">
                     <?php if (is_array($theme)): ?>
-                        <?= view('themes/thumbnail', ['theme' => $theme, 'compact' => true]) ?>
+                        <?= view('themes/thumbnail', ['theme' => $theme, 'featured' => false, 'compact' => true]) ?>
                     <?php endif; ?>
                     <div class="flex flex-1 flex-col p-5">
                         <h3 class="break-words text-lg font-semibold tracking-tight text-ink"><?= esc($cv->title) ?></h3>
