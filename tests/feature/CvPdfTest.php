@@ -35,6 +35,7 @@ final class CvPdfTest extends CIUnitTestCase
         $editor->assertOK();
         $editor->assertSee('Tinjau dan unduh');
         $editor->assertSee('Ukuran kertas');
+        $editor->assertSee('Bayar 15.000 untuk mengunduh');
 
         $this->withSession($_SESSION);
         $invalid = $this->withBodyFormat('json')
@@ -80,6 +81,7 @@ final class CvPdfTest extends CIUnitTestCase
         $this->assertGreaterThanOrEqual(1, $pageResult['page_count']);
 
         $this->withSession($_SESSION);
+        $this->approveDownload($userId, $cvId);
         $download = $this->get('/dashboard/cv/' . $cvId . '/download');
         $download->assertOK();
         $this->assertSame('application/pdf', $download->response()->getHeaderLine('Content-Type'));
@@ -101,6 +103,7 @@ final class CvPdfTest extends CIUnitTestCase
         $this->addProfileAndExperience($userId, $cvId);
         auth()->loginById($userId);
         $this->withSession($_SESSION);
+        $this->approveDownload($userId, $cvId);
 
         $download = $this->get('/dashboard/cv/' . $cvId . '/download');
         $download->assertOK();
@@ -199,6 +202,7 @@ final class CvPdfTest extends CIUnitTestCase
         auth()->loginById($userId);
         $this->withSession($_SESSION);
 
+        $this->approveDownload($userId, $cvId);
         $this->assertTrue(service('throttler')->check('cv-pdf-' . $userId, 5, 60, 5));
         $response = $this->get('/dashboard/cv/' . $cvId . '/download');
         $response->assertStatus(429);
@@ -286,5 +290,27 @@ final class CvPdfTest extends CIUnitTestCase
         $users->save($user);
 
         return $users->getInsertID();
+    }
+
+    private function approveDownload(int $userId, string $cvId): void
+    {
+        $timestamp = date('Y-m-d H:i:s');
+        $bytes = random_bytes(16);
+        $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
+        $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+
+        $this->db->table('cv_download_payments')->insert([
+            'id' => vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4)),
+            'cv_id' => $cvId,
+            'user_id' => $userId,
+            'amount_idr' => 15000,
+            'status' => 'approved',
+            'proof_path' => 'proof-' . str_repeat('a', 40) . '.png',
+            'reviewed_by' => $userId,
+            'proof_uploaded_at' => $timestamp,
+            'reviewed_at' => $timestamp,
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ]);
     }
 }

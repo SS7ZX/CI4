@@ -6,6 +6,8 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 $routes->get('/', 'Home::index');
+$routes->get('robots.txt', 'SiteMetadata::robots', ['as' => 'robots']);
+$routes->get('sitemap.xml', 'SiteMetadata::sitemap', ['as' => 'sitemap']);
 
 service('auth')->routes($routes, ['except' => ['magic-link', 'logout']]);
 $routes->post('logout', '\CodeIgniter\Shield\Controllers\LoginController::logoutAction', ['as' => 'logout']);
@@ -27,6 +29,13 @@ $routes->group('dashboard', ['filter' => 'session'], static function (RouteColle
     $routes->get('cv/(:segment)/preview/(:segment)', 'CvPreview::theme/$1/$2', ['as' => 'cv-theme-preview']);
     $routes->get('cv/(:segment)/pages', 'CvPreview::pageCount/$1', ['as' => 'cv-page-count']);
     $routes->get('cv/(:segment)/download', 'CvDownload::download/$1', ['as' => 'cv-download']);
+    $routes->get('cv/(:segment)/payment', 'CvPayments::checkout/$1', ['as' => 'cv-payment']);
+    $routes->post('cv/(:segment)/payment/proof', 'CvPayments::submit/$1', ['as' => 'cv-payment-submit']);
+    $routes->get('payments/qr', 'CvPayments::qr', ['as' => 'cv-payment-qr']);
+    $routes->get('payments/admin', 'CvPayments::admin', ['as' => 'cv-payment-admin']);
+    $routes->post('payments/admin/qr', 'CvPayments::uploadQr', ['as' => 'cv-payment-qr-upload']);
+    $routes->get('payments/admin/proof/(:segment)', 'CvPayments::proof/$1', ['as' => 'cv-payment-proof']);
+    $routes->post('payments/admin/review/(:segment)', 'CvPayments::review/$1', ['as' => 'cv-payment-review']);
     $routes->post('cv/(:segment)/photo', 'CvBuilder::uploadPhoto/$1', ['as' => 'cv-photo-upload']);
     $routes->get('cv/(:segment)/photo', 'CvBuilder::photo/$1', ['as' => 'cv-photo']);
     $routes->post('cv/(:segment)/duplicate', 'Dashboard::duplicate/$1', ['as' => 'cv-duplicate']);

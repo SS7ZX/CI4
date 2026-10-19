@@ -219,6 +219,32 @@
     color: var(--theme-preview-accent);
 }
 
+.theme-preview__page[data-theme="designer"] .theme-preview__header {
+    border-left: 4px solid var(--theme-preview-accent);
+    padding-left: 0.4rem;
+}
+
+.theme-preview__page[data-theme="designer"] .theme-preview__sidebar {
+    background: #eaf4f1;
+    border-top: 2px solid var(--theme-preview-accent);
+}
+
+.theme-preview__page[data-theme="portfolio"] .theme-preview__header {
+    border-bottom: 2px solid var(--theme-preview-accent);
+    padding-bottom: 0.6rem;
+}
+
+.theme-preview__page[data-theme="portfolio"] .theme-preview__line--title {
+    height: 6px;
+    width: 78%;
+}
+
+.theme-preview__page[data-theme="portfolio"] .theme-preview__section:last-child {
+    background: #f8f1e9;
+    border: 1px solid #e5d5c6;
+    padding: 0.35rem;
+}
+
 .theme-preview__page[data-layout="compact"] .theme-preview__body {
     gap: 0.35rem;
 }

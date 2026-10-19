@@ -1,0 +1,9 @@
+{
+  "key": "designer",
+  "name_key": "Themes.designer_name",
+  "description_key": "Themes.designer_description",
+  "ats_friendly": false,
+  "layout": "sidebar",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#0F766E", "#BE185D", "#B45309"]
+}

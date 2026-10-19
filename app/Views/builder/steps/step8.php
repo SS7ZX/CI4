@@ -36,7 +36,7 @@
 
         <div class="border-t border-line pt-4">
             <p class="text-sm text-muted" aria-live="polite" role="status" x-text="pageCountMessage"></p>
-            <button class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-accent-700 px-4 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-60" type="button" x-on:click="downloadPdf()" x-bind:disabled="busy"><?= esc(lang('CvBuilder.download_pdf')) ?></button>
+            <button class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-accent-700 px-4 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-60" type="button" x-on:click="downloadPdf()" x-bind:disabled="busy" x-text="paymentPaid ? messages.downloadPdf : messages.paymentDownload"><?= esc(lang('Payments.download_action')) ?></button>
         </div>
     </div>
 

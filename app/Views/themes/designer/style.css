@@ -1,0 +1,52 @@
+.cv-document--theme-designer {
+    background: #fffdf9;
+    border-top: 12px solid #0f766e;
+    color: #252c2b;
+    font-family: "CVMaker Sans", sans-serif;
+}
+
+.cv-document--theme-designer .cv-header {
+    border-bottom: 1px solid #c9e2dc;
+    padding-bottom: 1.25rem;
+}
+
+.cv-document--theme-designer .cv-header h1 {
+    color: #115e59;
+    font-size: 28pt;
+    letter-spacing: -0.04em;
+}
+
+.cv-document--theme-designer .cv-contact {
+    color: #4b625e;
+    font-size: 9pt;
+}
+
+.cv-document--theme-designer.cv-document--sidebar .cv-sections,
+.cv-document--theme-designer.cv-document--split .cv-sections {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+}
+
+.cv-document--theme-designer .cv-section--skills,
+.cv-document--theme-designer .cv-section--links,
+.cv-document--theme-designer .cv-section--languages {
+    background: #eef7f4;
+    border-left: 3px solid #0f766e;
+    padding: 0.7rem;
+}
+
+.cv-document--theme-designer .cv-section h2 {
+    color: #0f766e;
+    font-size: 10pt;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cv-document--theme-designer .cv-section--projects h2,
+.cv-document--theme-designer .cv-section--awards h2 {
+    color: #9d174d;
+}
+
+.cv-document--theme-designer .cv-entry {
+    border-left: 1px solid #d7ddd8;
+    padding-left: 0.8rem;
+}

@@ -8,6 +8,9 @@
             <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Dashboard.workspace_kicker')) ?></p>
             <h1 class="mt-2 text-3xl font-semibold tracking-tight text-ink"><?= esc(lang('Dashboard.title')) ?></h1>
             <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.description')) ?></p>
+            <?php if ($canReviewPayments): ?>
+                <a class="mt-3 inline-flex min-h-10 items-center text-sm font-semibold text-accent-900 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-payment-admin')) ?>"><?= esc(lang('Payments.admin_title')) ?></a>
+            <?php endif; ?>
         </div>
         <form action="<?= esc(url_to('cv-create')) ?>" method="post" class="grid w-full gap-2 sm:grid-cols-[minmax(12rem,1fr)_auto] lg:max-w-xl">
             <?= csrf_field() ?>

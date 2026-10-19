@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Libraries\Photos\LocalPhotoStorage;
 use App\Libraries\Photos\PhotoStorageInterface;
 use App\Services\CvBuilderService;
+use App\Services\CvPaymentService;
 use App\Services\MatchService;
 use App\Services\CvValidationException;
 use App\Services\ThemeRegistry;
@@ -36,6 +37,7 @@ final class CvBuilder extends BaseController
         }
 
         $data  = $this->builder->load($this->currentUser()->id, $cvId);
+        $paymentService = new CvPaymentService();
         $state = [];
         foreach ($data as $key => $value) {
             if (is_array($value)) {
@@ -80,12 +82,17 @@ final class CvBuilder extends BaseController
             'previewUrl' => url_to('cv-preview', $cvId),
             'pageCountUrl' => url_to('cv-page-count', $cvId),
             'downloadUrl' => url_to('cv-download', $cvId),
+            'paymentPaid' => $paymentService->hasPaid($this->currentUser()->id, $cvId),
             'themes'     => $this->themes->all(),
             'sectionLabels' => $sectionLabels,
             'messages' => [
                 'pageCountLoading' => lang('CvBuilder.page_count_loading'),
                 'pageCountError' => lang('CvBuilder.page_count_error'),
                 'pageCount' => lang('CvBuilder.page_count'),
+                'downloadPdf' => lang('Payments.download_action'),
+                'paymentDownload' => lang('Payments.payment_action', [
+                    number_format($paymentService->priceIdr(), 0, ',', '.'),
+                ]),
             ],
             'tokenName'  => csrf_token(),
             'tokenValue' => csrf_hash(),

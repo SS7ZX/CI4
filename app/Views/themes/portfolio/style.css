@@ -1,0 +1,59 @@
+.cv-document--theme-portfolio {
+    background: #fffefa;
+    border-top: 8px solid #7c2d12;
+    color: #29251f;
+    font-family: "CVMaker Sans", sans-serif;
+}
+
+.cv-document--theme-portfolio .cv-header {
+    border-bottom: 1px solid #d8c7b8;
+    padding: 1rem 0 1.4rem;
+}
+
+.cv-document--theme-portfolio .cv-header h1 {
+    color: #7c2d12;
+    font-size: 30pt;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+}
+
+.cv-document--theme-portfolio .cv-headline {
+    color: #5f544a;
+    font-size: 12pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.cv-document--theme-portfolio .cv-contact {
+    color: #6a625a;
+    font-size: 9pt;
+}
+
+.cv-document--theme-portfolio .cv-section {
+    border-top: 1px solid #e8dfd4;
+    padding-top: 0.65rem;
+}
+
+.cv-document--theme-portfolio .cv-section h2 {
+    color: #7c2d12;
+    display: flex;
+    font-size: 10pt;
+    justify-content: space-between;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.cv-document--theme-portfolio .cv-section--projects {
+    border: 1px solid #e5d5c6;
+    background: #f8f1e9;
+    padding: 0.8rem;
+}
+
+.cv-document--theme-portfolio .cv-section--projects h2 {
+    color: #365314;
+}
+
+.cv-document--theme-portfolio .cv-entry h3 {
+    color: #29251f;
+    font-size: 10pt;
+}

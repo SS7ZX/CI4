@@ -30,7 +30,7 @@ final class HomeLayoutTest extends CIUnitTestCase
         $result->assertSee('Pilih format yang sesuai dengan posisi.');
         $result->assertSee('Struktur ramah ATS');
         preg_match_all('/class="theme-preview(?:\\s|")/', $result->getBody(), $matches);
-        $this->assertSame(10, count($matches[0]));
+        $this->assertSame(12, count($matches[0]));
         $result->assertSee('Lewati ke konten utama');
         $response = $result->response();
         $response->getCSP()->finalize($response);

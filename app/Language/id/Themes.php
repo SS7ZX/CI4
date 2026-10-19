@@ -37,6 +37,10 @@ return [
     'minimal_description'    => 'Tipografi sederhana, jarak terukur, dan penekanan pada isi CV.',
     'executive_name'         => 'Eksekutif',
     'executive_description'  => 'Panel samping untuk ringkasan profil dan informasi pendukung.',
+    'designer_name'          => 'Desainer',
+    'designer_description'   => 'Tata letak berwarna dengan panel terpisah untuk keahlian dan informasi kontak.',
+    'portfolio_name'         => 'Portofolio',
+    'portfolio_description'  => 'Format editorial yang menonjolkan proyek, hasil kerja, dan keahlian kreatif.',
     'preview_frame_title'    => 'Pratinjau tema CV',
     'invalid_theme'          => 'Pilih tema CV yang tersedia.',
 ];

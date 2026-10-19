@@ -17,6 +17,7 @@
             previewUrl: <?= esc(json_encode($previewUrl, JSON_THROW_ON_ERROR), 'attr') ?>,
             pageCountUrl: <?= esc(json_encode($pageCountUrl, JSON_THROW_ON_ERROR), 'attr') ?>,
             downloadUrl: <?= esc(json_encode($downloadUrl, JSON_THROW_ON_ERROR), 'attr') ?>,
+            paymentPaid: <?= json_encode($paymentPaid, JSON_THROW_ON_ERROR) ?>,
             themes: <?= esc(json_encode($themes, JSON_THROW_ON_ERROR), 'attr') ?>,
             tokenName: <?= esc(json_encode($tokenName, JSON_THROW_ON_ERROR), 'attr') ?>,
             token: <?= esc(json_encode($tokenValue, JSON_THROW_ON_ERROR), 'attr') ?>,

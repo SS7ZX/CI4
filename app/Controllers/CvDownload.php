@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Libraries\Pdf\DompdfRenderer;
 use App\Services\CvRenderService;
+use App\Services\CvPaymentService;
 use App\Services\CvService;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -21,6 +22,9 @@ final class CvDownload extends BaseController
         }
         if ((new CvService())->findOwned($user->id, $cvId) === null) {
             throw PageNotFoundException::forPageNotFound();
+        }
+        if (! (new CvPaymentService())->hasPaid($user->id, $cvId)) {
+            return redirect()->to(url_to('cv-payment', $cvId));
         }
 
         if (! service('throttler')->check('cv-pdf-' . $user->id, 5, 60)) {

@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Models\Cv;
 use App\Services\CvService;
+use App\Services\CvPaymentService;
 use App\Services\ThemeRegistry;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -25,6 +26,7 @@ final class Dashboard extends BaseController
             'title'  => lang('Dashboard.title'),
             'cvs'    => $cvs,
             'themes' => array_column((new ThemeRegistry())->all(), null, 'key'),
+            'canReviewPayments' => (new CvPaymentService())->isAdmin((string) $user->email),
         ]);
     }
 

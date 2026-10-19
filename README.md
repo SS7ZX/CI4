@@ -96,11 +96,26 @@ Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendafta
 
 ## Tema dan pratinjau CV
 
-- Editor CV menyediakan sembilan tema: Akademik, ATS Klasik, Ringkas, Minimalis, Modern, Editorial, Eksekutif, Profesional, dan Dua Kolom. Pilihan tema disimpan pada CV tanpa mengubah bagian CV lainnya.
-- Akademik, ATS Klasik, Ringkas, Minimalis, dan Modern memakai struktur satu kolom dengan elemen HTML semantik. Editorial, Eksekutif, Profesional, dan Dua Kolom memakai tata letak visual. Label ramah ATS menjelaskan struktur, bukan menjamin hasil pembacaan atau kelulusan seleksi.
+- Editor CV menyediakan sebelas tema: Akademik, ATS Klasik, Ringkas, Minimalis, Modern, Desainer, Editorial, Eksekutif, Portofolio, Profesional, dan Dua Kolom. Pilihan tema disimpan pada CV tanpa mengubah bagian CV lainnya.
+- Akademik, ATS Klasik, Ringkas, Minimalis, dan Modern memakai struktur satu kolom dengan elemen HTML semantik. Desainer, Editorial, Eksekutif, Portofolio, Profesional, dan Dua Kolom memakai tata letak visual. Label ramah ATS menjelaskan struktur, bukan menjamin hasil pembacaan atau kelulusan seleksi.
 - Pratinjau tema dibuka di iframe bersandbox dan tidak menyimpan pilihan tema sampai pengguna memilihnya di editor.
 - Render HTML untuk pratinjau dan `DompdfRenderer` memakai template serta stylesheet tema yang sama. Font CV Maker didaftarkan dari font DejaVu Sans lokal yang disediakan oleh Dompdf; akses font dan gambar jarak jauh dinonaktifkan.
 - Konfigurasi tiap tema berada pada `app/Views/themes/<theme_key>/theme.json`, dengan template dan stylesheet di folder yang sama. Format tidak valid ditolak oleh `ThemeRegistry`.
+
+## Pembayaran unduhan
+
+- Unduhan PDF dikenai biaya satu kali sebesar Rp15.000 per CV. Setelah pembayaran disetujui, CV tersebut dapat diunduh kembali tanpa pembayaran tambahan. Duplikat CV dianggap CV baru.
+- Pembayaran memakai QRIS yang diunggah admin, tanpa gateway. Pengguna mengirim bukti pembayaran, lalu admin memeriksanya secara manual sebelum unduhan dibuka. Gambar QRIS dan bukti disimpan di `writable/uploads/cv-payments`, tidak disajikan sebagai file publik.
+- Tambahkan `CV_PAYMENT_ADMIN_EMAILS = 'email-admin@example.id'` ke `.env`, memakai alamat email akun yang sudah terdaftar. Beberapa admin dapat dipisahkan dengan koma. Admin masuk lalu membuka dashboard dan memilih Pemeriksaan pembayaran untuk memasang gambar QRIS serta memeriksa antrean.
+- Harga dapat diubah melalui `CV_DOWNLOAD_PRICE_IDR = 15000`. Nilai disalin ke catatan pembayaran saat bukti dikirim.
+- Migration `CreateCvDownloadPayments` membuat catatan pembayaran, indeks, foreign key cascade, serta RLS tanpa policy pada PostgreSQL. Terapkan migration sebelum membuka unduhan berbayar. Aplikasi tidak menjalankan migration otomatis.
+- Bukti yang ditolak dapat dikirim ulang. Bukti yang masih menunggu atau sudah disetujui tidak dapat diganti. Unduhan hanya dibuka untuk pemilik CV setelah status menjadi disetujui.
+
+## Halaman error dan indeks mesin pencari
+
+- Halaman 404 dan 500 menggunakan tampilan Indonesia yang responsif, mandiri dari aset CSS aplikasi, dan tidak menampilkan detail exception di production.
+- `/robots.txt` dibentuk dari `app.baseURL`, mengizinkan halaman beranda, mengecualikan rute akun dan dashboard, serta menunjuk ke sitemap.
+- `/sitemap.xml` hanya memuat URL beranda yang publik. Editor, akun, pembayaran, pratinjau CV, dan data lowongan tidak dimasukkan.
 
 ## Tinjau dan unduh PDF
 
@@ -197,6 +212,8 @@ Tes memakai konfigurasi SQLite database pengujian CodeIgniter dan tidak memerluk
    CI_ENVIRONMENT = production
    app.baseURL = 'https://cv.example.id/'
    app.forceGlobalSecureRequests = true
+   CV_DOWNLOAD_PRICE_IDR = 15000
+   CV_PAYMENT_ADMIN_EMAILS = 'email-admin@example.id'
    cookie.secure = true
    encryption.key = 'nilai-acak-yang-dihasilkan-php-spark-key-generate'
    database.default.hostname = 'host-pooler-dari-supabase'

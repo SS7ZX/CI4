@@ -1,0 +1,9 @@
+{
+  "key": "portfolio",
+  "name_key": "Themes.portfolio_name",
+  "description_key": "Themes.portfolio_description",
+  "ats_friendly": false,
+  "layout": "editorial",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#7C2D12", "#1D4ED8", "#365314"]
+}
