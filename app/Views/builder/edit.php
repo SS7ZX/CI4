@@ -70,7 +70,12 @@
 
             <div class="min-w-0 space-y-5">
                 <?php for ($stepNumber = 1; $stepNumber <= 8; $stepNumber++): ?>
-                    <section x-cloak x-show="step === <?= $stepNumber ?>" class="min-w-0 rounded-md border border-line bg-paper p-5 sm:p-7">
+                    <section
+                        id="builder-step-<?= $stepNumber ?>"
+                        <?= $stepNumber === $step ? '' : 'hidden' ?>
+                        x-bind:hidden="step !== <?= $stepNumber ?>"
+                        class="min-w-0 rounded-md border border-line bg-paper p-5 sm:p-7"
+                    >
                         <?= $this->include('builder/steps/step' . $stepNumber) ?>
                     </section>
                 <?php endfor; ?>

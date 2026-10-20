@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Cv;
 use App\Models\CvExperience;
 use App\Services\CvService;
 use CodeIgniter\Exceptions\PageNotFoundException;
@@ -17,6 +18,14 @@ final class CvServiceTest extends CIUnitTestCase
     use DatabaseTestTrait;
 
     protected $namespace = ['CodeIgniter\\Settings', 'CodeIgniter\\Shield', 'App'];
+
+    public function testCvModelsDoNotRequestDatabaseGeneratedIds(): void
+    {
+        $model = new Cv();
+        $property = new ReflectionProperty($model, 'useAutoIncrement');
+
+        $this->assertFalse($property->getValue($model));
+    }
 
     public function testCreateDuplicateAndSoftDeletePreserveOwnershipAndChildren(): void
     {

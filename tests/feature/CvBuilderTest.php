@@ -18,6 +18,32 @@ final class CvBuilderTest extends CIUnitTestCase
 
     protected $namespace = ['CodeIgniter\\Settings', 'CodeIgniter\\Shield', 'App'];
 
+    public function testCreatingCvPersistsApplicationGeneratedUuid(): void
+    {
+        $userId = $this->createUser('builder-create@example.test', 'builder-create');
+        auth()->loginById($userId);
+        $this->withSession($_SESSION);
+
+        try {
+            $response = $this->withHeaders([
+                'X-CSRF-TOKEN' => csrf_hash(),
+                'Accept'       => 'text/html',
+            ])->post('/dashboard/cv', ['title' => 'CV baru']);
+
+            $response->assertRedirect();
+
+            $cv = $this->db->table('cvs')->where('user_id', $userId)->get()->getRowArray();
+            $this->assertIsArray($cv);
+            $this->assertMatchesRegularExpression(
+                '/\A[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\z/i',
+                $cv['id'],
+            );
+            $this->assertStringContainsString($cv['id'], $response->getRedirectUrl());
+        } finally {
+            auth()->logout();
+        }
+    }
+
     public function testStepSixRendersAndJsonAutosavePersistsPersonalData(): void
     {
         $userId = $this->createUser('builder-feature@example.test', 'builder-feature');
@@ -31,6 +57,24 @@ final class CvBuilderTest extends CIUnitTestCase
         $editor->assertSee('Nama sertifikasi');
         $editor->assertSee('Langkah 6 dari 8');
         $editor->assertSee('aria-live="polite"');
+        $this->assertMatchesRegularExpression(
+            '/<section\s+id="builder-step-6"\s+x-bind:hidden="step !== 6"/',
+            $editor->getBody(),
+        );
+        $this->assertMatchesRegularExpression(
+            '/<section\s+id="builder-step-1"\s+hidden\s+x-bind:hidden="step !== 1"/',
+            $editor->getBody(),
+        );
+        $editor->assertSee('id="profile-full_name"');
+
+        $this->withSession($_SESSION);
+        $personalEditor = $this->get('/dashboard/cv/' . $cvId . '/step/1');
+        $personalEditor->assertOK();
+        $this->assertMatchesRegularExpression(
+            '/<section\s+id="builder-step-1"\s+x-bind:hidden="step !== 1"/',
+            $personalEditor->getBody(),
+        );
+        $personalEditor->assertSee('id="profile-full_name"');
 
         $this->withSession($_SESSION);
         try {

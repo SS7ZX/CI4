@@ -9,6 +9,7 @@ use JsonException;
 
 abstract class CvModel extends Model
 {
+    protected $useAutoIncrement = false;
     protected $useTimestamps = true;
     protected $dateFormat = 'datetime';
     protected $skipValidation = false;
@@ -68,7 +69,7 @@ abstract class CvModel extends Model
     {
         $this->pendingInsertId = $this->createUuid();
 
-        $result = parent::insert($row, $returnID);
+        $result = parent::insert($row, false);
         if ($result === false) {
             return false;
         }
