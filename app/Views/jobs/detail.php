@@ -55,16 +55,16 @@
                     <p class="text-sm text-neutral-700"><?= esc(lang('Jobs.original_link_unavailable')) ?></p>
                 <?php endif; ?>
                 <?php if ($job['status'] === 'hidden'): ?>
-                    <form action="<?= esc($restoreUrl) ?>" method="post">
+                    <form action="<?= esc(same_origin_url((string) $restoreUrl)) ?>" method="post">
                         <?= csrf_field() ?>
                         <button class="min-h-11 rounded-md border border-neutral-300 bg-white px-4 text-sm font-medium hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit"><?= esc(lang('Jobs.restore_job')) ?></button>
                     </form>
                 <?php else: ?>
-                    <form action="<?= esc($saveUrl) ?>" method="post">
+                    <form action="<?= esc(same_origin_url((string) $saveUrl)) ?>" method="post">
                         <?= csrf_field() ?>
                         <button class="min-h-11 rounded-md border border-neutral-300 bg-white px-4 text-sm font-medium hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit"><?= esc($job['status'] === 'saved' ? lang('Jobs.unsave_job') : lang('Jobs.save_job')) ?></button>
                     </form>
-                    <form action="<?= esc($hideUrl) ?>" method="post">
+                    <form action="<?= esc(same_origin_url((string) $hideUrl)) ?>" method="post">
                         <?= csrf_field() ?>
                         <button class="min-h-11 rounded-md border border-red-700 bg-white px-4 text-sm font-medium text-red-800 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700" type="submit"><?= esc(lang('Jobs.hide_job')) ?></button>
                     </form>
@@ -74,10 +74,10 @@
             <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.score_snippet_note')) ?></p>
         </header>
 
-        <section class="mt-4 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" aria-labelledby="application-tracking-heading">
+        <section class="mt-4 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" aria-labelledby="application-tracking-heading" data-reveal>
             <h2 class="text-lg font-semibold" id="application-tracking-heading"><?= esc(lang('Jobs.application_tracking_title')) ?></h2>
             <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.application_tracking_intro')) ?></p>
-            <form class="mt-4 space-y-4" action="<?= esc($applicationUrl) ?>" method="post">
+            <form class="mt-4 space-y-4" action="<?= esc(same_origin_url((string) $applicationUrl)) ?>" method="post">
                 <?= csrf_field() ?>
                 <label class="block text-sm font-medium" for="application-status"><?= esc(lang('Jobs.application_status')) ?>
                     <select class="mt-1 min-h-11 w-full rounded-md border border-neutral-400 bg-white px-3 font-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="application-status" name="application_status">
@@ -108,7 +108,7 @@
             <a class="mt-4 inline-flex min-h-10 items-center font-medium text-accent-800 underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-jobs-applications', $cvId)) ?>"><?= esc(lang('Jobs.view_application_tracker')) ?></a>
         </section>
 
-        <section class="mt-4 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" aria-labelledby="score-breakdown-heading">
+        <section class="mt-4 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" aria-labelledby="score-breakdown-heading" data-reveal>
             <h2 class="text-lg font-semibold" id="score-breakdown-heading"><?= esc(lang('Jobs.score_details')) ?></h2>
             <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.score_weight_note')) ?></p>
             <?php if ($breakdown === []): ?>

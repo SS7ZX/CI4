@@ -83,9 +83,17 @@ Ekstensi `pgsql` dipakai driver Postgre bawaan CodeIgniter. Ekstensi `gd` diperl
 - `tailwindcss` dan `@tailwindcss/cli`: compile utility CSS secara lokal.
 - `alpinejs`: interaksi kecil pada UI, dibundel sebagai aset lokal agar halaman tidak bergantung pada CDN.
 
+## Motion antarmuka dan aksesibilitas
+
+- Navigasi same-origin memakai View Transitions API secara progressive enhancement. Browser yang tidak mendukung tetap memakai navigasi dan render server standar.
+- Interaksi memakai transisi CSS singkat berbasis `transform` dan `opacity`; konten reveal tetap terlihat tanpa JavaScript. Preferensi `prefers-reduced-motion` menonaktifkan animasi non-esensial.
+- Scroll tetap mengikuti kontrol native browser. Aplikasi tidak mengganti scroll dengan inertia, paralaks, atau efek kursor magnetik.
+- Sumber motion ada di `resources/css/app.css` dan `resources/js/motion.js`. `npm run build` menghasilkan aset publik; `npm run test:motion` menjalankan test JavaScript tanpa dependency tambahan.
+
 ## Autentikasi dan dashboard
 
 - Halaman masuk, pendaftaran, tautan masuk untuk pemulihan akun, dan ubah kata sandi tersedia dalam bahasa Indonesia.
+- Email dinormalisasi menjadi huruf kecil tanpa spasi tepi. Alamat email yang sama tidak boleh digunakan pada akun berbeda, termasuk variasi kapital dan spasi.
 - Atur kredensial SMTP pada `.env` untuk mengirim tautan masuk. Nilai SMTP disimpan di environment, bukan di source code.
 - Tautan pemulihan berlaku satu jam. Permintaan dengan alamat yang tidak terdaftar menampilkan konfirmasi umum yang sama tanpa mengungkap status akun.
 - Dashboard tersedia di `/dashboard`. Setiap daftar, pembukaan, duplikasi, dan penghapusan CV dibatasi berdasarkan `user_id` pemilik.
@@ -94,9 +102,34 @@ Ekstensi `pgsql` dipakai driver Postgre bawaan CodeIgniter. Ekstensi `gd` diperl
 
 Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendaftaran dan masuk mengarahkan ke dashboard.
 
+## Draf CV dengan AI lokal
+
+- Fitur AI opsional dan nonaktif secara default. AI berjalan lewat Ollama yang dipasang serta dijalankan oleh pengelola pada server yang dikendalikan sendiri. Aplikasi tidak memakai API cloud, API key, atau dependency Composer baru.
+- Pasang Ollama secara terpisah, jalankan runtime, lalu unduh model kecil yang mendukung bahasa Indonesia. Contoh perintah Ollama:
+
+  ```powershell
+  ollama pull qwen2.5:3b
+  ollama serve
+  ```
+
+- Tambahkan konfigurasi berikut ke `.env`. Model diunduh oleh Ollama ke lokasi penyimpanannya sendiri, bukan ke repository atau database. Ukuran model dapat mencapai beberapa gigabyte; periksa kebutuhan ruang pada katalog model sebelum mengunduh.
+
+  ```ini
+  CV_AI_ENABLED = true
+  CV_AI_OLLAMA_URL = 'http://127.0.0.1:11434'
+  CV_AI_MODEL = 'qwen2.5:3b'
+  CV_AI_TIMEOUT_SECONDS = 90
+  ```
+
+- Jika aplikasi dan Ollama berjalan di container atau host berbeda, atur URL ke runtime privat yang dikelola sendiri, misalnya `host.docker.internal`, nama service `ollama`, atau IP privat. Endpoint internet publik ditolak oleh generator.
+- Cerita ditinjau dalam bentuk yang telah disamarkan dan persetujuan harus dicentang setiap kali sebelum pemrosesan. Nama lengkap, email, nomor telepon, dan kota yang dimasukkan pada formulir, serta pola kontak dan alamat yang dikenali, tidak dikirim ke runtime. Periksa dan hapus sendiri nama atau data pribadi lain dari teks tinjauan.
+- Permintaan dan draf sementara tidak disimpan di database, session, log aplikasi, atau `localStorage`. Draf hanya disimpan ke CV setelah pengguna meninjau dan mengirim formulir simpan. Data CV yang dipilih untuk disimpan tetap mengikuti penyimpanan akun biasa.
+- Jika Ollama tidak tersedia atau fitur tetap nonaktif, pengguna masih dapat memakai formulir CV cepat tanpa AI pada dashboard.
+- Jalankan test terarah AI dan seluruh test dengan perintah PHPUnit pada bagian Pengujian.
+
 ## Tema dan pratinjau CV
 
-- Editor CV menyediakan sebelas tema: Akademik, ATS Klasik, Ringkas, Minimalis, Modern, Desainer, Editorial, Eksekutif, Portofolio, Profesional, dan Dua Kolom. Pilihan tema disimpan pada CV tanpa mengubah bagian CV lainnya.
+- Editor CV menyediakan 21 tema, termasuk format ATS, profesional, kreatif, akademik, dan dua kolom. Tersedia pencarian serta filter ramah ATS. Pilihan tema disimpan pada CV tanpa mengubah bagian CV lainnya.
 - Akademik, ATS Klasik, Ringkas, Minimalis, dan Modern memakai struktur satu kolom dengan elemen HTML semantik. Desainer, Editorial, Eksekutif, Portofolio, Profesional, dan Dua Kolom memakai tata letak visual. Label ramah ATS menjelaskan struktur, bukan menjamin hasil pembacaan atau kelulusan seleksi.
 - Pratinjau tema dibuka di iframe bersandbox dan tidak menyimpan pilihan tema sampai pengguna memilihnya di editor.
 - Render HTML untuk pratinjau dan `DompdfRenderer` memakai template serta stylesheet tema yang sama. Font CV Maker didaftarkan dari font DejaVu Sans lokal yang disediakan oleh Dompdf; akses font dan gambar jarak jauh dinonaktifkan.
@@ -105,8 +138,10 @@ Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendafta
 ## Pembayaran unduhan
 
 - Unduhan PDF dikenai biaya satu kali sebesar Rp15.000 per CV. Setelah pembayaran disetujui, CV tersebut dapat diunduh kembali tanpa pembayaran tambahan. Duplikat CV dianggap CV baru.
-- Pembayaran memakai QRIS yang diunggah admin, tanpa gateway. Pengguna mengirim bukti pembayaran, lalu admin memeriksanya secara manual sebelum unduhan dibuka. Gambar QRIS dan bukti disimpan di `writable/uploads/cv-payments`, tidak disajikan sebagai file publik.
-- Tambahkan `CV_PAYMENT_ADMIN_EMAILS = 'email-admin@example.id'` ke `.env`, memakai alamat email akun yang sudah terdaftar. Beberapa admin dapat dipisahkan dengan koma. Admin masuk lalu membuka dashboard dan memilih Pemeriksaan pembayaran untuk memasang gambar QRIS serta memeriksa antrean.
+- Pembayaran memakai QRIS statis tanpa gateway. Pengguna mengirim bukti pembayaran, lalu admin memeriksanya secara manual sebelum unduhan dibuka. Aplikasi tidak dapat memastikan uang masuk hanya dari pemindaian QRIS. Gambar QRIS dan bukti disimpan di `writable/uploads/cv-payments`, tidak disajikan sebagai file publik.
+- Tambahkan `CV_PAYMENT_ADMIN_EMAILS = 'email-admin@example.id'` ke `.env`, memakai alamat email akun yang sudah terdaftar. Beberapa admin dapat dipisahkan dengan koma. Admin masuk lalu membuka dashboard dan memilih Pemeriksaan pembayaran untuk memasang gambar QRIS serta memeriksa antrean. Admin menerima email ketika bukti baru dikirim; pengguna menerima email ketika pembayaran disetujui atau ditolak.
+- Konfigurasikan pengiriman email melalui opsi `email.*` di `.env` sesuai penyedia SMTP yang digunakan. Jika pengiriman gagal, status pembayaran tetap tersimpan dan kegagalan dicatat di log aplikasi. Notifikasi email bukan konfirmasi transaksi dari bank atau penyedia QRIS.
+- QRIS yang diberikan untuk workspace pengembangan disimpan di `writable/uploads/cv-payments` dan diabaikan Git. File itu tidak disertakan dalam source code; setelah deploy ke lingkungan lain, admin perlu mengunggah QRIS melalui panel Pemeriksaan pembayaran.
 - Harga dapat diubah melalui `CV_DOWNLOAD_PRICE_IDR = 15000`. Nilai disalin ke catatan pembayaran saat bukti dikirim.
 - Migration `CreateCvDownloadPayments` membuat catatan pembayaran, indeks, foreign key cascade, serta RLS tanpa policy pada PostgreSQL. Terapkan migration sebelum membuka unduhan berbayar. Aplikasi tidak menjalankan migration otomatis.
 - Bukti yang ditolak dapat dikirim ulang. Bukti yang masih menunggu atau sudah disetujui tidak dapat diganti. Unduhan hanya dibuka untuk pemilik CV setelah status menjadi disetujui.
@@ -127,6 +162,9 @@ Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendafta
 
 ## Persetujuan dan profil pencarian lowongan
 
+- Diagram UML PlantUML untuk use case, komponen, alur CV, pencarian lowongan, pelacakan lamaran, dan persistence tersedia di [docs/uml/cv-maker.puml](docs/uml/cv-maker.puml).
+- Versi XML siap impor ke diagrams.net tersedia di [docs/uml/cv-maker.drawio](docs/uml/cv-maker.drawio), dengan setiap diagram pada halaman terpisah.
+
 - Migration Job Matching menambahkan `job_preferences`, `skills_dictionary`, dan `title_dictionary`. Semua tabel memakai UUID, relasi CV cascade, dan RLS tanpa policy pada PostgreSQL.
 - Isi kamus lintas profesi setelah migration dengan `php spark db:seed App\\Database\\Seeds\\JobDictionarySeeder`. Seeder idempoten, mencakup lebih dari 200 keahlian dan lebih dari 120 jabatan dengan alias Indonesia dan Inggris.
 - Tombol Cari Lowongan pada dashboard membuka persetujuan eksplisit yang tidak dicentang secara default. Setelah persetujuan, jabatan, kota, jenis kerja, dan preferensi lain dapat ditinjau serta diubah. Pencabutan persetujuan menghapus relasi hasil untuk CV tersebut.
@@ -144,6 +182,14 @@ Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendafta
 - Pemeriksaan kata kunci membandingkan skill yang kurang dengan teks CV dan memberi lokasi bagian yang mungkin sesuai. Ini hanya petunjuk pengeditan; UI secara eksplisit mengingatkan agar user tidak menambah atau mengklaim skill tanpa bukti nyata.
 
 ## Pengujian
+
+Jalankan test AI lokal secara terarah:
+
+```powershell
+php -d extension=php_sqlite3.dll vendor\bin\phpunit --no-coverage --filter CvAi
+```
+
+Jalankan seluruh suite:
 
 ```powershell
 php -d extension=php_sqlite3.dll vendor\bin\phpunit --no-coverage
@@ -236,3 +282,15 @@ Tes memakai konfigurasi SQLite database pengujian CodeIgniter dan tidak memerluk
    Jangan jalankan seeder contoh di production. Pastikan RLS aktif tanpa policy dan aplikasi memakai koneksi server PostgreSQL.
 7. Aktifkan rewrite dan compression di web server. Konfigurasi `public/.htaccess` memakai `mod_rewrite`, `mod_deflate`, dan `mod_expires`; untuk Nginx, konfigurasikan `try_files` ke `public/index.php` serta gzip untuk HTML, CSS, JavaScript, JSON, dan SVG. Uji header HTTPS, CSP, kompresi, login, autosave, upload, pratinjau, dan unduhan PDF setelah deploy.
 8. Pantau log aplikasi dan database, siapkan backup serta prosedur restore, dan rotasi segera setiap credential yang pernah masuk ke log, tiket, atau percakapan.
+
+## Ringkasan Sistem dan UML
+
+CV Maker adalah aplikasi server-rendered berbasis CodeIgniter 4 untuk mengelola CV dan membantu pengguna meninjau lowongan kerja yang relevan. Pengunjung dapat mendaftar atau masuk, sedangkan pengguna terdaftar dapat mengelola akun dan CV miliknya. CV dapat dibuat melalui satu formulir cepat yang menyusun informasi yang diberikan pengguna tanpa AI, lalu dibuka pada langkah peninjauan, atau melalui editor bertahap yang menyimpan perubahan secara otomatis dan memvalidasi data. Editor menyediakan bagian profil, pengalaman kerja, pendidikan, kelompok keahlian, tautan, proyek, sertifikasi, organisasi, penghargaan, bahasa, dan bagian khusus. Pengguna dapat menyalin atau menghapus CV, mengatur urutan dan visibilitas bagian, memilih tema, ukuran kertas, skala teks, dan warna aksen yang tersedia, lalu memeriksa hasil melalui pratinjau HTML. Unduhan PDF memakai dokumen dan stylesheet tema yang sama, dirender melalui interface PDF yang membungkus Dompdf, dan hanya dapat dilakukan oleh pemilik CV melalui endpoint terlindungi. Alur pembayaran unduhan mencakup pengiriman bukti oleh pengguna dan peninjauan admin yang dapat menyetujui atau menolak pembayaran.
+
+Modul pencarian lowongan hanya dijalankan setelah pengguna memberikan persetujuan eksplisit untuk CV terkait. Pengguna dapat meninjau dan mengubah jabatan target, kota, jenis pekerjaan, mode kerja, batas gaji, kata kunci pengecualian, serta preferensi pencarian lain. Pencarian menggunakan provider resmi melalui `JobProviderInterface`, dengan Jooble sebagai provider yang dikonfigurasi saat ini. Request ke provider dilakukan dari server menggunakan kata kunci jabatan dan keahlian umum serta lokasi tingkat kota; nama, email, nomor telepon, foto, alamat lengkap, dan identitas pribadi lain dari CV tidak dikirim. API key provider harus disediakan melalui `.env`. Pengguna dapat meninjau hasil beserta sumber aslinya, menyaring dan mengurutkan daftar, serta menyimpan atau menyembunyikan lowongan. Pencabutan persetujuan menonaktifkan pencarian dan menghapus relasi hasil pencarian untuk CV tersebut. Aplikasi tidak mengirim lamaran otomatis: pengguna membuka tautan lowongan asli, memeriksa persyaratannya, lalu mengirim lamaran sendiri di situs penyedia.
+
+Kecocokan lowongan dihitung secara deterministik dari komponen yang tersedia, termasuk kesesuaian jabatan, keahlian, tingkat pengalaman, lokasi, kesegaran posting, dan gaji. Bobot, batas skor, penalti, serta pengaturan keyakinan berada di konfigurasi Job Matching. Komponen yang datanya tidak tersedia dikeluarkan dari perhitungan dan bobot yang tersisa dinormalisasi ulang, sehingga informasi gaji yang hilang tidak dianggap bernilai nol. Hasil menyimpan skor, label, tingkat keyakinan, rincian komponen, skill yang cocok atau belum tercakup, dan alasan yang dapat diperiksa pengguna; cuplikan deskripsi yang terbatas dinyatakan sebagai sumber perhitungan dan dapat menurunkan keyakinan. Modul Insight merangkum skill yang sering diminta dan informasi gaji jika jumlah sampel memenuhi batas konfigurasi. Pemeriksaan kata kunci hanya memberikan petunjuk bagian CV yang mungkin perlu ditinjau, bukan menyarankan pengguna mengklaim keahlian yang tidak dimiliki. Pelacak lamaran mencatat status, waktu perubahan, catatan, dan riwayatnya, sementara masa simpan cache dan posting dibatasi oleh konfigurasi dan lowongan kedaluwarsa dibersihkan melalui perintah terjadwal atau manual.
+
+Secara arsitektur, browser menggunakan view CodeIgniter yang dirender di server, Tailwind CSS untuk tampilan, dan Alpine.js untuk interaksi kecil. Controller menangani HTTP dan meneruskan pekerjaan ke service; model atau repository mengelola akses data; service menangani alur CV, rendering, pembayaran, persetujuan, pencarian, normalisasi, scoring, dan insight. PostgreSQL di Supabase diakses melalui driver database CodeIgniter, bukan dari browser. Migration membuat tabel CV beserta bagian anaknya, preferensi dan kamus pencarian, cache query, posting, log refresh, hasil kecocokan, tracker lamaran, event status, dan pembayaran. Pada PostgreSQL, tabel project mengaktifkan Row Level Security tanpa policy; pemeriksaan kepemilikan tetap dilakukan oleh aplikasi, termasuk pemfilteran berdasarkan pemilik CV. Foto dan bukti pembayaran disimpan di penyimpanan privat server, sedangkan penyedia lowongan hanya diakses dari server melalui klien HTTP dengan timeout dan retry terbatas.
+
+Dokumentasi visual berada di [docs/uml/cv-maker.puml](docs/uml/cv-maker.puml) dalam format PlantUML yang dapat diedit dan dirender, serta di [docs/uml/cv-maker.drawio](docs/uml/cv-maker.drawio) sebagai file XML yang dapat dibuka atau diimpor ke diagrams.net. Kedua file memuat enam sudut pandang yang saling melengkapi: use case untuk aktor dan kemampuan pengguna, diagram komponen untuk pembagian browser, controller, service, repository, database dan layanan eksternal, sequence pembuatan CV dan autosave, sequence persetujuan dan pencarian lowongan, sequence peninjauan serta pencatatan lamaran manual, dan diagram persistence/ERD untuk tabel dan relasi utama. Diagram juga menandai batas privasi pengiriman data, persetujuan pencarian, kepemilikan CV, masa simpan data lowongan, dan keputusan bahwa pengiriman lamaran tetap dilakukan oleh pengguna di situs sumber.

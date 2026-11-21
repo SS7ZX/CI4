@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Libraries\Payments\PaymentImageStorage;
+use App\Libraries\Payments\PaymentNotifierInterface;
 use App\Services\CvBuilderService;
 use App\Services\CvPaymentService;
 use App\Services\CvService;
@@ -76,7 +77,33 @@ final class CvPaymentTest extends CIUnitTestCase
         $storage = new PaymentImageStorage($storagePath);
         $config = new CvPayments();
         $config->adminEmails = ['payment-admin@example.test'];
-        $service = new CvPaymentService($config, $storage);
+        $notifier = new class implements PaymentNotifierInterface {
+            /**
+             * @var list<array{string, int}>
+             */
+            public array $adminProofs = [];
+
+            /**
+             * @var list<array{string, string, int, string, ?string}>
+             */
+            public array $payerReviews = [];
+
+            public function notifyAdminsOfProof(string $cvTitle, int $amountIdr): void
+            {
+                $this->adminProofs[] = [$cvTitle, $amountIdr];
+            }
+
+            public function notifyPayerOfReview(
+                string $email,
+                string $cvTitle,
+                int $amountIdr,
+                string $status,
+                ?string $reviewNote,
+            ): void {
+                $this->payerReviews[] = [$email, $cvTitle, $amountIdr, $status, $reviewNote];
+            }
+        };
+        $service = new CvPaymentService($config, $storage, notifier: $notifier);
         $qrUpload = $this->createPngUpload('merchant-qr.png');
         $proofUpload = $this->createPngUpload('payment-proof.png');
         $proofPath = null;
@@ -90,6 +117,7 @@ final class CvPaymentTest extends CIUnitTestCase
             $this->assertFalse($service->hasPaid($userId, $cvId));
             $this->assertTrue($service->isAdmin('PAYMENT-ADMIN@example.test'));
             $this->assertSame('CV berbayar', $service->findForReviewWithCv((string) $payment['id'])['cv_title']);
+            $this->assertSame([['CV berbayar', 15000]], $notifier->adminProofs);
 
             auth()->loginById($userId);
             $this->withSession($_SESSION);
@@ -99,6 +127,9 @@ final class CvPaymentTest extends CIUnitTestCase
             $this->assertTrue($service->review((string) $payment['id'], $adminId, 'approved', ''));
             $this->assertTrue($service->hasPaid($userId, $cvId));
             $this->assertFalse($service->review((string) $payment['id'], $adminId, 'approved', ''));
+            $this->assertSame([
+                ['payment-owner@example.test', 'CV berbayar', 15000, 'approved', null],
+            ], $notifier->payerReviews);
 
             $this->withSession($_SESSION);
             $checkout = $this->get('/dashboard/cv/' . $cvId . '/payment');
@@ -120,7 +151,7 @@ final class CvPaymentTest extends CIUnitTestCase
                     unlink($path);
                 }
             }
-            $qrPath = $storagePath . DIRECTORY_SEPARATOR . 'merchant-qr.png';
+            $qrPath = $storagePath . DIRECTORY_SEPARATOR . 'merchant-qr.img';
             if (is_file($qrPath)) {
                 unlink($qrPath);
             }
@@ -132,18 +163,24 @@ final class CvPaymentTest extends CIUnitTestCase
 
     private function createPngUpload(string $filename): UploadedFile
     {
-        $image = imagecreatetruecolor(48, 48);
-        $background = imagecolorallocate($image, 255, 255, 255);
-        imagefill($image, 0, 0, $background);
         $path = tempnam(sys_get_temp_dir(), 'cv-payment-image-');
-        if ($path === false || ! imagepng($image, $path)) {
-            imagedestroy($image);
+        $contents = base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lS8AAAAASUVORK5CYII=',
+            true,
+        );
+        if (
+            $path === false
+            || $contents === false
+            || file_put_contents($path, $contents) !== strlen($contents)
+        ) {
+            if (is_string($path) && is_file($path)) {
+                unlink($path);
+            }
 
             throw new RuntimeException('File test untuk pembayaran tidak dapat dibuat.');
         }
-        imagedestroy($image);
 
-        return new class($path, $filename, 'image/png', filesize($path), UPLOAD_ERR_OK) extends UploadedFile {
+        return new class($path, $filename, 'image/png', strlen($contents), UPLOAD_ERR_OK) extends UploadedFile {
             public function isValid(): bool
             {
                 return $this->getError() === UPLOAD_ERR_OK && is_file($this->getTempName());

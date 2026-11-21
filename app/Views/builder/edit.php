@@ -28,7 +28,7 @@
         x-on:change="scheduleSave()"
         class="space-y-8"
     >
-        <div class="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
+        <div class="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5" data-reveal>
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('CvBuilder.title')) ?></p>
                 <h1 class="mt-2 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl"><?= esc($state['cv']['title']) ?></h1>
@@ -36,6 +36,10 @@
             </div>
             <a class="inline-flex min-h-10 items-center rounded-md border border-line bg-paper px-3 text-sm font-medium text-ink hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('CvBuilder.back')) ?></a>
         </div>
+
+        <?php if (is_string(session('success'))): ?>
+            <p class="rounded-md border border-green-700 bg-green-50 px-4 py-3 text-sm text-green-900" role="status" data-reveal><?= esc(session('success')) ?></p>
+        <?php endif; ?>
 
         <div class="grid items-start gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
             <aside class="min-w-0 rounded-md border border-line bg-paper p-3 lg:sticky lg:top-4">

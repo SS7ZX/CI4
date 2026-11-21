@@ -3,7 +3,7 @@
 <?= $this->section('title') ?><?= esc($title) ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<section class="mx-auto max-w-5xl">
+<section class="mx-auto max-w-5xl" data-reveal>
     <header class="border-b border-line pb-5">
         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Payments.admin_title')) ?></p>
         <h1 class="mt-2 text-3xl font-semibold tracking-tight text-ink"><?= esc(lang('Payments.admin_title')) ?></h1>
@@ -15,7 +15,7 @@
         <?php if ($qrConfigured): ?>
             <img class="mt-4 size-56 border border-line bg-white object-contain p-2" src="<?= esc($qrUrl) ?>" alt="<?= esc(lang('Payments.qr_image_alt')) ?>">
         <?php endif; ?>
-        <form action="<?= esc($qrUploadUrl) ?>" method="post" enctype="multipart/form-data" class="mt-4 max-w-xl">
+        <form action="<?= esc(same_origin_url((string) $qrUploadUrl)) ?>" method="post" enctype="multipart/form-data" class="mt-4 max-w-xl">
             <?= csrf_field() ?>
             <label class="block text-sm font-semibold text-ink" for="payment-qr"><?= esc(lang('Payments.qr_upload_label')) ?></label>
             <input class="mt-2 block min-h-11 w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink file:mr-3 file:rounded-sm file:border-0 file:bg-canvas file:px-3 file:py-1.5 file:text-sm file:font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="payment-qr" name="qr_image" type="file" accept="image/jpeg,image/png,image/webp" required>
@@ -43,7 +43,7 @@
                                 <img class="max-h-56 max-w-full border border-line object-contain" src="<?= esc($proofUrl((string) $payment['id'])) ?>" alt="<?= esc(lang('Payments.admin_open_proof')) ?>">
                             </div>
                         </div>
-                        <form action="<?= esc($reviewUrl((string) $payment['id'])) ?>" method="post" class="mt-5 border-t border-line pt-4">
+                        <form action="<?= esc(same_origin_url((string) $reviewUrl((string) $payment['id']))) ?>" method="post" class="mt-5 border-t border-line pt-4">
                             <?= csrf_field() ?>
                             <label class="block text-sm font-semibold text-ink" for="review-note-<?= esc($payment['id'], 'attr') ?>"><?= esc(lang('Payments.admin_note_label')) ?></label>
                             <input class="mt-2 min-h-11 w-full rounded-md border border-line bg-white px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="review-note-<?= esc($payment['id'], 'attr') ?>" name="review_note" type="text" maxlength="500" aria-describedby="review-help-<?= esc($payment['id'], 'attr') ?>">

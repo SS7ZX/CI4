@@ -12,7 +12,7 @@
     </nav>
 
     <section class="max-w-3xl">
-        <h1 class="text-2xl font-semibold"><?= esc(lang('Jobs.preferences_title')) ?></h1>
+        <h1 class="text-2xl font-semibold" data-reveal><?= esc(lang('Jobs.preferences_title')) ?></h1>
         <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.preferences_intro', [$cv->title])) ?></p>
         <p class="mt-3 text-sm text-neutral-700"><?= esc(lang('Jobs.search_intro')) ?></p>
         <?php if (session('warning')): ?>
@@ -73,7 +73,7 @@
         $excludedKeywords = is_array($old['excluded_keywords'] ?? null) ? $old['excluded_keywords'] : $preferences['excluded_keywords'];
         $jobTypes = is_array($old['job_types'] ?? null) ? $old['job_types'] : $preferences['job_types'];
         ?>
-        <form class="mt-5 space-y-5 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" action="<?= esc($saveUrl) ?>" method="post">
+        <form class="mt-5 space-y-5 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" action="<?= esc(same_origin_url((string) $saveUrl)) ?>" method="post">
             <?= csrf_field() ?>
 
             <fieldset>
@@ -152,7 +152,7 @@
             <a class="mt-4 inline-flex min-h-11 items-center rounded-md bg-accent-800 px-4 font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc($resultsUrl) ?>"><?= esc(lang('Jobs.browse_results')) ?></a>
         </section>
 
-        <form class="mt-5" action="<?= esc($revokeUrl) ?>" method="post" x-on:submit.prevent="window.confirm(<?= esc(json_encode(lang('Jobs.confirm_revoke'), JSON_THROW_ON_ERROR), 'attr') ?>) && $el.submit()">
+        <form class="mt-5" action="<?= esc(same_origin_url((string) $revokeUrl)) ?>" method="post" x-on:submit.prevent="window.confirm(<?= esc(json_encode(lang('Jobs.confirm_revoke'), JSON_THROW_ON_ERROR), 'attr') ?>) && $el.submit()">
             <?= csrf_field() ?>
             <button class="min-h-11 rounded-md border border-red-700 px-4 text-sm font-medium text-red-800 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700" type="submit"><?= esc(lang('Jobs.revoke_consent')) ?></button>
         </form>

@@ -19,25 +19,29 @@
             </ul>
         <?php endif; ?>
 
-        <form action="<?= esc(url_to('register')) ?>" method="post" class="space-y-4">
+        <form action="<?= esc(same_origin_url((string) url_to('register'))) ?>" method="post" class="space-y-4" x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
             <?= csrf_field() ?>
             <div>
                 <label for="email" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.email')) ?></label>
-                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="email" name="email" type="email" autocomplete="email" value="<?= esc(old('email')) ?>" required>
+                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" value="<?= esc(old('email')) ?>" required>
             </div>
             <div>
                 <label for="username" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.username')) ?></label>
-                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="username" name="username" type="text" autocomplete="username" value="<?= esc(old('username')) ?>" required>
+                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="30" pattern="[a-zA-Z0-9.]+" value="<?= esc(old('username')) ?>" required>
             </div>
             <div>
                 <label for="password" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.password')) ?></label>
-                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="password" name="password" type="password" autocomplete="new-password" required>
+                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="4096" aria-describedby="password-help" required>
+                <p class="mt-1 text-xs text-muted" id="password-help">Gunakan minimal 8 karakter dan hindari kata sandi yang mudah ditebak.</p>
             </div>
             <div>
                 <label for="password_confirm" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.passwordConfirm')) ?></label>
-                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="password_confirm" name="password_confirm" type="password" autocomplete="new-password" required>
+                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="password_confirm" name="password_confirm" type="password" autocomplete="new-password" minlength="8" maxlength="4096" required>
             </div>
-            <button class="min-h-12 w-full rounded-md bg-accent-700 px-4 font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" type="submit"><?= esc(lang('Auth.register')) ?></button>
+            <button class="min-h-12 w-full rounded-md bg-accent-700 px-4 font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-70" type="submit" x-bind:disabled="pending">
+                <span x-show="!pending" x-transition.opacity.duration.150ms><?= esc(lang('Auth.register')) ?></span>
+                <span x-cloak x-show="pending" x-transition.opacity.duration.150ms>Memproses...</span>
+            </button>
         </form>
 
         <p class="mt-5 text-sm text-muted"><?= esc(lang('Auth.haveAccount')) ?> <a class="font-medium text-accent-900 underline decoration-accent-700 underline-offset-4 hover:text-accent-700" href="<?= esc(url_to('login')) ?>"><?= esc(lang('Auth.login')) ?></a></p>

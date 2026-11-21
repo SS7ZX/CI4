@@ -1,0 +1,5 @@
+.cv-document--theme-elegant { color: #2f3340; }
+.cv-document--theme-elegant .cv-header { border-top: 1px solid #475569; border-bottom: 1px solid #475569; text-align: center; }
+.cv-document--theme-elegant .cv-header h1 { font-family: Georgia, "CVMaker Sans", serif; letter-spacing: 0.03em; }
+.cv-document--theme-elegant .cv-section { border-top: 1px solid #d7dae0; padding-top: 2mm; }
+.cv-document--theme-elegant .cv-section h2 { border: 0; text-align: center; letter-spacing: 0.1em; text-transform: uppercase; }

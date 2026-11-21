@@ -1,11 +1,31 @@
 <h2 class="mb-2 text-xl font-semibold"><?= esc(lang('Themes.step_title')) ?></h2>
 <p class="mb-5 text-sm text-neutral-700"><?= esc(lang('Themes.step_description')) ?></p>
 
+<div x-data="{ themeQuery: '', atsFilter: 'all' }">
+<div class="mb-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+    <div>
+        <label class="mb-1 block text-sm font-medium" for="theme-search"><?= esc(lang('Themes.search_label')) ?></label>
+        <input id="theme-search" type="search" x-model="themeQuery" class="min-h-11 w-full rounded-md border border-neutral-400 bg-white px-3" placeholder="<?= esc(lang('Themes.search_placeholder')) ?>">
+    </div>
+    <div>
+        <label class="mb-1 block text-sm font-medium" for="theme-filter"><?= esc(lang('Themes.filter_label')) ?></label>
+        <select id="theme-filter" x-model="atsFilter" class="min-h-11 w-full rounded-md border border-neutral-400 bg-white px-3 sm:w-52">
+            <option value="all"><?= esc(lang('Themes.filter_all')) ?></option>
+            <option value="ats"><?= esc(lang('Themes.ats_badge')) ?></option>
+            <option value="visual"><?= esc(lang('Themes.non_ats_badge')) ?></option>
+        </select>
+    </div>
+</div>
+
 <fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
     <legend class="sr-only"><?= esc(lang('Themes.step_title')) ?></legend>
     <?php foreach ($themes as $theme): ?>
         <?php $themeInputId = 'theme-' . $theme['key']; ?>
-        <div class="overflow-hidden rounded-md border border-neutral-300 hover:bg-neutral-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent-700" x-bind:class="selectedTheme === <?= esc(json_encode($theme['key'], JSON_THROW_ON_ERROR), 'attr') ?> ? 'border-accent-700 bg-accent-50' : ''">
+        <div
+            class="overflow-hidden rounded-md border border-neutral-300 hover:bg-neutral-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent-700"
+            x-bind:class="selectedTheme === <?= esc(json_encode($theme['key'], JSON_THROW_ON_ERROR), 'attr') ?> ? 'border-accent-700 bg-accent-50' : ''"
+            x-show="(themeQuery === '' || <?= esc(json_encode(mb_strtolower(lang($theme['name_key']) . ' ' . lang($theme['description_key']))), 'attr') ?>.includes(themeQuery.toLowerCase())) && (atsFilter === 'all' || (atsFilter === 'ats' && <?= $theme['ats_friendly'] ? 'true' : 'false' ?>) || (atsFilter === 'visual' && <?= $theme['ats_friendly'] ? 'false' : 'true' ?>))"
+        >
             <?= view('themes/thumbnail', ['theme' => $theme, 'featured' => false, 'compact' => false]) ?>
             <div class="p-4">
             <span class="flex items-start gap-3">
@@ -29,6 +49,7 @@
         </div>
     <?php endforeach; ?>
 </fieldset>
+</div>
 <p class="mt-4 text-sm leading-6 text-neutral-700"><?= esc(lang('Themes.ats_scope_note')) ?></p>
 <p class="mt-3 text-sm text-red-800" x-show="errors.theme_key" x-text="errors.theme_key" role="alert"></p>
 
@@ -36,6 +57,12 @@
     class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900 p-3 sm:p-6"
     x-cloak
     x-show="previewOpen"
+    x-transition:enter="motion-dialog-enter-active"
+    x-transition:enter-start="motion-dialog-enter-start"
+    x-transition:enter-end="motion-dialog-enter-end"
+    x-transition:leave="motion-dialog-leave-active"
+    x-transition:leave-start="motion-dialog-leave-start"
+    x-transition:leave-end="motion-dialog-leave-end"
     x-on:keydown.escape.window="closePreview()"
     x-on:keydown.tab="trapPreviewFocus($event)"
     role="dialog"

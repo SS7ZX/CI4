@@ -1,0 +1,9 @@
+{
+  "key": "technical",
+  "name_key": "Themes.technical_name",
+  "description_key": "Themes.technical_description",
+  "ats_friendly": true,
+  "layout": "single-column",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#1F2937", "#0369A1", "#0F766E", "#4D7C0F"]
+}

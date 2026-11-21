@@ -1,0 +1,9 @@
+{
+  "key": "metro",
+  "name_key": "Themes.metro_name",
+  "description_key": "Themes.metro_description",
+  "ats_friendly": false,
+  "layout": "split",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#0F766E", "#075985", "#B45309", "#BE185D"]
+}

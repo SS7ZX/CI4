@@ -141,7 +141,11 @@ class ContentSecurityPolicy extends BaseConfig
      *
      * @var list<string>|string
      */
-    public array|string $formAction = 'self';
+    public array|string $formAction = [
+        'self',
+        'http://localhost:8080',
+        'http://127.0.0.1:8080',
+    ];
 
     /**
      * Specifies the sources that can embed the current page.

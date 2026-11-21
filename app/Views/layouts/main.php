@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="<?= esc(lang('App.home_description')) ?>">
     <title><?= esc($title ?? lang('App.app_name')) ?></title>
-    <link rel="stylesheet" href="<?= esc(base_url('assets/css/app.css')) ?>">
-    <script defer src="<?= esc(base_url('assets/js/alpine.min.js')) ?>"></script>
+    <link rel="stylesheet" href="/assets/css/app.css">
 </head>
 <body class="min-h-screen bg-canvas font-sans text-ink antialiased">
     <div class="flex min-h-screen flex-col" x-data="{ menuOpen: false }">
@@ -44,7 +43,7 @@
                             href="<?= esc(url_to('password-edit')) ?>">
                             <?= esc(lang('Auth.changePassword')) ?>
                         </a>
-                        <form action="<?= esc(url_to('logout')) ?>" method="post" class="inline-flex">
+                        <form action="<?= esc(same_origin_url((string) url_to('logout'))) ?>" method="post" class="inline-flex">
                             <?= csrf_field() ?>
                             <button class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit">
                                 <?= esc(lang('Auth.logout')) ?>
@@ -93,5 +92,7 @@
             </div>
         </footer>
     </div>
+    <script defer src="/assets/js/motion.js"></script>
+    <script defer src="/assets/js/alpine.min.js"></script>
 </body>
 </html>

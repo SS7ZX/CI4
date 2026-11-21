@@ -12,7 +12,7 @@
     </nav>
 
     <section class="max-w-4xl" aria-labelledby="insights-heading">
-        <h1 class="text-2xl font-semibold" id="insights-heading"><?= esc(lang('Jobs.insights_title')) ?></h1>
+        <h1 class="text-2xl font-semibold" id="insights-heading" data-reveal><?= esc(lang('Jobs.insights_title')) ?></h1>
         <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.insights_intro')) ?></p>
 
         <section class="mt-4 rounded-md border border-neutral-200 bg-white p-5 sm:p-7" aria-labelledby="skill-gap-heading">

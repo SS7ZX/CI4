@@ -1,0 +1,9 @@
+{
+  "key": "nordic",
+  "name_key": "Themes.nordic_name",
+  "description_key": "Themes.nordic_description",
+  "ats_friendly": true,
+  "layout": "compact",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#374151", "#64748B", "#0F766E", "#92400E"]
+}

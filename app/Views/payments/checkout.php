@@ -3,7 +3,7 @@
 <?= $this->section('title') ?><?= esc($title) ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<section class="mx-auto max-w-3xl">
+<section class="mx-auto max-w-3xl" data-reveal>
     <header class="border-b border-line pb-5">
         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Payments.title')) ?></p>
         <h1 class="mt-2 text-3xl font-semibold tracking-tight text-ink"><?= esc(lang('Payments.title')) ?></h1>
@@ -48,7 +48,7 @@
             <?php endif; ?>
 
             <?php if ($qrConfigured && ($payment['status'] ?? null) !== 'pending' && ($payment['status'] ?? null) !== 'approved'): ?>
-                <form action="<?= esc($uploadUrl) ?>" method="post" enctype="multipart/form-data" class="rounded-md border border-line bg-paper p-5">
+                <form action="<?= esc(same_origin_url((string) $uploadUrl)) ?>" method="post" enctype="multipart/form-data" class="rounded-md border border-line bg-paper p-5">
                     <?= csrf_field() ?>
                     <h2 class="text-lg font-semibold text-ink"><?= esc(lang('Payments.submit_proof_title')) ?></h2>
                     <label class="mt-4 block text-sm font-semibold text-ink" for="payment-proof"><?= esc(lang('Payments.proof_label')) ?></label>

@@ -1,0 +1,5 @@
+.cv-document--theme-technical { color: #1f2937; font-family: "CVMaker Sans", "DejaVu Sans Mono", monospace; }
+.cv-document--theme-technical .cv-header { border-bottom: 2px solid #1f2937; }
+.cv-document--theme-technical .cv-header h1 { letter-spacing: -0.02em; }
+.cv-document--theme-technical .cv-section h2 { border-bottom: 1px solid #94a3b8; font-family: "CVMaker Sans", monospace; letter-spacing: 0.04em; }
+.cv-document--theme-technical .cv-entry h3 { color: #0369a1; }

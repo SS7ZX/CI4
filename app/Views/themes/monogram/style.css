@@ -1,0 +1,5 @@
+.cv-document--theme-monogram { color: #26243a; }
+.cv-document--theme-monogram .cv-header { border-left: 8px solid #1e3a8a; border-bottom: 1px solid #c7c3df; padding-left: 5mm; }
+.cv-document--theme-monogram .cv-header h1 { color: #1e3a8a; }
+.cv-document--theme-monogram.cv-document--sidebar .cv-sections { display: grid; grid-template-columns: 0.68fr 1.32fr; gap: 5mm; }
+.cv-document--theme-monogram .cv-section h2 { border: 0; border-bottom: 1px solid #d4d0e8; letter-spacing: 0.06em; }

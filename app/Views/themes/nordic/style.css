@@ -1,0 +1,5 @@
+.cv-document--theme-nordic { color: #30343a; line-height: 1.38; }
+.cv-document--theme-nordic .cv-header { border-bottom: 1px solid #374151; }
+.cv-document--theme-nordic .cv-header h1 { color: #374151; font-weight: 600; }
+.cv-document--theme-nordic .cv-section { margin-top: 3mm; }
+.cv-document--theme-nordic .cv-section h2 { border-bottom: 1px solid #cbd5e1; color: #374151; }

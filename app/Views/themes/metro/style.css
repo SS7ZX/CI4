@@ -1,0 +1,5 @@
+.cv-document--theme-metro { color: #263238; }
+.cv-document--theme-metro .cv-header { background: #eaf3f1; border: 0; border-left: 8px solid #0f766e; margin: -17mm -17mm 5mm; padding: 10mm 17mm 6mm; }
+.cv-document--theme-metro.cv-document--split .cv-sections { display: grid; grid-template-columns: 0.72fr 1.28fr; gap: 5mm; }
+.cv-document--theme-metro .cv-section { border-top: 1px solid #cad4d2; }
+.cv-document--theme-metro .cv-section h2 { border: 0; color: #0f766e; text-transform: uppercase; }

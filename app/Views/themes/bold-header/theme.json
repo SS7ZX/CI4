@@ -1,0 +1,9 @@
+{
+  "key": "bold-header",
+  "name_key": "Themes.bold_header_name",
+  "description_key": "Themes.bold_header_description",
+  "ats_friendly": false,
+  "layout": "single-column",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#14532D", "#1E3A8A", "#7C2D12", "#0F766E"]
+}

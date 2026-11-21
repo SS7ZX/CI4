@@ -1,0 +1,9 @@
+{
+  "key": "classic-serif",
+  "name_key": "Themes.classic_serif_name",
+  "description_key": "Themes.classic_serif_description",
+  "ats_friendly": true,
+  "layout": "single-column",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#3F3A32", "#1F4E5F", "#7C2D12", "#365314"]
+}

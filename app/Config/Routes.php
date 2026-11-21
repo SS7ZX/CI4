@@ -9,7 +9,11 @@ $routes->get('/', 'Home::index');
 $routes->get('robots.txt', 'SiteMetadata::robots', ['as' => 'robots']);
 $routes->get('sitemap.xml', 'SiteMetadata::sitemap', ['as' => 'sitemap']);
 
-service('auth')->routes($routes, ['except' => ['magic-link', 'logout']]);
+$routes->get('login', 'AuthLogin::loginView', ['as' => 'login']);
+$routes->post('login', 'AuthLogin::loginAction');
+$routes->get('register', 'AuthRegister::registerView', ['as' => 'register']);
+$routes->post('register', 'AuthRegister::registerAction');
+service('auth')->routes($routes, ['except' => ['login', 'register', 'magic-link', 'logout']]);
 $routes->post('logout', '\CodeIgniter\Shield\Controllers\LoginController::logoutAction', ['as' => 'logout']);
 $routes->get('login/magic-link', 'MagicLink::loginView', ['as' => 'magic-link']);
 $routes->post('login/magic-link', 'MagicLink::loginAction');
@@ -22,6 +26,10 @@ $routes->get(
 $routes->group('dashboard', ['filter' => 'session'], static function (RouteCollection $routes): void {
     $routes->get('/', 'Dashboard::index', ['as' => 'dashboard']);
     $routes->post('cv', 'Dashboard::create', ['as' => 'cv-create']);
+    $routes->post('cv/quick', 'Dashboard::quickCreate', ['as' => 'cv-quick-create']);
+    $routes->post('cv/ai/prepare', 'Dashboard::aiPrepare', ['as' => 'cv-ai-prepare']);
+    $routes->post('cv/ai/generate', 'Dashboard::aiGenerate', ['as' => 'cv-ai-generate']);
+    $routes->post('cv/ai/save', 'Dashboard::aiSave', ['as' => 'cv-ai-save']);
     $routes->get('cv/(:segment)', 'CvBuilder::edit/$1', ['as' => 'cv-show']);
     $routes->get('cv/(:segment)/step/(:num)', 'CvBuilder::edit/$1/$2', ['as' => 'cv-step']);
     $routes->post('cv/(:segment)/autosave/(:num)', 'CvBuilder::autosave/$1/$2', ['as' => 'cv-autosave']);

@@ -12,7 +12,7 @@
     </nav>
 
     <section class="max-w-4xl" aria-labelledby="application-list-heading">
-        <h1 class="text-2xl font-semibold" id="application-list-heading"><?= esc(lang('Jobs.applications_title')) ?></h1>
+        <h1 class="text-2xl font-semibold" id="application-list-heading" data-reveal><?= esc(lang('Jobs.applications_title')) ?></h1>
         <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.application_tracking_intro')) ?></p>
         <?php if ($applications === []): ?>
             <div class="mt-4 rounded-md border border-neutral-200 bg-white p-5" role="status">

@@ -9,6 +9,24 @@ use Tests\Support\Libraries\ConfigReader;
  */
 final class HealthTest extends CIUnitTestCase
 {
+    public function testIndonesianValidationUniqueMessageIsAvailable(): void
+    {
+        $message = lang('Validation.is_unique');
+
+        $this->assertSame(
+            'Nilai pada kolom {field} sudah digunakan. Gunakan nilai yang berbeda.',
+            $message,
+        );
+    }
+
+    public function testSameOriginUrlUsesOnlyPathAndQuery(): void
+    {
+        $this->assertSame(
+            '/dashboard/cv/example?page=2',
+            same_origin_url('http://127.0.0.1:8080/dashboard/cv/example?page=2'),
+        );
+    }
+
     public function testIsDefinedAppPath(): void
     {
         $this->assertDirectoryExists(APPPATH);

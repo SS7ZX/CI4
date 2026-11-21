@@ -5,7 +5,7 @@
 $atsThemeCount = count(array_filter($themes, static fn (array $theme): bool => $theme['ats_friendly']));
 $featuredTheme = array_values(array_filter($themes, static fn (array $theme): bool => $theme['key'] === 'ats-classic'))[0];
 ?>
-<section class="home-hero overflow-hidden rounded-md border border-line">
+<section class="home-hero overflow-hidden rounded-md border border-line" data-reveal>
     <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.82fr)]">
         <div class="flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-14 lg:px-14 lg:py-16">
             <p class="inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-accent-900">
@@ -45,7 +45,7 @@ $featuredTheme = array_values(array_filter($themes, static fn (array $theme): bo
     </div>
 </section>
 
-<section class="home-process mt-12 border-y border-line sm:mt-16" aria-label="<?= esc(lang('App.home_process_title')) ?>">
+<section class="home-process mt-12 border-y border-line sm:mt-16" aria-label="<?= esc(lang('App.home_process_title')) ?>" data-reveal>
     <ol class="grid sm:grid-cols-3">
         <?php foreach (lang('App.home_process') as $index => $item): ?>
             <li class="flex gap-4 border-b border-line py-5 last:border-0 sm:border-b-0 sm:border-r sm:px-5 sm:first:pl-0 sm:last:border-0">
@@ -66,8 +66,8 @@ $featuredTheme = array_values(array_filter($themes, static fn (array $theme): bo
         <p class="text-xs font-medium uppercase tracking-[0.12em] text-muted"><?= esc(lang('App.home_theme_count', [count($themes), $atsThemeCount])) ?></p>
     </div>
     <ul class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <?php foreach ($themes as $theme): ?>
-            <li class="theme-card flex flex-col overflow-hidden border border-line bg-paper">
+        <?php foreach ($themes as $index => $theme): ?>
+            <li class="theme-card motion-card flex flex-col overflow-hidden border border-line bg-paper" data-reveal style="--motion-reveal-delay: <?= min(($index % 6) * 35, 175) ?>ms">
                 <?= view('themes/thumbnail', ['theme' => $theme, 'featured' => false, 'compact' => true]) ?>
                 <div class="flex flex-1 flex-col px-4 py-4 sm:px-5">
                     <div class="flex flex-wrap items-baseline justify-between gap-2">
@@ -87,7 +87,7 @@ $featuredTheme = array_values(array_filter($themes, static fn (array $theme): bo
     <p class="mt-4 max-w-3xl text-xs leading-5 text-muted"><?= esc(lang('Themes.ats_scope_note')) ?></p>
 </section>
 
-<section class="home-final mt-16 flex flex-col gap-5 border-t border-line py-8 sm:mt-20 sm:flex-row sm:items-center sm:justify-between">
+<section class="home-final mt-16 flex flex-col gap-5 border-t border-line py-8 sm:mt-20 sm:flex-row sm:items-center sm:justify-between" data-reveal>
     <div class="max-w-2xl">
         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('App.home_bottom_kicker')) ?></p>
         <h2 class="home-section-title mt-2 text-2xl font-medium tracking-tight text-ink sm:text-3xl"><?= esc(lang('App.home_bottom_title')) ?></h2>

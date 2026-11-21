@@ -12,7 +12,7 @@
     </nav>
 
     <section aria-labelledby="results-title">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between" data-reveal>
             <div>
                 <h1 class="text-2xl font-semibold" id="results-title"><?= esc(lang('Jobs.results_title')) ?></h1>
                 <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.results_for_cv', [$cv->title])) ?></p>
@@ -22,18 +22,18 @@
                 <a class="inline-flex min-h-11 items-center rounded-md border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc($preferencesUrl) ?>"><?= esc(lang('Jobs.edit_preferences')) ?></a>
                 <a class="inline-flex min-h-11 items-center rounded-md border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc($applicationsUrl) ?>"><?= esc(lang('Jobs.applications_title')) ?></a>
                 <a class="inline-flex min-h-11 items-center rounded-md border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-800 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc($insightsUrl) ?>"><?= esc(lang('Jobs.insights_title')) ?></a>
-                <form action="<?= esc($refreshUrl) ?>" method="post" x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
+                <form action="<?= esc(same_origin_url((string) $refreshUrl)) ?>" method="post" x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
                     <?= csrf_field() ?>
                     <button class="min-h-11 rounded-md bg-accent-800 px-4 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit" x-bind:disabled="pending">
-                        <span x-show="!pending"><?= esc(lang('Jobs.refresh_search')) ?></span>
-                        <span x-cloak x-show="pending"><?= esc(lang('Jobs.loading')) ?></span>
+                        <span x-show="!pending" x-transition.opacity.duration.150ms><?= esc(lang('Jobs.refresh_search')) ?></span>
+                        <span x-cloak x-show="pending" x-transition.opacity.duration.150ms><?= esc(lang('Jobs.loading')) ?></span>
                     </button>
                     <span class="sr-only" role="status" aria-live="polite" x-text="pending ? <?= esc(json_encode(lang('Jobs.loading'), JSON_THROW_ON_ERROR), 'attr') ?> : ''"></span>
                 </form>
             </div>
         </div>
 
-        <form class="mt-5 grid gap-4 rounded-md border border-neutral-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3" action="<?= esc($resultsUrl) ?>" method="get">
+        <form class="mt-5 grid gap-4 rounded-md border border-neutral-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3" action="<?= esc(same_origin_url((string) $resultsUrl)) ?>" method="get">
             <label class="block text-sm font-medium" for="filter-location"><?= esc(lang('Jobs.filter_location')) ?>
                 <input class="mt-1 min-h-11 w-full rounded-md border border-neutral-400 px-3 font-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="filter-location" name="location" type="search" maxlength="120" value="<?= esc($filters['location']) ?>">
             </label>
@@ -93,7 +93,7 @@
                     $label = in_array($job['label'] ?? '', $labels, true) ? $job['label'] : 'low';
                     $detailUrl = url_to('cv-jobs-detail', $cvId, (string) $job['match_id']);
                     ?>
-                    <li class="rounded-md border border-neutral-200 bg-white p-4 sm:p-5">
+                    <li class="motion-card rounded-md border border-neutral-200 bg-white p-4 sm:p-5" data-reveal>
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div class="min-w-0">
                                 <h2 class="text-lg font-semibold">

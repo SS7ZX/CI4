@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Libraries\Payments\PaymentException;
+use App\Libraries\Payments\PaymentEmailNotifier;
 use App\Libraries\Payments\PaymentImageStorage;
+use App\Libraries\Payments\PaymentNotifierInterface;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\Files\UploadedFile;
+use CodeIgniter\Shield\Entities\User;
+use CodeIgniter\Shield\Models\UserModel;
 use Config\CvPayments;
 use Throwable;
 
@@ -19,14 +23,18 @@ final class CvPaymentService
 
     private CvService $cvs;
 
+    private PaymentNotifierInterface $notifier;
+
     public function __construct(
         ?CvPayments $config = null,
         ?PaymentImageStorage $storage = null,
         ?CvService $cvs = null,
+        ?PaymentNotifierInterface $notifier = null,
     ) {
         $this->config = $config ?? config('CvPayments');
-        $this->storage = $storage ?? new PaymentImageStorage();
+        $this->storage = $storage ?? new PaymentImageStorage($this->config->storageDirectory);
         $this->cvs = $cvs ?? new CvService();
+        $this->notifier = $notifier ?? new PaymentEmailNotifier($this->config);
     }
 
     public function priceIdr(): int
@@ -74,7 +82,8 @@ final class CvPaymentService
      */
     public function submitProof(int $userId, string $cvId, UploadedFile $file): array
     {
-        if ($this->cvs->findOwned($userId, $cvId) === null) {
+        $cv = $this->cvs->findOwned($userId, $cvId);
+        if ($cv === null) {
             throw PageNotFoundException::forPageNotFound();
         }
         if (! $this->storage->hasQr()) {
@@ -161,7 +170,11 @@ final class CvPaymentService
             }
         }
 
-        return $this->findForOwner($userId, $cvId) ?? throw new PaymentException(lang('Payments.proof_submit_failed'));
+        $savedPayment = $this->findForOwner($userId, $cvId)
+            ?? throw new PaymentException(lang('Payments.proof_submit_failed'));
+        $this->notifier->notifyAdminsOfProof($cv->title, $this->config->priceIdr);
+
+        return $savedPayment;
     }
 
     public function storeQr(UploadedFile $file): void
@@ -193,7 +206,7 @@ final class CvPaymentService
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<string, mixed>|null
      */
     public function findForReviewWithCv(string $paymentId): ?array
     {
@@ -215,7 +228,12 @@ final class CvPaymentService
 
     public function review(string $paymentId, int $reviewerId, string $status, string $note): bool
     {
-        if (! in_array($status, ['approved', 'rejected'], true) || mb_strlen($note) > 500) {
+        if (! in_array($status, ['approved', 'rejected'], true) || mb_strlen($note, 'UTF-8') > 500) {
+            return false;
+        }
+
+        $payment = $this->findForReviewWithCv($paymentId);
+        if (! is_array($payment) || ($payment['status'] ?? null) !== 'pending') {
             return false;
         }
 
@@ -231,7 +249,24 @@ final class CvPaymentService
                 'updated_at'  => date('Y-m-d H:i:s'),
             ]);
 
-        return $database->affectedRows() === 1;
+        if ($database->affectedRows() !== 1) {
+            return false;
+        }
+
+        $payer = model(UserModel::class)->findById((int) $payment['user_id']);
+        if ($payer instanceof User && is_string($payer->email) && $payer->email !== '') {
+            $this->notifier->notifyPayerOfReview(
+                $payer->email,
+                (string) $payment['cv_title'],
+                (int) $payment['amount_idr'],
+                $status,
+                $note === '' ? null : $note,
+            );
+        } else {
+            log_message('warning', 'Email hasil pemeriksaan pembayaran tidak dikirim karena akun tidak memiliki alamat email.');
+        }
+
+        return true;
     }
 
     private function uuidV4(): string

@@ -1,0 +1,5 @@
+.cv-document--theme-studio { border-top: 14px solid #9a3412; color: #302a27; }
+.cv-document--theme-studio .cv-header { border-bottom: 2px solid #cbd5e1; }
+.cv-document--theme-studio .cv-header h1 { color: #9a3412; font-size: 27pt; }
+.cv-document--theme-studio .cv-section h2 { border: 0; border-left: 4px solid #9a3412; padding-left: 3mm; letter-spacing: 0.08em; text-transform: uppercase; }
+.cv-document--theme-studio .cv-entry { border-top: 1px solid #ece3de; padding-top: 2mm; }

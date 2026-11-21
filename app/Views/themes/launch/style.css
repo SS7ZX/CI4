@@ -1,0 +1,5 @@
+.cv-document--theme-launch { color: #302c28; }
+.cv-document--theme-launch .cv-header { background: #fff7ed; border: 0; border-bottom: 3px solid #b45309; margin: -17mm -17mm 5mm; padding: 10mm 17mm 7mm; }
+.cv-document--theme-launch .cv-header h1 { color: #9a3412; }
+.cv-document--theme-launch .cv-section h2 { border: 0; border-bottom: 2px solid #b45309; text-transform: uppercase; }
+.cv-document--theme-launch .cv-section--projects { background: #fffaf5; border: 1px solid #f0d8bd; padding: 3mm; }

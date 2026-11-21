@@ -1,0 +1,9 @@
+{
+  "key": "skyline",
+  "name_key": "Themes.skyline_name",
+  "description_key": "Themes.skyline_description",
+  "ats_friendly": true,
+  "layout": "compact",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#334155", "#0F766E", "#1D4ED8", "#166534"]
+}

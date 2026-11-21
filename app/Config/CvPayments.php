@@ -13,6 +13,8 @@ final class CvPayments extends BaseConfig
 
     public int $maxImageSizeBytes = 5_242_880;
 
+    public string $storageDirectory;
+
     /**
      * @var list<string>
      */
@@ -21,6 +23,11 @@ final class CvPayments extends BaseConfig
     public function __construct()
     {
         parent::__construct();
+
+        $this->storageDirectory = WRITEPATH
+            . 'uploads'
+            . DIRECTORY_SEPARATOR
+            . (ENVIRONMENT === 'testing' ? 'cv-payments-test' : 'cv-payments');
 
         $configuredPrice = env('CV_DOWNLOAD_PRICE_IDR', null);
         if ($configuredPrice !== null) {

@@ -30,7 +30,7 @@
     <template x-if="state.profile.photo_path">
         <img class="mb-3 size-24 rounded-md border border-neutral-200 object-cover" src="<?= esc(url_to('cv-photo', $cvId)) ?>" alt="<?= esc(lang('CvBuilder.photo')) ?>">
     </template>
-    <form action="<?= esc(url_to('cv-photo-upload', $cvId)) ?>" method="post" enctype="multipart/form-data" x-on:submit.prevent="uploadPhoto($event)" class="flex flex-wrap items-end gap-3">
+    <form action="<?= esc(same_origin_url((string) url_to('cv-photo-upload', $cvId))) ?>" method="post" enctype="multipart/form-data" x-on:submit.prevent="uploadPhoto($event)" class="flex flex-wrap items-end gap-3">
         <?= csrf_field() ?>
         <div>
             <label class="mb-1 block text-sm font-medium" for="profile-photo"><?= esc(lang('CvBuilder.photo')) ?></label>

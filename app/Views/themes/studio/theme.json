@@ -1,0 +1,9 @@
+{
+  "key": "studio",
+  "name_key": "Themes.studio_name",
+  "description_key": "Themes.studio_description",
+  "ats_friendly": false,
+  "layout": "editorial",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#9A3412", "#BE123C", "#0369A1", "#365314"]
+}

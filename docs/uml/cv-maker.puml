@@ -1,0 +1,654 @@
+@startuml CVMaker-UseCases
+title CV Maker - Use Case
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Pengunjung" as Visitor
+actor "Pengguna terdaftar" as User
+actor "Admin pembayaran" as Admin
+actor "Penyedia lowongan resmi" as Provider
+actor "Situs lowongan asli" as JobSite
+
+User --|> Visitor
+Admin --|> User
+
+rectangle "CV Maker" {
+  usecase "Daftar dan masuk" as UC_Auth
+  usecase "Kelola akun" as UC_Account
+  usecase "Kelola CV" as UC_Cv
+  usecase "Buat, ubah, salin,\ndan hapus CV" as UC_EditCv
+  usecase "Isi data CV dan\nsimpan otomatis" as UC_Autosave
+  usecase "Pilih tema dan\natur bagian" as UC_Theme
+  usecase "Pratinjau CV/PDF" as UC_Preview
+  usecase "Kirim bukti pembayaran\ndan unduh PDF" as UC_Download
+  usecase "Tinjau pembayaran" as UC_ReviewPayment
+  usecase "Setujui atau tolak\nbukti pembayaran" as UC_ReviewProof
+  usecase "Kelola persetujuan\npencarian lowongan" as UC_Consent
+  usecase "Atur jabatan, kota,\ndan preferensi kerja" as UC_Preferences
+  usecase "Cari dan filter\nlowongan" as UC_Search
+  usecase "Tinjau skor dan\nrincian kecocokan" as UC_Score
+  usecase "Simpan atau sembunyikan\nlowongan" as UC_SaveJob
+  usecase "Buka tautan lowongan\nasli secara manual" as UC_ExternalApply
+  usecase "Catat status dan\nriwayat lamaran" as UC_Track
+  usecase "Lihat insight skill\ndan gaji" as UC_Insights
+  usecase "Kirim kata kunci umum\ndan kota" as UC_SafeQuery
+}
+
+Visitor --> UC_Auth
+User --> UC_Account
+User --> UC_Cv
+User --> UC_EditCv
+User --> UC_Autosave
+User --> UC_Theme
+User --> UC_Preview
+User --> UC_Download
+User --> UC_Consent
+User --> UC_Preferences
+User --> UC_Search
+User --> UC_Score
+User --> UC_SaveJob
+User --> UC_ExternalApply
+User --> UC_Track
+User --> UC_Insights
+Admin --> UC_ReviewPayment
+Admin --> UC_ReviewProof
+Provider --> UC_SafeQuery
+UC_Download .> UC_Preview : <<include>>
+UC_Search .> UC_Consent : <<include>>
+UC_Search .> UC_Preferences : <<include>>
+UC_Search .> UC_SafeQuery : <<include>>
+UC_Search .> UC_Score : <<include>>
+UC_ExternalApply --> JobSite
+
+note right of UC_ExternalApply
+  Pengguna meninjau lalu melamar
+  sendiri di situs sumber.
+  Tidak ada auto-apply massal.
+end note
+
+note bottom of UC_SafeQuery
+  Data pribadi seperti nama, email,
+  telepon, foto, alamat lengkap, dan
+  nama perusahaan CV tidak dikirim.
+end note
+@enduml
+
+@startuml CVMaker-Components
+title CV Maker - Component Diagram
+left to right direction
+skinparam componentStyle rectangle
+
+actor "Pengguna" as User
+actor "Admin" as Admin
+cloud "Jooble API\n(provider resmi)" as Jooble
+cloud "Situs lowongan asli" as JobSite
+database "Supabase\nPostgreSQL" as DB
+folder "writable/\npenyimpanan privat" as PrivateStorage
+
+package "Browser" {
+  [Server-rendered views] as Views
+  [Alpine.js interactions] as Alpine
+  [Tailwind CSS] as Tailwind
+}
+
+package "CodeIgniter 4" {
+  [Shield Authentication\nand session filter] as Auth
+  package "Controllers" {
+    [Dashboard] as Dashboard
+    [CvBuilder] as CvBuilder
+    [CvPreview] as CvPreview
+    [CvDownload] as CvDownload
+    [CvPayments] as CvPayments
+    [Jobs] as Jobs
+  }
+  package "Services" {
+    [CvService] as CvService
+    [CvBuilderService] as CvBuilderService
+    [CvRenderService] as CvRender
+    [ThemeRegistry] as Themes
+    [CvPaymentService] as Payments
+    [JobPreferenceService] as Preferences
+    [JobIngestService] as Ingest
+    [MatchService] as Matching
+    [MatchScorer] as Scorer
+    [SkillGapService] as Insights
+  }
+  package "Libraries and repositories" {
+    interface "JobProviderInterface" as ProviderInterface
+    [JoobleProvider] as JoobleProvider
+    [CURLRequest client] as HttpClient
+    [JobSearchRepository] as JobRepository
+    [JobDictionaryRepository] as DictionaryRepository
+    [PhotoStorageInterface] as PhotoStorage
+    [PdfRendererInterface] as PdfRenderer
+    [DompdfRenderer] as Dompdf
+  }
+}
+
+User --> Views
+Admin --> Views
+Views --> Alpine
+Views --> Tailwind
+Views --> Auth
+Auth --> Dashboard
+Auth --> CvBuilder
+Auth --> CvPreview
+Auth --> CvDownload
+Auth --> CvPayments
+Auth --> Jobs
+
+Dashboard --> CvService
+CvBuilder --> CvBuilderService
+CvBuilder --> Matching : recompute after autosave
+CvPreview --> CvRender
+CvDownload --> CvRender
+CvDownload --> Payments
+CvPayments --> Payments
+Jobs --> Preferences
+Jobs --> Ingest
+Jobs --> JobRepository
+Jobs --> Insights
+Ingest --> Preferences
+Ingest --> ProviderInterface
+Ingest --> JobRepository
+ProviderInterface <|.. JoobleProvider
+JoobleProvider --> HttpClient
+Ingest --> Matching
+Matching --> Scorer
+Matching --> JobRepository
+Matching --> DictionaryRepository
+CvRender --> CvBuilderService
+CvRender --> Themes
+CvDownload --> PdfRenderer
+PdfRenderer <|.. Dompdf
+CvBuilder --> PhotoStorage
+PhotoStorage --> PrivateStorage
+Payments --> PrivateStorage
+
+CvService --> DB
+CvBuilderService --> DB
+JobRepository --> DB
+Preferences --> DB
+DictionaryRepository --> DB
+Payments --> DB
+JoobleProvider --> Jooble : POST query terms\nand city only
+User --> JobSite : opens source link\nand applies manually
+@enduml
+
+@startuml CVMaker-CvEditing
+title CV Maker - Sequence: Buat dan Isi CV
+autonumber
+
+actor "Pengguna" as User
+participant "Dashboard" as Dashboard
+participant "CvService" as CvService
+participant "Browser / Alpine.js" as Browser
+participant "CvBuilder" as Controller
+participant "CvBuilderService" as Builder
+database "PostgreSQL" as DB
+participant "MatchService" as Match
+
+User -> Dashboard : Buat CV
+Dashboard -> CvService : create(userId, title)
+CvService -> DB : INSERT cvs dengan UUID
+DB --> CvService : berhasil
+CvService --> Dashboard : cvId
+Dashboard --> Browser : redirect ke editor
+
+User -> Browser : Isi langkah CV
+Browser -> Controller : POST autosave (JSON, CSRF)
+Controller -> Builder : saveStep(userId, cvId, step, payload)
+Builder -> DB : Pastikan CV milik pengguna
+DB --> Builder : data CV
+Builder -> Builder : Validasi field dan baris
+alt Data tidak valid
+  Builder --> Controller : CvValidationException
+  Controller --> Browser : 422 dan pesan per field
+else Data valid
+  Builder -> DB : BEGIN
+  Builder -> DB : Simpan bagian langkah dan last_step
+  Builder -> DB : COMMIT
+  Builder --> Controller : tersimpan
+  opt Langkah 1 sampai 6
+    Controller -> Match : recomputeForCv
+    Match -> DB : Perbarui skor match jika ada
+  end
+  Controller --> Browser : status saved dan token CSRF baru
+end
+
+User -> Browser : Klik Selanjutnya
+Browser -> Browser : Simpan langkah aktif
+Browser -> Browser : Pindah ke langkah berikutnya jika tersimpan
+@enduml
+
+@startuml CVMaker-JobSearch
+title CV Maker - Sequence: Persetujuan dan Pencarian Lowongan
+autonumber
+
+actor "Pengguna" as User
+participant "Jobs Controller" as Jobs
+participant "JobPreferenceService" as Preferences
+participant "CvProfileExtractor" as Extractor
+participant "SearchQueryBuilder" as QueryBuilder
+participant "JobIngestService" as Ingest
+participant "JobProviderRegistry" as Registry
+participant "JoobleProvider" as JoobleProvider
+participant "CURLRequest" as Http
+participant "JobNormalizer" as Normalizer
+participant "MatchService / MatchScorer" as Matching
+participant "JobSearchRepository" as Repository
+database "PostgreSQL" as DB
+cloud "Jooble API" as Jooble
+
+User -> Jobs : Buka Cari Lowongan
+Jobs -> Preferences : workflow(userId, cvId)
+Preferences -> DB : Muat CV dan consent
+DB --> Preferences : profil CV dan preferensi
+alt Belum memberi consent
+  Jobs --> User : Halaman consent eksplisit
+  User -> Jobs : Setuju secara aktif
+  Jobs -> Preferences : grantConsent
+  Preferences -> DB : Simpan consent_at dan search_enabled
+else Consent masih aktif
+  Jobs --> User : Tampilkan preferensi
+end
+
+User -> Jobs : Simpan preferensi dan mulai pencarian
+Jobs -> Ingest : refresh(userId, cvId)
+Ingest -> Preferences : workflow dengan kepemilikan dan consent
+Preferences -> Extractor : Ekstrak jabatan, skill umum, dan kota
+Extractor --> Preferences : profil pencarian yang dibersihkan
+Preferences --> Ingest : preferensi yang disetujui
+Ingest -> QueryBuilder : build(jabatan, skill, kota)
+QueryBuilder --> Ingest : kata kunci umum dan kota
+Ingest -> Registry : pilih provider yang tersedia
+Registry --> Ingest : JobProviderInterface
+Ingest -> Repository : cek kuota, cooldown, dan cache
+Repository -> DB : baca log refresh dan cache
+DB --> Repository : status pencarian
+
+alt Consent tidak aktif
+  Ingest --> Jobs : JobConsentRequiredException
+  Jobs --> User : Minta persetujuan
+else API key atau provider tidak tersedia
+  Ingest --> Jobs : JobProviderException
+  Jobs --> User : Pemberitahuan provider belum siap
+else Pencarian boleh dijalankan
+  loop Setiap query dalam batas konfigurasi
+    Ingest -> JoobleProvider : search(kata kunci, kota)
+    JoobleProvider -> Http : POST query tanpa data pribadi
+    Http -> Jooble : POST kata kunci dan kota
+    Jooble --> Http : Hasil lowongan
+    Http --> JoobleProvider : Respons HTTP
+    JoobleProvider --> Ingest : ProviderResult
+    Ingest -> Normalizer : Validasi dan normalisasi lowongan
+    Normalizer --> Ingest : lowongan aman atau dilewati
+    Ingest -> Repository : Simpan posting dan cache
+    Repository -> DB : UPSERT job_postings dan cache
+  end
+  Ingest -> Matching : scoreAndStorePostings
+  Matching -> Extractor : gunakan profil bersih
+  Matching -> DB : Muat kamus skill dan jabatan
+  Matching -> Matching : Hitung skor, confidence,\nbreakdown, dan alasan
+  Matching -> Repository : Simpan match dan komponen skor
+  Repository -> DB : Simpan job_matches
+  Ingest --> Jobs : Hasil dan peringatan
+  Jobs --> User : Daftar untuk ditinjau
+end
+
+note right of Jooble
+  Yang dikirim hanya query dari
+  jabatan target, skill umum,
+  dan kota yang disetujui.
+  Identitas dan data kontak tidak dikirim.
+end note
+@enduml
+
+@startuml CVMaker-ManualApplication
+title CV Maker - Sequence: Tinjau Lowongan dan Catat Lamaran
+autonumber
+
+actor "Pengguna" as User
+participant "Jobs Controller" as Jobs
+participant "JobSearchRepository" as Repository
+database "PostgreSQL" as DB
+participant "Browser" as Browser
+cloud "Situs lowongan asli" as JobSite
+
+User -> Jobs : Buka hasil lowongan
+Jobs -> Repository : paginatedMatchesForCv(cvId, filters, sort)
+Repository -> DB : Ambil hasil dan skor milik CV
+DB --> Repository : daftar lowongan
+Repository --> Jobs : hasil paginasi
+Jobs --> Browser : Kartu skor, label, keyakinan, dan sumber
+User -> Browser : Buka rincian dan tinjau skor
+User -> Browser : Pilih Buka lowongan asli
+Browser -> JobSite : Buka tautan resmi di tab baru
+User -> JobSite : Tinjau syarat dan kirim lamaran sendiri
+User -> Jobs : Catat status dan catatan lamaran
+Jobs -> Repository : updateApplicationTracking
+Repository -> DB : Simpan tracker dan event perubahan
+DB --> Repository : berhasil
+Repository --> Jobs : status tersimpan
+Jobs --> User : Konfirmasi dan riwayat lamaran
+
+note over User,JobSite
+  Aplikasi tidak mengisi atau mengirim formulir
+  lamaran ke situs pihak ketiga secara otomatis.
+end note
+@enduml
+
+@startuml CVMaker-Persistence
+title CV Maker - Persistence Class Diagram
+hide methods
+skinparam classAttributeIconSize 0
+
+class users <<Shield>> {
+  +id : BIGINT <<PK>>
+}
+
+class cvs {
+  +id : UUID <<PK>>
+  +user_id : BIGINT <<FK>>
+  +title : VARCHAR
+  +theme_key : VARCHAR
+  +locale : VARCHAR
+  +paper_size : VARCHAR
+  +font_scale : VARCHAR
+  +accent_color : VARCHAR?
+  +settings : JSONB
+  +last_step : INTEGER
+  +deleted_at : TIMESTAMPTZ?
+}
+
+class cv_profiles {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK, UK>>
+  +full_name : VARCHAR
+  +headline : VARCHAR?
+  +email : VARCHAR?
+  +phone : VARCHAR?
+  +city : VARCHAR?
+  +country : VARCHAR?
+  +summary : TEXT?
+  +photo_path : VARCHAR?
+}
+
+class cv_experiences {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +company : VARCHAR
+  +position : VARCHAR
+  +start_date : DATE
+  +end_date : DATE?
+  +is_current : BOOLEAN
+  +bullets : JSONB
+  +sort_order : INTEGER
+}
+
+class cv_educations {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +institution : VARCHAR
+  +degree : VARCHAR
+  +field_of_study : VARCHAR
+  +start_date : DATE
+  +end_date : DATE?
+  +gpa : VARCHAR?
+  +description : TEXT?
+  +sort_order : INTEGER
+}
+
+class cv_skill_groups {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +name : VARCHAR
+  +items : JSONB
+  +sort_order : INTEGER
+}
+
+class cv_links {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +label : VARCHAR
+  +url : VARCHAR
+  +sort_order : INTEGER
+}
+
+class cv_projects {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +name : VARCHAR
+  +role : VARCHAR?
+  +url : VARCHAR?
+  +start_date : DATE?
+  +end_date : DATE?
+  +bullets : JSONB
+  +tech_stack : JSONB
+  +sort_order : INTEGER
+}
+
+class cv_certifications {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +name : VARCHAR
+  +issuer : VARCHAR
+  +issued_at : DATE?
+  +expires_at : DATE?
+  +credential_url : VARCHAR?
+  +sort_order : INTEGER
+}
+
+class cv_organizations {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +organization : VARCHAR
+  +role : VARCHAR
+  +start_date : DATE
+  +end_date : DATE?
+  +bullets : JSONB
+  +sort_order : INTEGER
+}
+
+class cv_awards {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +title : VARCHAR
+  +issuer : VARCHAR?
+  +awarded_at : DATE?
+  +description : TEXT?
+  +sort_order : INTEGER
+}
+
+class cv_languages {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +name : VARCHAR
+  +level : VARCHAR
+  +sort_order : INTEGER
+}
+
+class cv_custom_sections {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +title : VARCHAR
+  +items : JSONB
+  +sort_order : INTEGER
+}
+
+class cv_section_settings {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +section_key : VARCHAR
+  +is_visible : BOOLEAN
+  +sort_order : INTEGER
+}
+
+class job_preferences {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK, UK>>
+  +target_titles : JSONB
+  +locations : JSONB
+  +remote_mode : VARCHAR
+  +job_types : JSONB
+  +min_salary_idr : INTEGER?
+  +excluded_keywords : JSONB
+  +experience_level_override : VARCHAR?
+  +search_enabled : BOOLEAN
+  +consent_at : TIMESTAMPTZ?
+}
+
+class skills_dictionary {
+  +id : UUID <<PK>>
+  +canonical : VARCHAR <<UK>>
+  +aliases : JSONB
+  +category : VARCHAR
+  +weight : SMALLINT
+}
+
+class title_dictionary {
+  +id : UUID <<PK>>
+  +canonical_title : VARCHAR <<UK>>
+  +aliases : JSONB
+  +job_family : VARCHAR
+  +seniority_hint : VARCHAR?
+}
+
+class job_query_cache {
+  +id : UUID <<PK>>
+  +query_hash : VARCHAR <<UK>>
+  +provider : VARCHAR
+  +keywords : VARCHAR
+  +location : VARCHAR
+  +page : INTEGER
+  +total_count : INTEGER?
+  +posting_ids : JSONB
+  +fetched_at : TIMESTAMPTZ
+  +expires_at : TIMESTAMPTZ
+}
+
+class job_postings {
+  +id : UUID <<PK>>
+  +provider : VARCHAR
+  +external_key : VARCHAR?
+  +dedupe_hash : VARCHAR <<UK>>
+  +title : VARCHAR
+  +company : VARCHAR?
+  +location : VARCHAR?
+  +is_remote : BOOLEAN?
+  +job_type : VARCHAR?
+  +salary_text : VARCHAR?
+  +salary_min_idr : INTEGER?
+  +salary_max_idr : INTEGER?
+  +snippet : TEXT
+  +source_name : VARCHAR?
+  +link : TEXT
+  +posted_at : TIMESTAMPTZ?
+  +fetched_at : TIMESTAMPTZ
+  +expires_at : TIMESTAMPTZ
+  +raw : JSONB
+}
+
+class job_refresh_log {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +started_at : TIMESTAMPTZ
+  +finished_at : TIMESTAMPTZ?
+  +queries_run : INTEGER
+  +postings_new : INTEGER
+  +postings_updated : INTEGER
+  +error : TEXT?
+}
+
+class job_matches {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +job_posting_id : UUID <<FK>>
+  +matched_at : TIMESTAMPTZ
+  +score : SMALLINT?
+  +label : VARCHAR?
+  +confidence : VARCHAR?
+  +breakdown : JSONB
+  +matched_skills : JSONB
+  +missing_skills : JSONB
+  +reasons : JSONB
+  +status : VARCHAR
+  +notes : TEXT?
+  +status_changed_at : TIMESTAMPTZ
+  +computed_at : TIMESTAMPTZ?
+  +excluded_keyword_match : BOOLEAN
+  +is_hidden_by_score : BOOLEAN
+}
+
+class job_application_trackers {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK>>
+  +match_id : UUID? <<FK, UK>>
+  +application_status : VARCHAR
+  +status_changed_at : TIMESTAMPTZ
+  +notes : TEXT?
+  +saved_expired : BOOLEAN
+}
+
+class job_application_events {
+  +id : UUID <<PK>>
+  +tracker_id : UUID <<FK>>
+  +application_status : VARCHAR
+  +notes : TEXT?
+  +changed_at : TIMESTAMPTZ
+}
+
+class cv_download_payments {
+  +id : UUID <<PK>>
+  +cv_id : UUID <<FK, UK>>
+  +user_id : BIGINT <<FK>>
+  +amount_idr : INTEGER
+  +status : VARCHAR
+  +proof_path : VARCHAR
+  +reviewed_by : BIGINT? <<FK>>
+  +review_note : VARCHAR?
+  +proof_uploaded_at : TIMESTAMPTZ
+  +reviewed_at : TIMESTAMPTZ?
+}
+
+users "1" -- "0..*" cvs
+cvs "1" -- "0..1" cv_profiles
+cvs "1" -- "0..*" cv_experiences
+cvs "1" -- "0..*" cv_educations
+cvs "1" -- "0..*" cv_skill_groups
+cvs "1" -- "0..*" cv_links
+cvs "1" -- "0..*" cv_projects
+cvs "1" -- "0..*" cv_certifications
+cvs "1" -- "0..*" cv_organizations
+cvs "1" -- "0..*" cv_awards
+cvs "1" -- "0..*" cv_languages
+cvs "1" -- "0..*" cv_custom_sections
+cvs "1" -- "0..*" cv_section_settings
+cvs "1" -- "0..1" job_preferences
+cvs "1" -- "0..*" job_refresh_log
+cvs "1" -- "0..*" job_matches
+job_postings "1" -- "0..*" job_matches
+cvs "1" -- "0..*" job_application_trackers
+job_matches "0..1" -- "0..1" job_application_trackers
+job_application_trackers "1" -- "0..*" job_application_events
+cvs "1" -- "0..1" cv_download_payments
+users "1" -- "0..*" cv_download_payments : pemilik
+users "0..1" -- "0..*" cv_download_payments : peninjau
+
+note bottom of job_query_cache
+  posting_ids menyimpan daftar ID hasil
+  dan dikendalikan oleh masa berlaku cache.
+end note
+
+note bottom of skills_dictionary
+  Kamus global, bukan data milik satu CV.
+  RLS aktif tanpa policy pada PostgreSQL;
+  aplikasi mengakses DB melalui server.
+end note
+
+note bottom of cvs
+  Semua tabel project di schema public
+  memakai RLS tanpa policy pada PostgreSQL.
+  Hak milik CV tetap diverifikasi aplikasi.
+end note
+@enduml

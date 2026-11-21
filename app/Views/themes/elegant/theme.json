@@ -1,0 +1,9 @@
+{
+  "key": "elegant",
+  "name_key": "Themes.elegant_name",
+  "description_key": "Themes.elegant_description",
+  "ats_friendly": false,
+  "layout": "editorial",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#475569", "#7F1D1D", "#854D0E", "#166534"]
+}

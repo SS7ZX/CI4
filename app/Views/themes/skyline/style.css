@@ -1,0 +1,5 @@
+.cv-document--theme-skyline { color: #26313d; line-height: 1.32; }
+.cv-document--theme-skyline .cv-header { border-bottom: 3px solid #334155; }
+.cv-document--theme-skyline .cv-section { margin-top: 2.8mm; }
+.cv-document--theme-skyline .cv-section h2 { border-bottom: 1px solid #aab3bd; letter-spacing: 0.05em; text-transform: uppercase; }
+.cv-document--theme-skyline .cv-entry { margin-bottom: 2mm; }

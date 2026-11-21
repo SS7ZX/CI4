@@ -1,0 +1,9 @@
+{
+  "key": "monogram",
+  "name_key": "Themes.monogram_name",
+  "description_key": "Themes.monogram_description",
+  "ats_friendly": false,
+  "layout": "sidebar",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#1E3A8A", "#075985", "#164E63", "#047857"]
+}

@@ -2,6 +2,9 @@
 
 namespace Config;
 
+use App\Libraries\CvAi\CurlCvAiHttpClient;
+use App\Libraries\CvAi\CvAiDraftGeneratorInterface;
+use App\Libraries\CvAi\OllamaCvAiDraftGenerator;
 use CodeIgniter\Config\BaseService;
 
 /**
@@ -19,14 +22,12 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
-    /*
-     * public static function example($getShared = true)
-     * {
-     *     if ($getShared) {
-     *         return static::getSharedInstance('example');
-     *     }
-     *
-     *     return new \CodeIgniter\Example();
-     * }
-     */
+    public static function cvAiDraftGenerator(bool $getShared = true): CvAiDraftGeneratorInterface
+    {
+        if ($getShared) {
+            return static::getSharedInstance('cvAiDraftGenerator');
+        }
+
+        return new OllamaCvAiDraftGenerator(config(CvAi::class), new CurlCvAiHttpClient());
+    }
 }

@@ -1,0 +1,5 @@
+.cv-document--theme-classic-serif { color: #292724; font-family: Georgia, "CVMaker Sans", serif; }
+.cv-document--theme-classic-serif .cv-header { border-bottom: 2px solid #3f3a32; text-align: center; }
+.cv-document--theme-classic-serif .cv-header h1 { color: #3f3a32; letter-spacing: 0.02em; }
+.cv-document--theme-classic-serif .cv-section h2 { border-bottom: 1px solid #aaa49b; font-variant: small-caps; letter-spacing: 0.08em; }
+.cv-document--theme-classic-serif .cv-entry { border-left: 1px solid #d3cec4; padding-left: 3mm; }

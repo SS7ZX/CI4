@@ -9,7 +9,7 @@
         <span><?= esc(lang('Jobs.find_jobs')) ?></span>
     </nav>
 
-    <section class="max-w-2xl rounded-md border border-neutral-200 bg-white p-5 sm:p-7">
+    <section class="max-w-2xl rounded-md border border-neutral-200 bg-white p-5 sm:p-7" data-reveal>
         <h1 class="text-2xl font-semibold"><?= esc(lang('Jobs.consent_title')) ?></h1>
         <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.consent_intro', [$cv->title])) ?></p>
 
@@ -19,7 +19,7 @@
             <li><?= esc(lang('Jobs.consent_withdrawal')) ?></li>
         </ul>
 
-        <form class="mt-6 space-y-4" action="<?= esc($consentUrl) ?>" method="post">
+        <form class="mt-6 space-y-4" action="<?= esc(same_origin_url((string) $consentUrl)) ?>" method="post">
             <?= csrf_field() ?>
             <label class="flex items-start gap-3 text-sm font-medium">
                 <input class="mt-1 size-4 accent-accent-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="checkbox" name="consent" value="1" required>

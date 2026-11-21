@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-    <section class="mx-auto grid w-full max-w-5xl overflow-hidden rounded-md border border-line bg-paper md:grid-cols-[minmax(0,0.9fr)_minmax(22rem,1.1fr)]">
+    <section class="mx-auto grid w-full max-w-5xl overflow-hidden rounded-md border border-line bg-paper md:grid-cols-[minmax(0,0.9fr)_minmax(22rem,1.1fr)]" data-reveal>
         <aside class="hidden flex-col justify-between border-r border-line bg-[#eeeee7] p-8 md:flex lg:p-10">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Auth.workspace_kicker')) ?></p>

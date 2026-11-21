@@ -57,7 +57,7 @@ final class CvPayments extends BaseController
 
         return $this->response
             ->setHeader('Content-Type', $image['mime'])
-            ->setHeader('Content-Disposition', 'inline; filename="payment-qr.png"')
+            ->setHeader('Content-Disposition', 'inline; filename="payment-qr"')
             ->setHeader('Cache-Control', 'private, no-store')
             ->setHeader('X-Content-Type-Options', 'nosniff')
             ->setBody($image['contents']);
@@ -112,7 +112,7 @@ final class CvPayments extends BaseController
 
         return $this->response
             ->setHeader('Content-Type', $image['mime'])
-            ->setHeader('Content-Disposition', 'inline; filename="payment-proof.png"')
+            ->setHeader('Content-Disposition', 'inline; filename="payment-proof"')
             ->setHeader('Cache-Control', 'private, no-store')
             ->setHeader('X-Content-Type-Options', 'nosniff')
             ->setBody($image['contents']);

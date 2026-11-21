@@ -18,7 +18,7 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $baseURL = 'http://localhost:8080/';
+    public string $baseURL = 'http://127.0.0.1:8080/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
@@ -42,7 +42,7 @@ class App extends BaseConfig
      * something else. If you have configured your web server to remove this file
      * from your site URIs, set this variable to an empty string.
      */
-    public string $indexPage = 'index.php';
+    public string $indexPage = '';
 
     /**
      * --------------------------------------------------------------------------
@@ -212,5 +212,13 @@ class App extends BaseConfig
             env('app.forceGlobalSecureRequests', $this->forceGlobalSecureRequests),
             FILTER_VALIDATE_BOOLEAN,
         );
+
+        if (ENVIRONMENT !== 'production') {
+            $host = $_SERVER['HTTP_HOST'] ?? '';
+            if (preg_match('/\A(?:localhost|127(?:\.[0-9]{1,3}){3})(?::[0-9]{1,5})?\z/i', $host) === 1) {
+                $this->baseURL = 'http://' . $host . '/';
+                $this->indexPage = '';
+            }
+        }
     }
 }

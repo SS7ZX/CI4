@@ -57,6 +57,14 @@ final class CvBuilderTest extends CIUnitTestCase
         $editor->assertSee('Nama sertifikasi');
         $editor->assertSee('Langkah 6 dari 8');
         $editor->assertSee('aria-live="polite"');
+        $editor->assertSee('data-reveal');
+        $editor->assertSee('x-transition:enter="motion-dialog-enter-active"');
+        $builderScriptPosition = strpos($editor->getBody(), 'assets/js/cv-builder.js');
+        $alpineScriptPosition = strpos($editor->getBody(), 'assets/js/alpine.min.js');
+        $this->assertIsInt($builderScriptPosition);
+        $this->assertIsInt($alpineScriptPosition);
+        $this->assertLessThan($alpineScriptPosition, $builderScriptPosition);
+        $this->assertStringContainsString('assets/js/motion.js', $editor->getBody());
         $this->assertMatchesRegularExpression(
             '/<section\s+id="builder-step-6"\s+x-bind:hidden="step !== 6"/',
             $editor->getBody(),

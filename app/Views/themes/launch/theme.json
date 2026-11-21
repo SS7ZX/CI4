@@ -1,0 +1,9 @@
+{
+  "key": "launch",
+  "name_key": "Themes.launch_name",
+  "description_key": "Themes.launch_description",
+  "ats_friendly": false,
+  "layout": "sidebar",
+  "font_family": "CVMaker Sans",
+  "accent_palette": ["#B45309", "#9A3412", "#1E40AF", "#166534"]
+}

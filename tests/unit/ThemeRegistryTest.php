@@ -10,17 +10,17 @@ use CodeIgniter\Test\CIUnitTestCase;
  */
 final class ThemeRegistryTest extends CIUnitTestCase
 {
-    public function testRegistryLoadsElevenThemesWithAtsThemesFirst(): void
+    public function testRegistryLoadsTwentyOneThemesWithAtsThemesFirst(): void
     {
         $themes = (new ThemeRegistry())->all();
 
-        $this->assertCount(11, $themes);
+        $this->assertCount(21, $themes);
         $this->assertSame(
-            ['academic', 'ats-classic', 'compact', 'minimal', 'modern', 'designer', 'editorial', 'executive', 'portfolio', 'professional', 'split'],
+            ['academic', 'ats-classic', 'classic-serif', 'compact', 'minimal', 'modern', 'nordic', 'skyline', 'technical', 'bold-header', 'designer', 'editorial', 'elegant', 'executive', 'launch', 'metro', 'monogram', 'portfolio', 'professional', 'split', 'studio'],
             array_column($themes, 'key'),
         );
         $this->assertSame(
-            [true, true, true, true, true, false, false, false, false, false, false],
+            [true, true, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false],
             array_column($themes, 'ats_friendly'),
         );
     }

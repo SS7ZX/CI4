@@ -19,6 +19,13 @@ final class DashboardAccessTest extends CIUnitTestCase
 
     protected $namespace = ['CodeIgniter\\Settings', 'CodeIgniter\\Shield', 'App'];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        service('throttler')->remove(md5('0.0.0.0'));
+    }
+
     public function testAuthScreensRenderAndAnonymousDashboardRedirectsToLogin(): void
     {
         $login = $this->get('/login');
@@ -70,6 +77,79 @@ final class DashboardAccessTest extends CIUnitTestCase
         $response->assertRedirectTo('/dashboard');
         $this->withSession($_SESSION);
         $this->get('/dashboard')->assertOK();
+        auth()->logout();
+    }
+
+    public function testRegistrationNormalizesEmailAndRejectsCaseInsensitiveDuplicate(): void
+    {
+        $firstCsrfToken = $this->csrfTokenFrom('/register');
+        $firstResponse = $this->post('/register', [
+            'csrf_test_name'   => $firstCsrfToken,
+            'username'         => 'emailnormal',
+            'email'            => '  Normal.User@Example.Test  ',
+            'password'         => 'AmanSekali!123',
+            'password_confirm' => 'AmanSekali!123',
+        ]);
+
+        $firstResponse->assertRedirectTo('/dashboard');
+        auth()->logout();
+
+        $identity = $this->db->table('auth_identities')
+            ->where('type', 'email_password')
+            ->where('secret', 'normal.user@example.test')
+            ->get()
+            ->getRowArray();
+        $this->assertNotEmpty($identity);
+
+        $duplicateCsrfToken = $this->csrfTokenFrom('/register');
+        $duplicateResponse = $this->post('/register', [
+            'csrf_test_name'   => $duplicateCsrfToken,
+            'username'         => 'emailnormal2',
+            'email'            => 'NORMAL.USER@EXAMPLE.TEST',
+            'password'         => 'AmanSekali!123',
+            'password_confirm' => 'AmanSekali!123',
+        ]);
+
+        $duplicateResponse->assertRedirect();
+        $duplicateResponse->assertSessionHas('errors');
+        $this->assertSame(
+            1,
+            $this->db->table('auth_identities')
+                ->where('type', 'email_password')
+                ->where('secret', 'normal.user@example.test')
+                ->countAllResults(),
+        );
+    }
+
+    public function testLoginRejectsInvalidCredentialsWithoutChangingSession(): void
+    {
+        $this->createUser('login@example.test', 'loginuser');
+        $csrfToken = $this->csrfTokenFrom('/login');
+
+        $response = $this->post('/login', [
+            'csrf_test_name' => $csrfToken,
+            'email'          => 'LOGIN@EXAMPLE.TEST',
+            'password'       => 'PasswordSalah!123',
+        ]);
+
+        $response->assertRedirectTo('/login');
+        $response->assertSessionHas('error');
+        $this->assertFalse(auth()->loggedIn());
+    }
+
+    public function testLoginAcceptsNormalizedEmail(): void
+    {
+        $this->createUser('normalize-login@example.test', 'normalizelogin');
+        $csrfToken = $this->csrfTokenFrom('/login');
+
+        $response = $this->post('/login', [
+            'csrf_test_name' => $csrfToken,
+            'email'          => '  NORMALIZE-LOGIN@EXAMPLE.TEST ',
+            'password'       => 'AmanSekali!123',
+        ]);
+
+        $response->assertRedirectTo('/dashboard');
+        $this->assertTrue(auth()->loggedIn());
         auth()->logout();
     }
 
