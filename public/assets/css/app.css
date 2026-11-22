@@ -1650,6 +1650,78 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
   height: 7px;
   width: 84%;
 }
+.theme-preview__page[data-theme="ats-classic"] .theme-preview__header::after {
+  height: 1px;
+  width: 100%;
+}
+.theme-preview__page[data-theme="bold-header"] .theme-preview__header {
+  background: var(--theme-preview-accent);
+  margin: -0.75rem -0.75rem 0;
+  padding: 0.75rem 0.75rem 0.55rem;
+}
+.theme-preview__page[data-theme="bold-header"] .theme-preview__header .theme-preview__line {
+  background: #e8eee8;
+}
+.theme-preview__page[data-theme="bold-header"] .theme-preview__header .theme-preview__line--title {
+  background: #fffefa;
+}
+.theme-preview__page[data-theme="classic-serif"] .theme-preview__header, .theme-preview__page[data-theme="elegant"] .theme-preview__header {
+  justify-items: center;
+  text-align: center;
+}
+.theme-preview__page[data-theme="classic-serif"] .theme-preview__line--title {
+  height: 4px;
+  width: 60%;
+}
+.theme-preview__page[data-theme="classic-serif"] .theme-preview__header::after {
+  height: 1px;
+  width: 60%;
+}
+.theme-preview__page[data-theme="professional"] .theme-preview__sidebar {
+  border-right: 1px solid #d7d9d2;
+}
+.theme-preview__page[data-theme="editorial"] .theme-preview__header::after {
+  height: 2px;
+  width: 100%;
+}
+.theme-preview__page[data-theme="elegant"] .theme-preview__header::after {
+  height: 1px;
+  width: 35%;
+}
+.theme-preview__page[data-theme="launch"] .theme-preview__header {
+  background: #fff7ed;
+  margin: -0.75rem -0.75rem 0;
+  padding: 0.75rem 0.75rem 0.55rem;
+}
+.theme-preview__page[data-theme="launch"] .theme-preview__header::after {
+  height: 2px;
+}
+.theme-preview__page[data-theme="metro"] .theme-preview__sidebar {
+  border-top: 2px solid var(--theme-preview-accent);
+}
+.theme-preview__page[data-theme="monogram"] .theme-preview__header {
+  border-left: 4px solid var(--theme-preview-accent);
+  padding-left: 0.4rem;
+}
+.theme-preview__page[data-theme="nordic"] .theme-preview__section + .theme-preview__section {
+  border-color: #d7dce1;
+  padding-top: 0.4rem;
+}
+.theme-preview__page[data-theme="skyline"] .theme-preview__header::after {
+  height: 2px;
+  width: 100%;
+}
+.theme-preview__page[data-theme="split"] .theme-preview__sidebar {
+  background: #edf2f7;
+  border-right: 1px solid #cbd5e1;
+}
+.theme-preview__page[data-theme="studio"] {
+  border-top: 5px solid var(--theme-preview-accent);
+}
+.theme-preview__page[data-theme="technical"] .theme-preview__section {
+  border-left: 1px solid var(--theme-preview-accent);
+  padding-left: 0.3rem;
+}
 .home-hero {
   background: #eeeee7;
 }

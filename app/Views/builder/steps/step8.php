@@ -1,3 +1,13 @@
+<?php
+$currentTheme = null;
+foreach ($themes as $theme) {
+    if ($theme['key'] === ($state['cv']['theme_key'] ?? '')) {
+        $currentTheme = $theme;
+        break;
+    }
+}
+?>
+
 <h2 class="mb-2 text-xl font-semibold tracking-tight text-ink"><?= esc(lang('CvBuilder.steps')[7]) ?></h2>
 <p class="mb-5 max-w-2xl text-sm leading-6 text-muted"><?= esc(lang('CvBuilder.pdf_review_help')) ?></p>
 
@@ -19,6 +29,23 @@
                 <option value="large"><?= esc(lang('CvBuilder.font_large')) ?></option>
             </select>
             <p class="mt-1 text-sm text-red-800" x-show="errors.font_scale" x-text="errors.font_scale" role="alert"></p>
+        </div>
+        <div class="border-t border-line pt-4">
+            <h3 class="text-sm font-semibold text-ink"><?= esc(lang('Themes.current_theme')) ?></h3>
+            <?php if ($currentTheme !== null): ?>
+                <p class="mt-1 text-sm font-medium text-ink"><?= esc(lang($currentTheme['name_key'])) ?></p>
+                <p class="mt-2 inline-flex rounded-md border border-line px-2 py-1 text-xs font-semibold text-ink">
+                    <?= esc(lang($currentTheme['ats_friendly'] ? 'Themes.ats_badge' : 'Themes.non_ats_badge')) ?>
+                </p>
+                <p class="mt-2 text-xs leading-5 text-muted">
+                    <?= esc(lang($currentTheme['ats_friendly'] ? 'Themes.ats_scope_note' : 'Themes.ats_visual_warning')) ?>
+                </p>
+            <?php else: ?>
+                <p class="mt-2 text-sm text-red-800" role="alert"><?= esc(lang('Themes.invalid_theme')) ?></p>
+            <?php endif; ?>
+            <button class="mt-3 min-h-10 w-full rounded-md border border-line bg-paper px-3 text-sm font-medium text-ink hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700 disabled:cursor-wait disabled:opacity-60" type="button" x-on:click="navigate(7)" x-bind:disabled="busy">
+                <?= esc(lang('Themes.change_theme')) ?>
+            </button>
         </div>
         <fieldset>
             <legend class="mb-2 text-sm font-semibold text-ink"><?= esc(lang('CvBuilder.accent_color')) ?></legend>
@@ -43,7 +70,7 @@
     <div class="min-w-0">
         <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent-900">Dokumen</p>
+                <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent-900"><?= esc(lang('Themes.current_theme')) ?></p>
                 <h3 class="mt-1 text-lg font-semibold text-ink"><?= esc(lang('CvBuilder.pdf_preview_title')) ?></h3>
             </div>
             <p class="max-w-xs text-right text-xs leading-5 text-muted"><?= esc(lang('CvBuilder.preview_changes_note')) ?></p>

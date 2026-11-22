@@ -83,7 +83,13 @@ final class CvBuilder extends BaseController
             'pageCountUrl' => url_to('cv-page-count', $cvId),
             'downloadUrl' => url_to('cv-download', $cvId),
             'paymentPaid' => $paymentService->hasPaid($this->currentUser()->id, $cvId),
-            'themes'     => $this->themes->all(),
+            'themes'     => array_map(
+                static fn (array $theme): array => [
+                    ...$theme,
+                    'name' => lang($theme['name_key']),
+                ],
+                $this->themes->all(),
+            ),
             'sectionLabels' => $sectionLabels,
             'messages' => [
                 'pageCountLoading' => lang('CvBuilder.page_count_loading'),

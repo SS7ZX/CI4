@@ -21,6 +21,7 @@ document.addEventListener('alpine:init', () => {
         selectedTheme: '',
         previewOpen: false,
         previewTrigger: null,
+        previewThemeKey: '',
         previewFrameUrl: '',
         pageCountMessage: '',
         busy: false,
@@ -165,10 +166,26 @@ document.addEventListener('alpine:init', () => {
         },
 
         previewTheme(themeKey) {
+            this.previewThemeKey = themeKey;
             this.previewFrameUrl = this.themePreviewUrl.replace('__theme__', encodeURIComponent(themeKey));
             this.previewTrigger = document.activeElement;
             this.previewOpen = true;
             this.$nextTick(() => this.$refs.previewClose?.focus());
+        },
+
+        previewThemeName() {
+            return this.themes.find((theme) => theme.key === this.previewThemeKey)?.name ?? '';
+        },
+
+        previewThemeIsAtsFriendly() {
+            return this.themes.find((theme) => theme.key === this.previewThemeKey)?.ats_friendly === true;
+        },
+
+        applyPreviewTheme() {
+            if (this.previewThemeKey === '') return;
+            this.selectedTheme = this.previewThemeKey;
+            this.scheduleSave();
+            this.closePreview();
         },
 
         closePreview() {

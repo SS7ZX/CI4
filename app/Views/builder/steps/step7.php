@@ -72,11 +72,23 @@
 >
     <div class="flex h-full max-h-[92vh] w-full max-w-6xl flex-col rounded-md border border-neutral-300 bg-white p-3 sm:p-5">
         <div class="mb-3 flex items-center justify-between gap-3">
-            <h3 class="text-lg font-semibold"><?= esc(lang('Themes.preview_title')) ?></h3>
+            <div>
+                <h3 class="text-lg font-semibold"><?= esc(lang('Themes.preview_title')) ?></h3>
+                <p class="mt-1 text-sm font-medium text-ink" x-text="previewThemeName()"></p>
+                <p class="mt-1 text-xs text-muted" x-cloak x-show="previewThemeIsAtsFriendly()"><?= esc(lang('Themes.ats_badge')) ?></p>
+                <p class="mt-1 text-xs text-muted" x-cloak x-show="!previewThemeIsAtsFriendly()"><?= esc(lang('Themes.non_ats_badge')) ?></p>
+            </div>
             <button class="min-h-10 rounded-md border border-neutral-400 px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="button" x-on:click="closePreview()" x-ref="previewClose"><?= esc(lang('Themes.close_preview')) ?></button>
         </div>
         <template x-if="previewOpen">
             <iframe class="min-h-0 w-full flex-1 border border-neutral-200" title="<?= esc(lang('Themes.preview_frame_title')) ?>" x-bind:src="previewFrameUrl" x-on:load="configurePreviewFrame($event)" sandbox="allow-same-origin"></iframe>
         </template>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <p class="max-w-2xl text-xs leading-5 text-muted"><?= esc(lang('Themes.ats_scope_note')) ?></p>
+            <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-4 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-not-allowed disabled:opacity-60" type="button" x-on:click="applyPreviewTheme()" x-bind:disabled="selectedTheme === previewThemeKey">
+                <span x-cloak x-show="selectedTheme !== previewThemeKey"><?= esc(lang('Themes.apply_preview')) ?></span>
+                <span x-cloak x-show="selectedTheme === previewThemeKey"><?= esc(lang('Themes.selected')) ?></span>
+            </button>
+        </div>
     </div>
 </div>

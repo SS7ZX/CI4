@@ -56,7 +56,11 @@ final class CvThemeTest extends CIUnitTestCase
         $editor->assertSee('Tidak dioptimalkan untuk ATS');
         preg_match_all('/class="theme-preview(?:\\s|")/', $editor->getBody(), $matches);
         $this->assertSame(21, count($matches[0]));
+        preg_match_all('/data-ats="true"/', $editor->getBody(), $atsThemes);
+        $this->assertSame(9, count($atsThemes[0]));
         $editor->assertSee('Label ramah ATS menjelaskan struktur dokumen, bukan jaminan lolos seleksi.');
+        $editor->assertSee('Gunakan tema ini');
+        $editor->assertSee('previewThemeIsAtsFriendly()');
 
         $preview = $this->get('/dashboard/cv/' . $cvId . '/preview/ats-classic');
         $preview->assertOK();
@@ -102,6 +106,12 @@ final class CvThemeTest extends CIUnitTestCase
         $this->assertSame('professional', (new CvService())->findOwned($userId, $cvId)?->theme_key);
         $this->assertSame(1, $this->db->table('cv_profiles')->where('cv_id', $cvId)->countAllResults());
         $this->assertSame(1, $this->db->table('cv_experiences')->where('cv_id', $cvId)->countAllResults());
+
+        $review = $this->get('/dashboard/cv/' . $cvId . '/step/8');
+        $review->assertOK();
+        $review->assertSee(lang('Themes.professional_name'));
+        $review->assertSee(lang('Themes.non_ats_badge'));
+        $review->assertSee(lang('Themes.change_theme'));
 
         $this->withSession($_SESSION);
         $currentPreview = $this->get('/dashboard/cv/' . $cvId . '/preview');

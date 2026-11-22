@@ -18,6 +18,7 @@ return [
     'preview'                => 'Pratinjau tema',
     'preview_title'          => 'Pratinjau CV',
     'close_preview'          => 'Tutup pratinjau',
+    'apply_preview'          => 'Gunakan tema ini',
     'selected'               => 'Tema dipilih',
     'ats_classic_name'       => 'ATS Klasik',
     'ats_classic_description'=> 'Satu kolom dengan struktur sederhana untuk sistem pelacakan pelamar.',
@@ -66,5 +67,7 @@ return [
     'filter_label' => 'Filter tampilan',
     'filter_all' => 'Semua tema',
     'preview_frame_title'    => 'Pratinjau tema CV',
+    'current_theme'          => 'Tema yang digunakan',
+    'change_theme'           => 'Ganti tema',
     'invalid_theme'          => 'Pilih tema CV yang tersedia.',
 ];

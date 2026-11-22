@@ -1,6 +1,6 @@
 <?php $modifier = ! empty($featured) ? 'theme-preview--featured' : (! empty($compact) ? 'theme-preview--compact' : ''); ?>
 <div class="theme-preview<?= $modifier !== '' ? ' ' . esc($modifier, 'attr') : '' ?>" style="--theme-preview-accent: <?= esc($theme['accent_palette'][0], 'attr') ?>" aria-hidden="true">
-    <div class="theme-preview__page" data-layout="<?= esc($theme['layout'], 'attr') ?>" data-theme="<?= esc($theme['key'], 'attr') ?>">
+    <div class="theme-preview__page" data-layout="<?= esc($theme['layout'], 'attr') ?>" data-theme="<?= esc($theme['key'], 'attr') ?>" data-ats="<?= $theme['ats_friendly'] ? 'true' : 'false' ?>">
         <div class="theme-preview__header">
             <span class="theme-preview__line theme-preview__line--title"></span>
             <span class="theme-preview__line theme-preview__line--short"></span>
