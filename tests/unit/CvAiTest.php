@@ -42,7 +42,7 @@ final class CvAiTest extends TestCase
             'message' => [
                 'content' => json_encode([
                     'headline'   => 'Analis Data',
-                    'summary'    => 'Mengolah data untuk mendukung keputusan.',
+                    'summary'    => 'Mengelola proyek dan menyusun laporan berkala. Mengatur jadwal kerja, memantau progres, serta mendokumentasikan hasil.',
                     'experience' => ['Menyusun laporan bulanan', 'Menganalisis tren penjualan'],
                     'education'  => ['Sistem Informasi'],
                     'skills'     => ['SQL', 'Analisis data'],
@@ -60,7 +60,7 @@ final class CvAiTest extends TestCase
 
                     return $payload['model'] === 'qwen2.5:3b'
                         && $payload['stream'] === false
-                        && $payload['messages'][1]['content'] === 'Mengelola proyek dan laporan.'
+                        && $payload['messages'][1]['content'] === 'Mengelola proyek, menyusun laporan berkala, mengatur jadwal kerja, memantau progres, dan mendokumentasikan hasil.'
                         && ! str_contains($encoded, 'Dina Pratama')
                         && ! str_contains($encoded, 'dina@example.test')
                         && ! str_contains($encoded, '+62 812');
@@ -73,10 +73,11 @@ final class CvAiTest extends TestCase
         $config->enabled = true;
         $generator = new OllamaCvAiDraftGenerator($config, $http);
 
-        $draft = $generator->generate('Mengelola proyek dan laporan.');
+        $draft = $generator->generate('Mengelola proyek, menyusun laporan berkala, mengatur jadwal kerja, memantau progres, dan mendokumentasikan hasil.');
 
         $this->assertInstanceOf(CvAiDraft::class, $draft);
         $this->assertSame('Analis Data', $draft->headline);
+        $this->assertSame('Mengelola proyek dan menyusun laporan berkala. Mengatur jadwal kerja, memantau progres, serta mendokumentasikan hasil.', $draft->summary);
         $this->assertSame('Menyusun laporan bulanan', $draft->experience);
         $this->assertSame('', $draft->skills);
     }
@@ -131,7 +132,7 @@ final class CvAiTest extends TestCase
         $response->method('getBody')->willReturn(json_encode([
             'message' => ['content' => json_encode([
                 'headline'   => 'Analis Data',
-                'summary'    => 'Menyusun laporan dari data operasional.',
+                'summary'    => 'Lmaopisang',
                 'experience' => ['Inacoo', 'Menyusun laporan bulanan'],
                 'education'  => ['Lorem ipsum'],
                 'skills'     => ['SQL', 'Inacoo'],
@@ -146,8 +147,58 @@ final class CvAiTest extends TestCase
             ->generate('Menyusun laporan bulanan menggunakan SQL.');
 
         $this->assertSame('Menyusun laporan bulanan', $draft->experience);
+        $this->assertSame('', $draft->summary);
         $this->assertSame('', $draft->education);
         $this->assertSame('SQL', $draft->skills);
+    }
+
+    public function testGeneratorClearsProfessionalLookingSummaryThatIsNotGroundedInStory(): void
+    {
+        $response = $this->createMock(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getBody')->willReturn(json_encode([
+            'message' => ['content' => json_encode([
+                'headline'   => 'Analis Data',
+                'summary'    => 'Mengembangkan strategi pemasaran digital untuk memperluas pasar dan meningkatkan pendapatan secara terukur.',
+                'experience' => [],
+                'education'  => [],
+                'skills'     => [],
+            ], JSON_THROW_ON_ERROR)],
+        ], JSON_THROW_ON_ERROR));
+        $http = $this->createMock(CvAiHttpClientInterface::class);
+        $http->method('post')->willReturn($response);
+        $config = new CvAi();
+        $config->enabled = true;
+
+        $draft = (new OllamaCvAiDraftGenerator($config, $http))
+            ->generate('Menyusun laporan bulanan menggunakan SQL.');
+
+        $this->assertSame('', $draft->summary);
+    }
+
+    public function testGeneratorKeepsDraftWhenSummaryExceedsItsLengthLimit(): void
+    {
+        $response = $this->createMock(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getBody')->willReturn(json_encode([
+            'message' => ['content' => json_encode([
+                'headline'   => 'Analis Data',
+                'summary'    => str_repeat('Menyusun laporan berkala. ', 50),
+                'experience' => ['Menyusun laporan berkala'],
+                'education'  => [],
+                'skills'     => [],
+            ], JSON_THROW_ON_ERROR)],
+        ], JSON_THROW_ON_ERROR));
+        $http = $this->createMock(CvAiHttpClientInterface::class);
+        $http->method('post')->willReturn($response);
+        $config = new CvAi();
+        $config->enabled = true;
+
+        $draft = (new OllamaCvAiDraftGenerator($config, $http))
+            ->generate('Menyusun laporan berkala setiap bulan.');
+
+        $this->assertSame('', $draft->summary);
+        $this->assertSame('Menyusun laporan berkala', $draft->experience);
     }
 
     public function testGeneratorRejectsNonLocalRuntimeEndpoint(): void

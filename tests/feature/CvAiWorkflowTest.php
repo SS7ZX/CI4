@@ -68,7 +68,7 @@ final class CvAiWorkflowTest extends CIUnitTestCase
                 'email'     => 'dina@example.test',
                 'phone'     => '+62 812 3456 7890',
                 'city'      => 'Bandung',
-                'story'     => 'Dina Pratama, dina@example.test, +62 812 3456 7890 tinggal di Bandung. Mengelola proyek dan laporan.',
+                'story'     => 'Dina Pratama, dina@example.test, +62 812 3456 7890 tinggal di Bandung. Mengelola proyek, menyusun laporan berkala, mengatur jadwal kerja, memantau progres, dan mendokumentasikan hasil.',
             ]);
             $prepared->assertOK();
             $this->assertStringContainsString('private', $prepared->response()->getHeaderLine('Cache-Control'));
@@ -84,7 +84,7 @@ final class CvAiWorkflowTest extends CIUnitTestCase
                 ->with($preparedStory)
                 ->willReturn(new CvAiDraft(
                     'Koordinator Proyek',
-                    'Mengelola proyek dan laporan.',
+                    '',
                     'Mengelola proyek dan laporan.',
                     'Administrasi Bisnis',
                     'Manajemen proyek, Pelaporan',
@@ -106,6 +106,7 @@ final class CvAiWorkflowTest extends CIUnitTestCase
             $this->assertStringContainsString('private', $generated->response()->getHeaderLine('Cache-Control'));
             $this->assertStringContainsString('no-store', $generated->response()->getHeaderLine('Cache-Control'));
             $generated->assertSee('Koordinator Proyek');
+            $generated->assertSee(lang('Dashboard.ai_summary_not_generated'));
             $this->assertSame(0, (new Cv())->where('user_id', $userId)->countAllResults());
 
             $saved = $this->withHeaders([
@@ -117,7 +118,7 @@ final class CvAiWorkflowTest extends CIUnitTestCase
                 'email'      => 'dina@example.test',
                 'phone'      => '+62 812 3456 7890',
                 'city'       => 'Bandung',
-                'summary'    => 'Mengelola proyek dan laporan.',
+                'summary'    => 'Mengelola proyek dan menyusun laporan berkala. Mengatur jadwal kerja, memantau progres, serta mendokumentasikan hasil.',
                 'experience' => 'Mengelola proyek dan laporan.',
                 'education'  => 'Administrasi Bisnis',
                 'skills'     => 'Manajemen proyek, Pelaporan',

@@ -1,51 +1,59 @@
 .cv-document {
-    color: #171717;
+    color: #1f2933;
     font-family: "CVMaker Sans", "DejaVu Sans", Arial, sans-serif;
     font-size: 10.5pt;
-    line-height: 1.42;
+    line-height: 1.45;
 }
 .cv-header {
-    border-bottom: 1px solid #737373;
-    margin-bottom: 5mm;
-    padding-bottom: 4mm;
+    border-bottom: 2px solid #245b65;
+    margin-bottom: 6mm;
+    padding-bottom: 4.5mm;
 }
 .cv-header h1 {
-    font-size: 22pt;
+    color: #173b42;
+    font-size: 25pt;
     font-weight: 700;
-    line-height: 1.15;
+    line-height: 1.1;
 }
 .cv-headline {
-    font-size: 12pt;
-    margin-top: 2mm;
+    color: #36575c;
+    font-size: 11pt;
+    font-weight: 600;
+    margin-top: 2.5mm;
 }
 .cv-contact,
 .cv-meta {
-    color: #404040;
-    font-size: 9pt;
-    margin-top: 1.5mm;
+    color: #4b5563;
+    font-size: 8.75pt;
+    margin-top: 2mm;
 }
 .cv-section {
-    margin-top: 4mm;
+    margin-top: 5mm;
     page-break-inside: auto;
     break-inside: auto;
 }
 .cv-section h2 {
-    border-bottom: 1px solid #737373;
-    font-size: 11.5pt;
+    border-bottom: 1px solid #9aaeb0;
+    color: #245b65;
+    font-size: 10.5pt;
     font-weight: 700;
-    margin-bottom: 2mm;
-    padding-bottom: 1mm;
+    letter-spacing: 0.04em;
+    margin-bottom: 2.5mm;
+    padding-bottom: 1.25mm;
 }
 .cv-entry {
-    margin: 0 0 3mm;
+    margin: 0 0 3.5mm;
     page-break-inside: avoid;
 }
 .cv-entry h3 {
+    color: #202b33;
     font-size: 10.5pt;
     font-weight: 700;
 }
 .cv-subtitle {
+    color: #45545b;
     font-size: 10pt;
+    margin-top: 0.75mm;
 }
 .cv-list {
     list-style: disc;

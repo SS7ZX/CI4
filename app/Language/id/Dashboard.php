@@ -73,6 +73,7 @@ return [
     'ai_back' => 'Kembali ke dashboard',
     'ai_headline' => 'Target pekerjaan atau jabatan',
     'ai_summary' => 'Ringkasan profesional',
+    'ai_summary_not_generated' => 'Ringkasan AI tidak tersedia atau belum cukup didukung oleh cerita. Tulis ringkasan berdasarkan fakta CV yang spesifik, atau tambahkan informasi relevan pada cerita.',
     'ai_experience' => 'Pengalaman, satu informasi per baris',
     'ai_education' => 'Pendidikan, satu informasi per baris',
     'ai_skills' => 'Keahlian, pisahkan dengan koma atau baris baru',

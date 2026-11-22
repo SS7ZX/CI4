@@ -65,10 +65,34 @@ final class CvThemeTest extends CIUnitTestCase
         $preview = $this->get('/dashboard/cv/' . $cvId . '/preview/ats-classic');
         $preview->assertOK();
         $html = $preview->getBody();
+        $this->assertMatchesRegularExpression('/<style(?: nonce="[^"]+")?>/', $html);
+        $this->assertStringNotContainsString('{csp-style-nonce}', $html);
+        $this->assertStringContainsString('font-family: "CVMaker Sans", "DejaVu Sans", Arial, sans-serif;', $html);
         $this->assertDoesNotMatchRegularExpression('/<(?:table|img|svg)\b/i', $html);
         $this->assertStringContainsString('Menyusun laporan', $html);
         $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $html);
         $this->assertStringNotContainsString('<script>alert(1)</script>', $html);
+        $previewResponse = $preview->response();
+        $previewResponse->getCSP()->finalize($previewResponse);
+        $renderedHtml = $previewResponse->getBody();
+        $csp = $previewResponse->getHeaderLine('Content-Security-Policy');
+        $styleNonceMatch = [];
+        $hasStyleNonce = preg_match('/<style nonce="([^"]+)">/', $renderedHtml, $styleNonceMatch) === 1;
+        preg_match_all('/(?:^|[,;])\s*style-src(?:-elem)?\s+([^,;]+)/', $csp, $stylePolicies);
+        $nonceRequired = false;
+        $nonceAuthorized = false;
+        $inlineStylesAllowed = false;
+        foreach ($stylePolicies[1] as $stylePolicy) {
+            $inlineStylesAllowed = $inlineStylesAllowed || str_contains($stylePolicy, "'unsafe-inline'");
+            if (preg_match("/'nonce-([^']+)'/", $stylePolicy, $nonceMatch) === 1) {
+                $nonceRequired = true;
+                $nonceAuthorized = $nonceAuthorized || (
+                    $hasStyleNonce
+                    && hash_equals($nonceMatch[1], $styleNonceMatch[1])
+                );
+            }
+        }
+        $this->assertTrue($nonceRequired ? $nonceAuthorized : $inlineStylesAllowed);
         $this->assertSame('ats-classic', (new CvService())->findOwned($userId, $cvId)?->theme_key);
         $document = (new CvRenderService())->buildDocument($userId, $cvId);
         $this->assertSame(

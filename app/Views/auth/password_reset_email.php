@@ -5,9 +5,9 @@
     <title><?= esc(lang('Auth.passwordResetSubject')) ?></title>
 </head>
 <body>
-    <p>Halo,</p>
-    <p>Untuk mengatur kata sandi CV Maker yang baru, buka tautan berikut:</p>
+    <p><?= esc(lang('Auth.passwordResetEmailGreeting')) ?></p>
+    <p><?= esc(lang('Auth.passwordResetEmailInstructions')) ?></p>
     <p><a href="<?= esc($resetUrl) ?>"><?= esc(lang('Auth.resetPassword')) ?></a></p>
-    <p>Tautan berlaku selama <?= esc((string) $lifetimeMinutes) ?> menit. Jika Anda tidak meminta reset ini, abaikan email ini dan kata sandi lama tetap berlaku.</p>
+    <p><?= esc(lang('Auth.passwordResetEmailExpiry', [(string) $lifetimeMinutes])) ?></p>
 </body>
 </html>

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use CodeIgniter\Shield\Models\UserIdentityModel;
 use CodeIgniter\Shield\Models\UserModel;
+use CodeIgniter\Config\Services;
+use CodeIgniter\Email\Email as EmailService;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
@@ -94,6 +96,65 @@ final class PasswordResetTest extends CIUnitTestCase
 
         $response->assertRedirect();
         $this->assertStringContainsString('/password/reset-requested', (string) $response->getRedirectUrl());
+    }
+
+    public function testResetEmailUsesHtmlAndOmitsDebugViewMarkers(): void
+    {
+        $this->createUser('reset-email@example.test', 'resetemail');
+
+        $emailConfig = config(Email::class);
+        $originalConfig = [
+            'protocol'   => $emailConfig->protocol,
+            'SMTPHost'   => $emailConfig->SMTPHost,
+            'SMTPUser'   => $emailConfig->SMTPUser,
+            'SMTPPass'   => $emailConfig->SMTPPass,
+            'SMTPPort'   => $emailConfig->SMTPPort,
+            'fromEmail'  => $emailConfig->fromEmail,
+            'fromName'   => $emailConfig->fromName,
+        ];
+        $emailConfig->protocol = 'smtp';
+        $emailConfig->SMTPHost = 'smtp.mail.test';
+        $emailConfig->SMTPUser = 'user';
+        $emailConfig->SMTPPass = 'password';
+        $emailConfig->SMTPPort = 587;
+        $emailConfig->fromEmail = 'no-reply@cv-maker.test';
+        $emailConfig->fromName = 'CV Maker';
+
+        $email = $this->createMock(EmailService::class);
+        $email->expects($this->once())
+            ->method('setMailType')
+            ->with('html')
+            ->willReturnSelf();
+        $email->expects($this->once())
+            ->method('setMessage')
+            ->with($this->callback(static fn (string $message): bool => str_contains($message, '<!doctype html>')
+                && ! str_contains($message, 'DEBUG-VIEW')))
+            ->willReturnSelf();
+        $email->expects($this->once())
+            ->method('setAltMessage')
+            ->with($this->callback(static fn (string $message): bool => str_contains($message, 'password/reset/')
+                && str_contains($message, lang('Auth.passwordResetEmailInstructions'))))
+            ->willReturnSelf();
+        $email->expects($this->once())->method('send')->with(false)->willReturn(true);
+        $email->expects($this->once())->method('clear')->with(true);
+        Services::injectMock('email', $email);
+
+        try {
+            $response = $this->withHeaders([
+                'X-CSRF-TOKEN' => csrf_hash(),
+                'Accept'       => 'text/html',
+            ])->post('/login/magic-link', [
+                'email' => 'reset-email@example.test',
+            ]);
+
+            $response->assertRedirect();
+            $this->assertStringContainsString('/password/reset-requested', (string) $response->getRedirectUrl());
+        } finally {
+            Services::resetSingle('email');
+            foreach ($originalConfig as $key => $value) {
+                $emailConfig->{$key} = $value;
+            }
+        }
     }
 
     private function createUser(string $email, string $username): int

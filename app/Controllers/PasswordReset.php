@@ -156,8 +156,17 @@ final class PasswordReset extends BaseController
         $email->setTo((string) $user->email);
         $email->setSubject(lang('Auth.passwordResetSubject'));
         $email->setMessage(view('auth/password_reset_email', [
-            'resetUrl' => $resetUrl,
+            'resetUrl'       => $resetUrl,
             'lifetimeMinutes' => self::RESET_LIFETIME_SECONDS / 60,
+        ], ['debug' => false]));
+        $email->setMailType('html');
+        $email->setAltMessage(implode("\n\n", [
+            lang('Auth.passwordResetEmailGreeting'),
+            lang('Auth.passwordResetEmailInstructions'),
+            lang('Auth.resetPassword') . ': ' . $resetUrl,
+            lang('Auth.passwordResetEmailExpiry', [
+                (string) (self::RESET_LIFETIME_SECONDS / 60),
+            ]),
         ]));
 
         if (! $email->send(false)) {

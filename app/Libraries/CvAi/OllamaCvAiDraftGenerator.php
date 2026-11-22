@@ -10,6 +10,47 @@ use JsonException;
 
 final class OllamaCvAiDraftGenerator implements CvAiDraftGeneratorInterface
 {
+    private const SUMMARY_MAX_CHARACTERS = 1000;
+
+    private const SUMMARY_MINIMUM_TERMS = 6;
+
+    private const SUMMARY_MINIMUM_GROUNDED_TERMS = 2;
+
+    private const SUMMARY_STOP_WORDS = [
+        'a',
+        'adalah',
+        'akan',
+        'and',
+        'atau',
+        'bagi',
+        'dapat',
+        'dan',
+        'dari',
+        'dengan',
+        'di',
+        'dalam',
+        'for',
+        'from',
+        'has',
+        'have',
+        'ini',
+        'is',
+        'itu',
+        'ke',
+        'of',
+        'oleh',
+        'pada',
+        'sebagai',
+        'secara',
+        'serta',
+        'the',
+        'telah',
+        'to',
+        'untuk',
+        'with',
+        'yang',
+    ];
+
     private const OUTPUT_SCHEMA = [
         'type'                 => 'object',
         'additionalProperties' => false,
@@ -73,7 +114,7 @@ final class OllamaCvAiDraftGenerator implements CvAiDraftGeneratorInterface
                     'messages' => [
                         [
                             'role'    => 'system',
-                            'content' => 'Susun draf CV berbahasa Indonesia profesional yang hanya menggunakan fakta tertulis pada cerita. Jangan mengarang, menerjemahkan bebas, membuat tanggal, jabatan, institusi, angka, pencapaian, atau keahlian yang tidak ada. Tolak kata acak, teks lorem ipsum, placeholder, dan duplikat. Untuk pengalaman dan pendidikan gunakan frasa singkat berbasis fakta. Gunakan daftar kosong jika fakta tidak tersedia. Jangan mengulang identitas, email, nomor telepon, atau alamat. Keluarkan hanya JSON sesuai skema.',
+                            'content' => 'Susun draf CV berbahasa Indonesia profesional yang hanya menggunakan fakta tertulis pada cerita. Jangan mengarang, menerjemahkan bebas, membuat tanggal, jabatan, institusi, angka, pencapaian, atau keahlian yang tidak ada. Tolak kata acak, teks lorem ipsum, placeholder, dan duplikat. Ringkasan harus terdiri dari 2 atau 3 kalimat yang spesifik, ringkas, dan berbasis fakta. Fokus pada bidang atau peran, keahlian yang disebut, dan hasil konkret yang benar-benar tertulis. Jangan memakai klaim umum, kata promosi, tingkat senioritas, atau angka yang tidak ada di cerita. Gunakan istilah penting yang memang muncul di cerita. Jika fakta cerita tidak cukup untuk membuat ringkasan yang jelas, isi summary dengan string kosong. Untuk pengalaman dan pendidikan gunakan frasa singkat berbasis fakta. Gunakan daftar kosong jika fakta tidak tersedia. Jangan mengulang identitas, email, nomor telepon, atau alamat. Keluarkan hanya JSON sesuai skema.',
                         ],
                         [
                             'role'    => 'user',
@@ -148,9 +189,9 @@ final class OllamaCvAiDraftGenerator implements CvAiDraftGeneratorInterface
         if (! $this->looksLikeProfessionalText($headline, true)) {
             throw new CvAiGenerationException('invalid_response');
         }
-        $summary = $this->boundedString($data, 'summary', 3000);
-        if ($summary !== '' && ! $this->looksLikeProfessionalText($summary, false)) {
-            throw new CvAiGenerationException('invalid_response');
+        $summary = $this->summaryString($data);
+        if (! $this->isGroundedSummary($summary, $sanitizedStory)) {
+            $summary = '';
         }
 
         return new CvAiDraft(
@@ -257,6 +298,19 @@ final class OllamaCvAiDraftGenerator implements CvAiDraftGeneratorInterface
         return trim($value);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function summaryString(array $data): string
+    {
+        $value = $data['summary'] ?? null;
+        if (! is_string($value) || mb_strlen($value, 'UTF-8') > self::SUMMARY_MAX_CHARACTERS) {
+            return '';
+        }
+
+        return trim($value);
+    }
+
     private function isLocalRuntimeHost(string $host): bool
     {
         $host = strtolower(rtrim($host, '.'));
@@ -330,6 +384,32 @@ final class OllamaCvAiDraftGenerator implements CvAiDraftGeneratorInterface
         }
 
         return [];
+    }
+
+    private function isGroundedSummary(string $summary, string $story): bool
+    {
+        if (! $this->looksLikeProfessionalText($summary, false)) {
+            return false;
+        }
+
+        $summaryTokens = $this->summaryTokens($summary);
+        if (count($summaryTokens) < self::SUMMARY_MINIMUM_TERMS) {
+            return false;
+        }
+
+        return count(array_intersect($summaryTokens, $this->summaryTokens($story)))
+            >= self::SUMMARY_MINIMUM_GROUNDED_TERMS;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function summaryTokens(string $text): array
+    {
+        return array_values(array_filter(
+            $this->meaningfulTokens($text),
+            static fn (string $token): bool => ! in_array($token, self::SUMMARY_STOP_WORDS, true),
+        ));
     }
 
     private function looksLikeProfessionalText(string $text, bool $allowShortSkill): bool

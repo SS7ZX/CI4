@@ -47,6 +47,10 @@
             </div>
             <div class="sm:col-span-2">
                 <label class="mb-1 block text-sm font-medium" for="ai-review-summary"><?= esc(lang('Dashboard.ai_summary')) ?></label>
+                <?php if (trim($draft['summary']) === ''): ?>
+                    <p class="mb-2 rounded-md border border-amber-700 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-950" role="status"><?= esc(lang('Dashboard.ai_summary_not_generated')) ?></p>
+                <?php endif; ?>
+                <p class="mb-2 text-sm leading-6 text-muted"><?= esc(lang('CvBuilder.summary_guidance')) ?></p>
                 <textarea class="min-h-24 w-full rounded-md border border-line bg-canvas p-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="ai-review-summary" name="summary" maxlength="3000"><?= esc($draft['summary']) ?></textarea>
             </div>
             <div>

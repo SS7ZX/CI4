@@ -124,6 +124,7 @@
             <div class="sm:col-span-2">
                 <label class="mb-1 block text-sm font-medium" for="quick-summary"><?= esc(lang('Dashboard.quick_summary')) ?></label>
                 <textarea class="min-h-24 w-full rounded-md border border-line bg-canvas p-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="quick-summary" name="summary" maxlength="3000"><?= esc(old('summary')) ?></textarea>
+                <p class="mt-1 text-sm leading-6 text-muted"><?= esc(lang('CvBuilder.summary_guidance')) ?></p>
             </div>
             <div>
                 <label class="mb-1 block text-sm font-medium" for="quick-experience"><?= esc(lang('Dashboard.quick_experience')) ?></label>
