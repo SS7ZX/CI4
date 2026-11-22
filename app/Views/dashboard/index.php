@@ -3,25 +3,42 @@
 <?= $this->section('title') ?><?= esc($title) ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-    <header class="mb-8 flex flex-col gap-6 border-b border-line pb-6 lg:flex-row lg:items-end lg:justify-between" data-reveal>
-        <div class="max-w-2xl">
+    <?php
+    $themeCount = count($themes);
+    $atsThemeCount = count(array_filter($themes, static fn (array $theme): bool => $theme['ats_friendly']));
+    $featuredCv = $cvs[0] ?? null;
+    $featuredTheme = $featuredCv === null ? null : ($themes[$featuredCv->theme_key] ?? null);
+    $featuredStep = $featuredCv === null ? 1 : min(8, max(1, (int) $featuredCv->last_step));
+    $aiReady = $cvAiStatus['available'] && $cvAiStatus['model_installed'];
+    $aiStatusLabel = match (true) {
+        $aiReady => lang('Dashboard.ai_status_ready'),
+        $cvAiStatus['reason'] === 'model_missing' => lang('Dashboard.ai_status_model_missing'),
+        $cvAiStatus['reason'] === 'unavailable' => lang('Dashboard.ai_status_unavailable'),
+        default => lang('Dashboard.ai_status_disabled'),
+    };
+    ?>
+
+    <header class="mb-8 grid gap-6 border-b border-line pb-7 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.7fr)] lg:items-end" data-reveal>
+        <div class="max-w-3xl">
             <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Dashboard.workspace_kicker')) ?></p>
-            <h1 class="mt-2 text-3xl font-semibold tracking-tight text-ink"><?= esc(lang('Dashboard.title')) ?></h1>
-            <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.description')) ?></p>
-            <a class="mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-5 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" href="#quick-cv"><?= esc(lang('Dashboard.quick_title')) ?></a>
-            <?php if ($canReviewPayments): ?>
-                <a class="mt-3 inline-flex min-h-10 items-center text-sm font-semibold text-accent-900 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-payment-admin')) ?>"><?= esc(lang('Payments.admin_title')) ?></a>
-            <?php endif; ?>
+            <h1 class="mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl"><?= esc(lang('Dashboard.title')) ?></h1>
+            <p class="mt-3 max-w-2xl text-sm leading-6 text-muted"><?= esc(lang('Dashboard.description')) ?></p>
         </div>
-        <details class="w-full rounded-md border border-line bg-paper p-3 lg:max-w-xl">
-            <summary class="cursor-pointer rounded-sm px-2 py-3 text-sm font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"><?= esc(lang('Dashboard.create_empty')) ?></summary>
-            <form action="<?= esc(same_origin_url((string) url_to('cv-create'))) ?>" method="post" class="mt-2 grid gap-2 sm:grid-cols-[minmax(12rem,1fr)_auto]">
-                <?= csrf_field() ?>
-                <label class="sr-only" for="new-cv-title"><?= esc(lang('Dashboard.new_cv_title')) ?></label>
-                <input class="min-h-12 rounded-md border border-line bg-paper px-3 text-sm text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="new-cv-title" name="title" type="text" maxlength="160" placeholder="<?= esc(lang('Dashboard.title_placeholder')) ?>" required>
-                <button class="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-accent-700 px-5 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" type="submit"><?= esc(lang('Dashboard.create')) ?></button>
-            </form>
-        </details>
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:justify-end">
+            <a class="inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-5 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" href="#quick-cv"><?= esc(lang('Dashboard.quick_title')) ?></a>
+            <?php if ($canReviewPayments): ?>
+                <a class="inline-flex min-h-11 items-center justify-center rounded-md border border-line bg-paper px-4 text-sm font-semibold text-ink hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-payment-admin')) ?>"><?= esc(lang('Payments.admin_title')) ?></a>
+            <?php endif; ?>
+            <details class="w-full rounded-md border border-line bg-paper p-3">
+                <summary class="cursor-pointer rounded-sm px-2 py-2 text-sm font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"><?= esc(lang('Dashboard.create_empty')) ?></summary>
+                <form action="<?= esc(same_origin_url((string) url_to('cv-create'))) ?>" method="post" class="mt-2 grid gap-2">
+                    <?= csrf_field() ?>
+                    <label class="sr-only" for="new-cv-title"><?= esc(lang('Dashboard.new_cv_title')) ?></label>
+                    <input class="min-h-11 w-full min-w-0 rounded-md border border-line bg-canvas px-3 text-sm text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="new-cv-title" name="title" type="text" maxlength="160" placeholder="<?= esc(lang('Dashboard.title_placeholder')) ?>" required>
+                    <button class="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-accent-700 px-5 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" type="submit"><?= esc(lang('Dashboard.create')) ?></button>
+                </form>
+            </details>
+        </div>
     </header>
 
     <?php if (is_array(session('errors'))): ?>
@@ -32,16 +49,73 @@
         </ul>
     <?php endif; ?>
 
-    <section class="mb-8 flex flex-col gap-5 rounded-md border border-line bg-paper p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7" data-reveal>
+    <section class="mb-8 grid grid-cols-1 divide-y divide-line overflow-hidden rounded-md border border-line bg-paper sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4" aria-label="<?= esc(lang('Dashboard.workspace_summary')) ?>" data-reveal>
+        <div class="flex min-h-28 flex-col justify-between p-4 sm:p-5">
+            <span class="text-xs font-semibold uppercase tracking-[0.12em] text-muted"><?= esc(lang('Dashboard.stat_documents')) ?></span>
+            <span class="mt-4 text-2xl font-semibold tracking-tight text-ink"><?= esc((string) count($cvs)) ?></span>
+        </div>
+        <div class="flex min-h-28 flex-col justify-between p-4 sm:p-5">
+            <span class="text-xs font-semibold uppercase tracking-[0.12em] text-muted"><?= esc(lang('Dashboard.stat_themes')) ?></span>
+            <span class="mt-4 text-2xl font-semibold tracking-tight text-ink"><?= esc((string) $themeCount) ?></span>
+        </div>
+        <div class="flex min-h-28 flex-col justify-between p-4 sm:p-5">
+            <span class="text-xs font-semibold uppercase tracking-[0.12em] text-muted"><?= esc(lang('Dashboard.stat_ats_themes')) ?></span>
+            <span class="mt-4 text-2xl font-semibold tracking-tight text-ink"><?= esc((string) $atsThemeCount) ?></span>
+        </div>
+        <div class="flex min-h-28 flex-col justify-between p-4 sm:p-5">
+            <span class="text-xs font-semibold uppercase tracking-[0.12em] text-muted"><?= esc(lang('Dashboard.stat_ai')) ?></span>
+            <span class="mt-4 text-base font-semibold leading-6 text-ink"><?= esc($aiStatusLabel) ?></span>
+        </div>
+    </section>
+
+    <?php if ($featuredCv !== null): ?>
+        <section class="mb-8" aria-labelledby="latest-cv-title" data-reveal>
+            <div class="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-line pb-3">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent-900"><?= esc(lang('Dashboard.latest_kicker')) ?></p>
+                    <h2 class="mt-1 text-xl font-semibold tracking-tight text-ink" id="latest-cv-title"><?= esc(lang('Dashboard.latest_title')) ?></h2>
+                </div>
+                <p class="text-sm text-muted"><?= esc(lang('Dashboard.last_step', [$featuredStep, 8])) ?></p>
+            </div>
+            <div class="grid overflow-hidden rounded-md border border-line bg-paper lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.8fr)]">
+                <div class="flex min-h-72 items-center justify-center bg-canvas p-6 sm:p-8">
+                    <?php if (is_array($featuredTheme)): ?>
+                        <?= view('themes/thumbnail', ['theme' => $featuredTheme, 'featured' => true, 'compact' => false]) ?>
+                    <?php else: ?>
+                        <div class="flex min-h-56 w-full max-w-sm items-center justify-center rounded-md border border-dashed border-line bg-paper px-6 text-center text-sm leading-6 text-muted">
+                            <?= esc(lang('Dashboard.latest_theme_missing')) ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="flex flex-col justify-between border-t border-line p-5 sm:p-7 lg:border-l lg:border-t-0">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.12em] text-muted"><?= esc(lang('Dashboard.latest_document_label')) ?></p>
+                        <h3 class="mt-2 break-words text-xl font-semibold tracking-tight text-ink"><?= esc($featuredCv->title) ?></h3>
+                        <?php if (is_array($featuredTheme)): ?>
+                            <p class="mt-3 text-sm font-medium text-accent-900"><?= esc(lang($featuredTheme['name_key'])) ?></p>
+                            <span class="mt-2 inline-flex min-h-8 items-center rounded-md border border-line px-3 text-xs font-semibold text-ink">
+                                <?= esc(lang($featuredTheme['ats_friendly'] ? 'Themes.ats_badge' : 'Themes.non_ats_badge')) ?>
+                            </span>
+                            <p class="mt-3 text-sm leading-6 text-muted"><?= esc(lang($featuredTheme['ats_friendly'] ? 'Themes.ats_scope_note' : 'Themes.ats_visual_warning')) ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <div class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-4">
+                        <a class="inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-5 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" href="<?= esc(url_to('cv-step', $featuredCv->id, $featuredStep)) ?>"><?= esc(lang('Dashboard.continue')) ?></a>
+                        <a class="text-sm font-semibold text-accent-900 underline decoration-accent-700 underline-offset-4 hover:text-accent-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-preview', $featuredCv->id)) ?>"><?= esc(lang('Dashboard.preview')) ?></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <section class="mb-8 flex flex-col gap-5 rounded-md border border-line bg-paper p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7" aria-labelledby="ai-title" data-reveal>
         <div class="max-w-2xl">
             <div class="flex flex-wrap items-center gap-3">
-                <h2 class="text-xl font-semibold tracking-tight text-ink"><?= esc(lang('Dashboard.ai_title')) ?></h2>
-                <?php if ($cvAiStatus['available'] && $cvAiStatus['model_installed']): ?>
-                    <span class="inline-flex min-h-8 items-center rounded-md border border-green-700 bg-green-50 px-3 text-xs font-semibold text-green-900"><?= esc(lang('Dashboard.ai_local_ready')) ?></span>
-                <?php endif; ?>
+                <h2 class="text-xl font-semibold tracking-tight text-ink" id="ai-title"><?= esc(lang('Dashboard.ai_title')) ?></h2>
+                <span class="inline-flex min-h-8 items-center rounded-md border border-line px-3 text-xs font-semibold text-ink"><?= esc($aiStatusLabel) ?></span>
             </div>
             <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.ai_description')) ?></p>
-            <?php if (! ($cvAiStatus['available'] && $cvAiStatus['model_installed'])): ?>
+            <?php if (! $aiReady): ?>
                 <?php if ($cvAiStatus['reason'] === 'model_missing'): ?>
                     <p class="mt-3 text-sm leading-6 text-muted" role="status"><?= esc(lang('Dashboard.ai_error_model_missing')) ?></p>
                 <?php elseif ($cvAiStatus['reason'] === 'unavailable'): ?>
@@ -51,7 +125,7 @@
                 <?php endif; ?>
             <?php endif; ?>
         </div>
-        <?php if ($cvAiStatus['available'] && $cvAiStatus['model_installed']): ?>
+        <?php if ($aiReady): ?>
             <a class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-accent-700 px-5 text-sm font-semibold text-accent-900 hover:bg-accent-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-ai-start')) ?>"><?= esc(lang('Dashboard.ai_start_action')) ?></a>
         <?php endif; ?>
     </section>
@@ -136,11 +210,14 @@
             <?= view('themes/thumbnail', ['theme' => reset($themes), 'featured' => false, 'compact' => true]) ?>
         </section>
     <?php else: ?>
-        <div class="mb-4 flex items-baseline justify-between gap-3">
-            <h2 class="text-lg font-semibold text-ink"><?= esc(lang('Dashboard.your_cvs')) ?></h2>
+        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent-900"><?= esc(lang('Dashboard.archive_kicker')) ?></p>
+                <h2 class="mt-1 text-xl font-semibold tracking-tight text-ink"><?= esc(lang('Dashboard.your_cvs')) ?></h2>
+            </div>
             <p class="text-sm text-muted"><?= esc(lang('Dashboard.cv_count', [count($cvs)])) ?></p>
         </div>
-        <ul class="grid items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <ul class="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <?php foreach ($cvs as $index => $cv): ?>
                 <?php $lastStep = min(8, max(1, (int) $cv->last_step)); ?>
                 <?php $theme = $themes[$cv->theme_key] ?? null; ?>

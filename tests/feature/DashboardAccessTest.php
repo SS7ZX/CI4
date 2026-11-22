@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Services\CvService;
+use App\Services\ThemeRegistry;
 use CodeIgniter\Shield\Models\UserModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\Test\CIUnitTestCase;
@@ -209,6 +210,14 @@ final class DashboardAccessTest extends CIUnitTestCase
         $dashboard->assertSee('Pratinjau');
         $dashboard->assertSee('Posisi terakhir: langkah 1 dari 8.');
         $dashboard->assertSee('Struktur ramah ATS');
+        $dashboard->assertSee(lang('Dashboard.stat_documents'));
+        $dashboard->assertSee(lang('Dashboard.cv_count', [1]));
+        $dashboard->assertSee(lang('Dashboard.stat_themes'));
+        $dashboard->assertSee((string) count((new ThemeRegistry())->all()));
+        $dashboard->assertDontSee('Bagas Pratama');
+        $dashboard->assertDontSee('98.4%');
+        $dashboard->assertDontSee('AES-256');
+        $dashboard->assertDontSee('PDF/A-1b');
         $dashboard->assertSee('Duplikat');
         $dashboard->assertSee('Hapus');
 
