@@ -13,6 +13,20 @@ test('compiled stylesheet includes progressive page and builder transitions', ()
     assert.match(css, /\.motion-step-enter-active,[\s\S]*?transition:[\s\S]*?opacity[\s\S]*?transform/);
 });
 
+test('compiled stylesheet includes a bounded transition for user theme changes', () => {
+    assert.match(css, /html\.theme-transitioning::view-transition-old\(root\)/);
+    assert.match(css, /html\.theme-transitioning::view-transition-new\(root\)/);
+    assert.match(css, /motion-theme-exit\s+140ms/);
+    assert.match(css, /motion-theme-enter\s+220ms/);
+});
+
+test('card lift is limited to hover devices without reduced-motion preference', () => {
+    assert.match(
+        css,
+        /@media\s*\(hover:\s*hover\)\s*and\s*\(prefers-reduced-motion:\s*no-preference\)[\s\S]*?\.motion-card:hover,[\s\S]*?\.theme-card:hover[\s\S]*?transform:\s*translateY\(-2px\)/,
+    );
+});
+
 test('compiled reduced-motion rules suppress nonessential movement', () => {
     assert.match(
         css,
@@ -21,5 +35,9 @@ test('compiled reduced-motion rules suppress nonessential movement', () => {
     assert.match(
         css,
         /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.motion-card:hover[\s\S]*?transform:\s*none/,
+    );
+    assert.match(
+        css,
+        /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.theme-card:hover[\s\S]*?transform:\s*none/,
     );
 });

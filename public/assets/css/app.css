@@ -476,11 +476,11 @@
   .min-h-72 {
     min-height: calc(var(--spacing) * 72);
   }
+  .min-h-128 {
+    min-height: calc(var(--spacing) * 128);
+  }
   .min-h-\[25rem\] {
     min-height: 25rem;
-  }
-  .min-h-\[32rem\] {
-    min-height: 32rem;
   }
   .min-h-screen {
     min-height: 100vh;
@@ -512,8 +512,8 @@
   .max-w-7xl {
     max-width: var(--container-7xl);
   }
-  .max-w-\[52rem\] {
-    max-width: 52rem;
+  .max-w-208 {
+    max-width: calc(var(--spacing) * 208);
   }
   .max-w-full {
     max-width: 100%;
@@ -969,6 +969,9 @@
   .break-words {
     overflow-wrap: break-word;
   }
+  .wrap-break-word {
+    overflow-wrap: break-word;
+  }
   .whitespace-pre-line {
     white-space: pre-line;
   }
@@ -1055,6 +1058,15 @@
     transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, content-visibility, overlay, pointer-events;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .transition-colors {
+    transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+  .duration-150 {
+    --tw-duration: 150ms;
+    transition-duration: 150ms;
   }
   .file\:mr-3::file-selector-button {
     margin-right: calc(var(--spacing) * 3);
@@ -1563,9 +1575,6 @@ html[data-theme="dark"] .bg-accent-700.text-white:hover, html[data-theme="dark"]
 .motion-card {
   transition: border-color var(--motion-duration-ui) var(--motion-ease-standard), transform var(--motion-duration-ui) var(--motion-ease-out);
 }
-.motion-card:hover {
-  transform: translateY(-3px);
-}
 @view-transition {
   navigation: auto;
 }
@@ -1586,6 +1595,12 @@ html[data-theme="dark"] .bg-accent-700.text-white:hover, html[data-theme="dark"]
 ::view-transition-new(root) {
   animation: motion-page-enter var(--motion-duration-page) var(--motion-ease-out) both;
 }
+html.theme-transitioning::view-transition-old(root) {
+  animation: motion-theme-exit 140ms var(--motion-ease-standard) both;
+}
+html.theme-transitioning::view-transition-new(root) {
+  animation: motion-theme-enter 220ms var(--motion-ease-out) both;
+}
 @keyframes motion-page-exit {
   to {
     opacity: 0;
@@ -1600,6 +1615,19 @@ html[data-theme="dark"] .bg-accent-700.text-white:hover, html[data-theme="dark"]
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+@keyframes motion-theme-exit {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes motion-theme-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 html.motion-ready [data-reveal]:not(.motion-visible) {
@@ -1935,9 +1963,11 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
 .theme-card {
   transition: border-color var(--motion-duration-ui) var(--motion-ease-standard), transform var(--motion-duration-ui) var(--motion-ease-out);
 }
-.theme-card:hover {
-  border-color: #9aa9a1;
-  transform: translateY(-3px);
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .motion-card:hover, .theme-card:hover {
+    border-color: var(--color-accent-700);
+    transform: translateY(-2px);
+  }
 }
 .theme-preview--featured {
   background: transparent;
@@ -2044,7 +2074,7 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
     transition-duration: 0.01ms !important;
     transition-delay: 0ms !important;
   }
-  .motion-card:hover, :where(button, [role="button"]):active:not(:disabled) {
+  .motion-card:hover, .theme-card:hover, :where(button, [role="button"]):active:not(:disabled) {
     transform: none;
   }
   html.motion-ready [data-reveal] {
@@ -2227,6 +2257,10 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
   syntax: "*";
   inherits: false;
 }
+@property --tw-duration {
+  syntax: "*";
+  inherits: false;
+}
 @property --tw-divide-x-reverse {
   syntax: "*";
   inherits: false;
@@ -2275,6 +2309,7 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
       --tw-drop-shadow-color: initial;
       --tw-drop-shadow-alpha: 100%;
       --tw-drop-shadow-size: initial;
+      --tw-duration: initial;
       --tw-divide-x-reverse: 0;
     }
   }

@@ -75,11 +75,38 @@ class MockElement {
 
 class MockInput extends MockElement {}
 
-function createTheme({ storedTheme = null, systemDark = false } = {}) {
-    const root = { dataset: {}, style: {} };
+function createTheme({
+    storedTheme = null,
+    systemDark = false,
+    reducedMotion = false,
+    viewTransitionAvailable = false,
+    viewTransitionThrows = false,
+    storageAvailable = true,
+} = {}) {
+    const rootClasses = new Set();
+    const root = {
+        dataset: {},
+        style: {},
+        classList: {
+            add: (value) => rootClasses.add(value),
+            contains: (value) => rootClasses.has(value),
+            remove: (value) => rootClasses.delete(value),
+        },
+    };
     const buttons = [];
     const documentListeners = new Map();
     const writes = [];
+    const transitions = [];
+    const systemPreferenceListeners = [];
+    const systemPreference = {
+        matches: systemDark,
+        addEventListener: (eventName, listener) => {
+            assert.equal(eventName, 'change');
+            systemPreferenceListeners.push(listener);
+        },
+        addListener: (listener) => systemPreferenceListeners.push(listener),
+    };
+    const motionPreference = { matches: reducedMotion };
     const document = {
         documentElement: root,
         readyState: 'loading',
@@ -88,16 +115,44 @@ function createTheme({ storedTheme = null, systemDark = false } = {}) {
     };
     const window = {
         matchMedia: (query) => {
-            assert.equal(query, '(prefers-color-scheme: dark)');
-            return { matches: systemDark };
+            if (query === '(prefers-color-scheme: dark)') {
+                return systemPreference;
+            }
+            if (query === '(prefers-reduced-motion: reduce)') {
+                return motionPreference;
+            }
+            assert.fail(`Unexpected media query: ${query}`);
         },
     };
+    if (viewTransitionAvailable) {
+        document.startViewTransition = (update) => {
+            if (viewTransitionThrows) {
+                throw new Error('View Transition API failed');
+            }
+            update();
+            let finish;
+            const finished = new Promise((resolve) => {
+                finish = resolve;
+            });
+            transitions.push({ finish, finished });
+            return { finished };
+        };
+    }
     const localStorage = {
         getItem: (key) => {
+            if (!storageAvailable) {
+                throw new Error('Storage is unavailable');
+            }
             assert.equal(key, 'cv-maker-theme');
             return storedTheme;
         },
-        setItem: (key, value) => writes.push([key, value]),
+        setItem: (key, value) => {
+            if (!storageAvailable) {
+                throw new Error('Storage is unavailable');
+            }
+            storedTheme = value;
+            writes.push([key, value]);
+        },
     };
 
     vm.runInNewContext(themeSource, { document, localStorage, window });
@@ -113,11 +168,23 @@ function createTheme({ storedTheme = null, systemDark = false } = {}) {
         dispatchReady() {
             documentListeners.get('DOMContentLoaded')();
         },
+        finishTransition(index = 0) {
+            transitions[index].finish();
+        },
         get root() {
             return root;
         },
+        get transitions() {
+            return transitions;
+        },
         get writes() {
             return writes;
+        },
+        setSystemPreference(matches) {
+            systemPreference.matches = matches;
+            for (const listener of systemPreferenceListeners) {
+                listener({ matches });
+            }
         },
         window,
     };
@@ -214,6 +281,65 @@ test('system preference supplies the theme when there is no stored choice', () =
 
     const lightTheme = createTheme();
     assert.equal(lightTheme.window.cvTheme.get(), 'light');
+});
+
+test('follows system theme changes until the user stores a preference', () => {
+    const theme = createTheme();
+
+    theme.setSystemPreference(true);
+    assert.equal(theme.window.cvTheme.get(), 'dark');
+    assert.deepEqual(theme.writes, []);
+
+    theme.window.cvTheme.set('light');
+    theme.setSystemPreference(true);
+    assert.equal(theme.window.cvTheme.get(), 'light');
+    assert.deepEqual(theme.writes, [['cv-maker-theme', 'light']]);
+});
+
+test('animates explicit theme changes only when view transitions are available', async () => {
+    const theme = createTheme({ viewTransitionAvailable: true });
+    const button = theme.addToggleButton();
+    theme.dispatchReady();
+
+    assert.equal(theme.transitions.length, 0);
+    theme.window.cvTheme.toggle();
+    assert.equal(theme.transitions.length, 1);
+    assert.equal(theme.root.dataset.theme, 'dark');
+    assert.equal(theme.root.classList.contains('theme-transitioning'), true);
+    assert.equal(button.getAttribute('aria-pressed'), 'true');
+
+    theme.finishTransition();
+    await Promise.resolve();
+    assert.equal(theme.root.classList.contains('theme-transitioning'), false);
+});
+
+test('skips theme transitions when reduced motion is enabled', () => {
+    const theme = createTheme({ reducedMotion: true, viewTransitionAvailable: true });
+
+    theme.window.cvTheme.set('dark');
+
+    assert.equal(theme.window.cvTheme.get(), 'dark');
+    assert.equal(theme.transitions.length, 0);
+    assert.equal(theme.root.classList.contains('theme-transitioning'), false);
+});
+
+test('falls back to an immediate theme change if the transition API throws', () => {
+    const theme = createTheme({ viewTransitionAvailable: true, viewTransitionThrows: true });
+
+    theme.window.cvTheme.set('dark');
+
+    assert.equal(theme.window.cvTheme.get(), 'dark');
+    assert.equal(theme.root.classList.contains('theme-transitioning'), false);
+});
+
+test('keeps the selected theme for the current page when storage is unavailable', () => {
+    const theme = createTheme({ storageAvailable: false });
+
+    theme.window.cvTheme.set('dark');
+    theme.setSystemPreference(false);
+
+    assert.equal(theme.window.cvTheme.get(), 'dark');
+    assert.deepEqual(theme.writes, []);
 });
 
 test('command shortcut filters results, moves selection, and works without dialog methods', () => {

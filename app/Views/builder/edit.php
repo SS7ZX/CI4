@@ -35,7 +35,7 @@
                 <p class="mt-2 text-sm text-muted"><?= esc(lang('CvBuilder.description')) ?></p>
             </div>
             <div class="flex items-center gap-3">
-                <span class="inline-flex min-h-9 items-center rounded-md border border-line bg-paper px-3 text-xs font-semibold text-ink" aria-live="polite" role="status"
+                <span class="inline-flex min-h-9 items-center rounded-md border border-line bg-paper px-3 text-xs font-semibold text-ink transition-colors duration-150" aria-live="polite" role="status"
                     x-bind:class="status === 'error' ? 'border-red-700 text-red-800' : (status === 'saved' ? 'border-green-700 text-green-900' : '')">
                     <span x-text="status === 'saving' ? '<?= esc(lang('CvBuilder.saving'), 'js') ?>' : (status === 'saved' ? '<?= esc(lang('CvBuilder.saved'), 'js') ?>' : (status === 'error' ? '<?= esc(lang('CvBuilder.save_error'), 'js') ?>' : '<?= esc(lang('CvBuilder.review_status'), 'js') ?>'))"></span>
                 </span>
@@ -78,7 +78,7 @@
                         <?php endforeach; ?>
                     </ol>
                 </nav>
-                <p class="mt-3 min-h-12 border-t border-line px-2 pt-3 text-xs leading-5 text-muted" aria-live="polite" role="status"
+                <p class="mt-3 min-h-12 border-t border-line px-2 pt-3 text-xs leading-5 text-muted transition-colors duration-150" aria-live="polite" role="status"
                     x-bind:class="status === 'error' ? 'text-red-800' : (status === 'saved' ? 'text-accent-900' : '')">
                     <span><?= esc(lang('CvBuilder.save_status')) ?>:</span>
                     <span x-text="status === 'saving' ? '<?= esc(lang('CvBuilder.saving'), 'js') ?>' : (status === 'saved' ? '<?= esc(lang('CvBuilder.saved'), 'js') ?>' : (status === 'error' ? '<?= esc(lang('CvBuilder.save_error'), 'js') ?>' : ''))"></span>

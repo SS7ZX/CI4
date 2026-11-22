@@ -3,7 +3,7 @@
 <?= $this->section('title') ?><?= esc($title) ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-    <section class="mx-auto max-w-3xl rounded-md border border-line bg-paper p-5 sm:p-8">
+    <section class="mx-auto max-w-3xl rounded-md border border-line bg-paper p-5 sm:p-8" data-reveal>
         <h1 class="text-2xl font-semibold tracking-tight text-ink"><?= esc(lang('Dashboard.ai_start_title')) ?></h1>
         <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.ai_start_description')) ?></p>
         <?= view('dashboard/ai-progress', ['currentStep' => 1]) ?>

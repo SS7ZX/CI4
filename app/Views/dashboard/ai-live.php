@@ -5,6 +5,7 @@
 <?= $this->section('content') ?>
     <section
         class="mx-auto max-w-3xl rounded-md border border-line bg-paper p-5 sm:p-8"
+        data-reveal
         data-cv-ai-stream-root
         data-review-url="<?= esc(same_origin_url((string) url_to('cv-ai-review'))) ?>"
         data-generating="<?= esc(lang('Dashboard.ai_live_generating')) ?>"
