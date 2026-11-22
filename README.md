@@ -102,6 +102,33 @@ Ekstensi `pgsql` dipakai driver Postgre bawaan CodeIgniter. Ekstensi `gd` diperl
 
 Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendaftaran dan masuk mengarahkan ke dashboard.
 
+## Pengiriman tautan lupa password
+
+- Tautan lupa password memakai SMTP server dan dikirim ke alamat email akun yang terdaftar. Konfigurasi ada pada `.env`.
+- Untuk Gmail, aktifkan verifikasi dua langkah pada akun pengirim, buat App Password Gmail, lalu isi:
+
+  ```ini
+  email.protocol = 'smtp'
+  email.SMTPHost = 'smtp.gmail.com'
+  email.SMTPUser = 'alamat-gmail-kamu@gmail.com'
+  email.SMTPPass = 'app-password-16-karakter'
+  email.SMTPPort = 587
+  email.SMTPCrypto = 'tls'
+  email.fromEmail = 'alamat-gmail-kamu@gmail.com'
+  email.fromName = 'CV Maker'
+  ```
+
+- Untuk MailHog atau SMTP lokal, gunakan host dan port MailHog serta kosongkan kredensial hanya jika server benar-benar mengizinkan tanpa autentikasi. Pada environment produksi, SMTP wajib memakai host, username, App Password atau secret penyedia, port, dan alamat pengirim yang valid.
+- Jangan memakai sandi Gmail biasa atau menyimpan App Password di source code. Jangan commit `.env`.
+- Restart server setelah mengubah `.env`.
+- Uji pengiriman tanpa membuat pengguna baru:
+
+  ```powershell
+  php spark email:test alamat-email-terdaftar@example.com
+  ```
+
+  Perintah ini mengirim satu email uji. Jika gagal, periksa kredensial SMTP, App Password, port, TLS, folder spam, dan log aplikasi. Jika sukses, buka tautan lupa password dan kirim permintaan untuk alamat email yang terdaftar.
+
 ## Draf CV dengan AI lokal
 
 - Fitur AI opsional dan nonaktif secara default. AI berjalan lewat Ollama yang dipasang serta dijalankan oleh pengelola pada server yang dikendalikan sendiri. Aplikasi tidak memakai API cloud, API key, atau dependency Composer baru.
@@ -119,6 +146,7 @@ Setelah `.env` dan migration siap, buka `/register` untuk membuat akun. Pendafta
   CV_AI_OLLAMA_URL = 'http://127.0.0.1:11434'
   CV_AI_MODEL = 'qwen2.5:3b'
   CV_AI_TIMEOUT_SECONDS = 90
+  CV_AI_HEALTH_TIMEOUT_SECONDS = 3
   ```
 
 - Jika aplikasi dan Ollama berjalan di container atau host berbeda, atur URL ke runtime privat yang dikelola sendiri, misalnya `host.docker.internal`, nama service `ollama`, atau IP privat. Endpoint internet publik ditolak oleh generator.

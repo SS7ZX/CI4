@@ -15,8 +15,12 @@ $routes->get('register', 'AuthRegister::registerView', ['as' => 'register']);
 $routes->post('register', 'AuthRegister::registerAction');
 service('auth')->routes($routes, ['except' => ['login', 'register', 'magic-link', 'logout']]);
 $routes->post('logout', '\CodeIgniter\Shield\Controllers\LoginController::logoutAction', ['as' => 'logout']);
-$routes->get('login/magic-link', 'MagicLink::loginView', ['as' => 'magic-link']);
-$routes->post('login/magic-link', 'MagicLink::loginAction');
+// Password-reset routes replace magic-link semantics in the forgot-password flow.
+$routes->get('login/magic-link', 'PasswordReset::forgotView', ['as' => 'magic-link']);
+$routes->post('login/magic-link', 'PasswordReset::requestReset', ['as' => 'password-forgot']);
+$routes->get('password/reset-requested', 'PasswordReset::resetRequested', ['as' => 'password-reset-requested']);
+$routes->get('password/reset/(:segment)', 'PasswordReset::resetView/$1', ['as' => 'password-reset']);
+$routes->post('password/reset/(:segment)', 'PasswordReset::resetAction/$1', ['as' => 'password-reset-action']);
 $routes->get(
     'login/verify-magic-link',
     '\CodeIgniter\Shield\Controllers\MagicLinkController::verify',

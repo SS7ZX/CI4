@@ -40,9 +40,7 @@ final class MagicLink extends ShieldMagicLinkController
         }
 
         $emailConfig = config('Email');
-        $smtpConfigured = $emailConfig->protocol === 'smtp'
-            && trim($emailConfig->SMTPHost) !== ''
-            && trim($emailConfig->fromEmail) !== '';
+        $smtpConfigured = $emailConfig->isSmtpConfigured();
 
         if (! $smtpConfigured && ENVIRONMENT === 'development' && $user instanceof User) {
             $token = $this->createDevelopmentMagicLink($user);
@@ -53,6 +51,13 @@ final class MagicLink extends ShieldMagicLinkController
             return view(setting('Auth.views')['magic-link-message'], [
                 'developmentMagicLinkUrl' => $verificationUrl,
             ]);
+        }
+        if (! $smtpConfigured) {
+            log_message('error', 'Permintaan tautan masuk ditolak karena konfigurasi SMTP tidak lengkap.');
+
+            return redirect()
+                ->route('magic-link')
+                ->with('error', lang('Auth.smtpNotConfigured'));
         }
 
         return parent::loginAction();

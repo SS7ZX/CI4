@@ -161,8 +161,8 @@ final class DashboardAccessTest extends CIUnitTestCase
             'email'          => 'unknown@example.test',
         ]);
 
-        $response->assertOK();
-        $response->assertSee('Periksa email Anda');
+        $response->assertRedirect();
+        $this->assertStringContainsString('/password/reset-requested', (string) $response->getRedirectUrl());
         $response->assertDontSee('unknown@example.test');
     }
 

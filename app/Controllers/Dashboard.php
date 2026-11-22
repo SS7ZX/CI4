@@ -22,6 +22,10 @@ final class Dashboard extends BaseController
     {
         $user = $this->currentUser();
         $cvAi = config(CvAi::class);
+        $cvAiStatus = ['available' => false, 'model_installed' => false, 'reason' => 'disabled'];
+        if ($cvAi->enabled) {
+            $cvAiStatus = service('cvAiDraftGenerator')->status();
+        }
         $cvs  = (new Cv())
             ->where('user_id', $user->id)
             ->orderBy('updated_at', 'DESC')
@@ -34,6 +38,7 @@ final class Dashboard extends BaseController
             'userEmail' => (string) $user->email,
             'canReviewPayments' => (new CvPaymentService())->isAdmin((string) $user->email),
             'cvAiEnabled' => $cvAi->enabled,
+            'cvAiStatus' => $cvAiStatus,
         ]);
     }
 

@@ -73,7 +73,7 @@ final class OllamaCvAiDraftGenerator implements CvAiDraftGeneratorInterface
                     'messages' => [
                         [
                             'role'    => 'system',
-                            'content' => 'Susun draf CV berbahasa Indonesia hanya dari fakta yang tertulis pada cerita. Jangan mengarang tanggal, jabatan, institusi, angka, pencapaian, atau keterampilan. Jika informasi tidak tersedia, isi string kosong atau daftar kosong. Jangan mengulang identitas, email, nomor telepon, atau alamat. Keluarkan hanya JSON sesuai skema.',
+                            'content' => 'Susun draf CV berbahasa Indonesia profesional yang hanya menggunakan fakta tertulis pada cerita. Jangan mengarang, menerjemahkan bebas, membuat tanggal, jabatan, institusi, angka, pencapaian, atau keahlian yang tidak ada. Tolak kata acak, teks lorem ipsum, placeholder, dan duplikat. Untuk pengalaman dan pendidikan gunakan frasa singkat berbasis fakta. Gunakan daftar kosong jika fakta tidak tersedia. Jangan mengulang identitas, email, nomor telepon, atau alamat. Keluarkan hanya JSON sesuai skema.',
                         ],
                         [
                             'role'    => 'user',
@@ -119,20 +119,129 @@ final class OllamaCvAiDraftGenerator implements CvAiDraftGeneratorInterface
             throw new CvAiGenerationException('invalid_response');
         }
 
-        $experience = implode("\n", $this->boundedList($data, 'experience', 1000, 3000));
-        $education = implode("\n", $this->boundedList($data, 'education', 1000, 3000));
-        $skills = implode(', ', $this->boundedList($data, 'skills', 120, 3000));
+        $experience = implode("\n", $this->boundedGroundedList(
+            $data,
+            'experience',
+            $sanitizedStory,
+            1000,
+            3000,
+        ));
+        $education = implode("\n", $this->boundedGroundedList(
+            $data,
+            'education',
+            $sanitizedStory,
+            1000,
+            3000,
+        ));
+        $skills = implode(', ', $this->boundedGroundedList(
+            $data,
+            'skills',
+            $sanitizedStory,
+            120,
+            3000,
+        ));
         if (mb_strlen($experience) > 3000 || mb_strlen($education) > 3000 || mb_strlen($skills) > 3000) {
             throw new CvAiGenerationException('invalid_response');
         }
 
+        $headline = $this->boundedString($data, 'headline', 160);
+        if (! $this->looksLikeProfessionalText($headline, true)) {
+            throw new CvAiGenerationException('invalid_response');
+        }
+        $summary = $this->boundedString($data, 'summary', 3000);
+        if ($summary !== '' && ! $this->looksLikeProfessionalText($summary, false)) {
+            throw new CvAiGenerationException('invalid_response');
+        }
+
         return new CvAiDraft(
-            $this->boundedString($data, 'headline', 160),
-            $this->boundedString($data, 'summary', 3000),
+            $headline,
+            $summary,
             $experience,
             $education,
             $skills,
         );
+    }
+
+    /**
+     * @return array{available: bool, model_installed: bool, reason: string}
+     */
+    public function status(): array
+    {
+        if (! $this->config->enabled) {
+            return [
+                'available'       => false,
+                'model_installed' => false,
+                'reason'          => 'disabled',
+            ];
+        }
+
+        $parts = parse_url($this->config->ollamaBaseUrl);
+        if (
+            $parts === false
+            || ! isset($parts['scheme'], $parts['host'])
+            || ! in_array($parts['scheme'], ['http', 'https'], true)
+            || isset($parts['user'], $parts['pass'], $parts['query'], $parts['fragment'])
+            || ! $this->isLocalRuntimeHost((string) $parts['host'])
+        ) {
+            return [
+                'available'       => false,
+                'model_installed' => false,
+                'reason'          => 'disabled',
+            ];
+        }
+
+        try {
+            $response = $this->http->get(
+                rtrim($this->config->ollamaBaseUrl, '/') . '/api/tags',
+                $this->config->healthTimeoutSeconds,
+            );
+        } catch (HTTPException) {
+            return [
+                'available'       => false,
+                'model_installed' => false,
+                'reason'          => 'unavailable',
+            ];
+        }
+
+        if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
+            return [
+                'available'       => false,
+                'model_installed' => false,
+                'reason'          => 'unavailable',
+            ];
+        }
+
+        try {
+            $data = json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return [
+                'available'       => false,
+                'model_installed' => false,
+                'reason'          => 'invalid_response',
+            ];
+        }
+
+        $models = is_array($data) && is_array($data['models'] ?? null)
+            ? $data['models']
+            : [];
+        $modelInstalled = false;
+        foreach ($models as $model) {
+            if (! is_array($model) || ! is_string($model['name'] ?? null)) {
+                continue;
+            }
+            if ($model['name'] === $this->config->model
+                || str_starts_with($model['name'], $this->config->model . ':')
+            ) {
+                $modelInstalled = true;
+                break;
+            }
+        }
+
+        return [
+            'available'       => true,
+            'model_installed' => $modelInstalled,
+            'reason'          => $modelInstalled ? 'ready' : 'model_missing',
+        ];
     }
 
     /**
@@ -164,6 +273,103 @@ final class OllamaCvAiDraftGenerator implements CvAiDraftGeneratorInterface
         }
 
         return false;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return list<string>
+     */
+    private function boundedGroundedList(
+        array $data,
+        string $key,
+        string $story,
+        int $maximumItemLength,
+        int $maximumTotalLength,
+    ): array {
+        $items = $this->boundedList($data, $key, $maximumItemLength, $maximumTotalLength);
+        $storyTokens = $this->meaningfulTokens($story);
+        $grounded = [];
+
+        foreach ($items as $item) {
+            $item = trim($item);
+            if (! $this->looksLikeProfessionalText($item, $key === 'skills')) {
+                continue;
+            }
+
+            $itemTokens = $this->meaningfulTokens($item);
+            if ($itemTokens === []) {
+                continue;
+            }
+
+            $overlap = array_intersect($itemTokens, $storyTokens);
+            if ($overlap !== []) {
+                $grounded[] = $item;
+            }
+        }
+
+        return $grounded;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function meaningfulTokens(string $text): array
+    {
+        $normalized = mb_strtolower(trim($text), 'UTF-8');
+        if (preg_match_all('/[\p{L}\p{N}][\p{L}\p{N}+.#-]{1,}/u', $normalized, $matches) !== false) {
+            $tokens = array_map(
+                static fn (string $token): string => trim($token, '.+#-'),
+                $matches[0],
+            );
+
+            return array_values(array_unique(array_filter(
+                $tokens,
+                static fn (string $token): bool => mb_strlen($token, 'UTF-8') >= 2,
+            )));
+        }
+
+        return [];
+    }
+
+    private function looksLikeProfessionalText(string $text, bool $allowShortSkill): bool
+    {
+        $text = trim($text);
+        if ($text === '' || mb_strlen($text, 'UTF-8') > 1000) {
+            return false;
+        }
+
+        $minimumLength = $allowShortSkill ? 2 : 4;
+        if (mb_strlen($text, 'UTF-8') < $minimumLength) {
+            return false;
+        }
+
+        $lower = mb_strtolower($text, 'UTF-8');
+        foreach ([
+            'lorem ipsum',
+            'dummy',
+            'placeholder',
+            'contoh',
+            'inacoo',
+            'not available',
+            'n/a',
+        ] as $placeholder) {
+            if (str_contains($lower, $placeholder)) {
+                return false;
+            }
+        }
+
+        if (preg_match('/(.)\1{3,}/u', $text) === 1) {
+            return false;
+        }
+
+        $letterCount = preg_match_all('/\p{L}/u', $text);
+        $totalCount = mb_strlen($text, 'UTF-8');
+        if ($letterCount === false || $totalCount === 0 || $letterCount / $totalCount < 0.45) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

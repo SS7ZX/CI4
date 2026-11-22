@@ -8,6 +8,8 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 interface CvAiHttpClientInterface
 {
+    public function get(string $url, int $timeoutSeconds): ResponseInterface;
+
     /**
      * @param array<string, mixed> $json
      */

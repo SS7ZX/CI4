@@ -207,6 +207,9 @@ class App extends BaseConfig
         parent::__construct();
 
         $this->baseURL      = env('app.baseURL', $this->baseURL);
+        $this->allowedHostnames = $this->readAllowedHostnames(
+            env('app.allowedHostnames', ''),
+        );
         $this->appTimezone = env('app.appTimezone', $this->appTimezone);
         $this->forceGlobalSecureRequests = filter_var(
             env('app.forceGlobalSecureRequests', $this->forceGlobalSecureRequests),
@@ -220,5 +223,33 @@ class App extends BaseConfig
                 $this->indexPage = '';
             }
         }
+    }
+
+    /**
+     * @param array<string, mixed>|string $configured
+     *
+     * @return list<string>
+     */
+    private function readAllowedHostnames(array|string $configured): array
+    {
+        if (is_array($configured)) {
+            $values = $configured;
+        } else {
+            $values = preg_split('/[,;\r\n]+/', trim($configured)) ?: [];
+        }
+
+        $hostnames = [];
+        foreach ($values as $value) {
+            if (! is_string($value)) {
+                continue;
+            }
+
+            $value = trim($value);
+            if ($value !== '' && preg_match('/\A[a-z0-9.-]+\z/i', $value) === 1) {
+                $hostnames[] = strtolower($value);
+            }
+        }
+
+        return array_values(array_unique($hostnames));
     }
 }

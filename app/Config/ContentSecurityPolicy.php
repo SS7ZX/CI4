@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Config;
 
 use CodeIgniter\Config\BaseConfig;
@@ -145,6 +147,8 @@ class ContentSecurityPolicy extends BaseConfig
         'self',
         'http://localhost:8080',
         'http://127.0.0.1:8080',
+        'http://localhost:8088',
+        'http://127.0.0.1:8088',
     ];
 
     /**

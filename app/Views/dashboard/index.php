@@ -34,7 +34,7 @@
     <section class="mb-8 rounded-md border border-line bg-paper p-5 sm:p-7" data-reveal>
         <h2 class="text-xl font-semibold text-ink"><?= esc(lang('Dashboard.ai_title')) ?></h2>
         <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.ai_description')) ?></p>
-        <?php if ($cvAiEnabled): ?>
+        <?php if ($cvAiStatus['available'] && $cvAiStatus['model_installed']): ?>
             <form
                 action="<?= esc(same_origin_url((string) url_to('cv-ai-prepare'))) ?>"
                 method="post"
@@ -72,6 +72,10 @@
                     </button>
                 </div>
             </form>
+        <?php elseif ($cvAiStatus['reason'] === 'model_missing'): ?>
+            <p class="mt-4 rounded-md border border-amber-700 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900" role="status"><?= esc(lang('Dashboard.ai_error_model_missing')) ?></p>
+        <?php elseif ($cvAiStatus['reason'] === 'unavailable'): ?>
+            <p class="mt-4 rounded-md border border-red-700 bg-red-50 px-4 py-3 text-sm leading-6 text-red-900" role="status"><?= esc(lang('Dashboard.ai_error_unavailable')) ?></p>
         <?php else: ?>
             <p class="mt-4 rounded-md border border-line bg-canvas px-4 py-3 text-sm leading-6 text-muted" role="status"><?= esc(lang('Dashboard.ai_disabled')) ?> <?= esc(lang('Dashboard.ai_setup_help')) ?></p>
         <?php endif; ?>

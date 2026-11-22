@@ -139,4 +139,20 @@ class Email extends BaseConfig
         $this->SMTPPort  = (int) env('email.SMTPPort', $this->SMTPPort);
         $this->SMTPCrypto = (string) env('email.SMTPCrypto', $this->SMTPCrypto);
     }
+
+    public function isSmtpConfigured(): bool
+    {
+        $host = strtolower(trim($this->SMTPHost));
+        $fromEmail = strtolower(trim($this->fromEmail));
+        $hostIsPlaceholder = $host === '' || str_contains($host, 'example.');
+        $emailIsPlaceholder = $fromEmail === '' || str_contains($fromEmail, 'example.');
+
+        return $this->protocol === 'smtp'
+            && ! $hostIsPlaceholder
+            && ! $emailIsPlaceholder
+            && trim($this->SMTPUser) !== ''
+            && trim($this->SMTPPass) !== ''
+            && $this->SMTPPort > 0
+            && filter_var($this->fromEmail, FILTER_VALIDATE_EMAIL) !== false;
+    }
 }

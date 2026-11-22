@@ -18,7 +18,7 @@
             </ul>
         <?php endif; ?>
 
-        <form action="<?= esc(same_origin_url((string) url_to('magic-link'))) ?>" method="post" class="space-y-4" x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
+        <form action="<?= esc(same_origin_url((string) url_to('password-forgot'))) ?>" method="post" class="space-y-4" x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
             <?= csrf_field() ?>
             <div>
                 <label for="email" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.email')) ?></label>

@@ -41,10 +41,20 @@
     </div>
 
     <div class="min-w-0">
-        <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h3 class="text-lg font-semibold text-ink"><?= esc(lang('CvBuilder.pdf_preview_title')) ?></h3>
-            <p class="text-xs text-muted"><?= esc(lang('CvBuilder.preview_changes_note')) ?></p>
+        <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent-900">Dokumen</p>
+                <h3 class="mt-1 text-lg font-semibold text-ink"><?= esc(lang('CvBuilder.pdf_preview_title')) ?></h3>
+            </div>
+            <p class="max-w-xs text-right text-xs leading-5 text-muted"><?= esc(lang('CvBuilder.preview_changes_note')) ?></p>
         </div>
-        <iframe class="h-[68vh] min-h-[28rem] w-full rounded-md border border-line bg-white" title="<?= esc(lang('CvBuilder.pdf_preview_title')) ?>" x-bind:src="previewFrameUrl"></iframe>
+        <div class="overflow-hidden rounded-md border border-neutral-300 bg-neutral-100 p-2 sm:p-4">
+            <iframe
+                class="mx-auto h-[72vh] min-h-[32rem] w-full max-w-[52rem] border border-neutral-300 bg-white"
+                title="<?= esc(lang('CvBuilder.pdf_preview_title')) ?>"
+                loading="lazy"
+                x-bind:src="previewFrameUrl"
+            ></iframe>
+        </div>
     </div>
 </div>

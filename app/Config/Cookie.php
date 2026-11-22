@@ -110,5 +110,8 @@ class Cookie extends BaseConfig
         parent::__construct();
 
         $this->secure = filter_var(env('cookie.secure', $this->secure), FILTER_VALIDATE_BOOLEAN);
+        if ($this->secure === false && filter_var(env('app.forceGlobalSecureRequests', false), FILTER_VALIDATE_BOOLEAN)) {
+            $this->secure = true;
+        }
     }
 }

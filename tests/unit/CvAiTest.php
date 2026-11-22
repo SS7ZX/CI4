@@ -77,8 +77,8 @@ final class CvAiTest extends TestCase
 
         $this->assertInstanceOf(CvAiDraft::class, $draft);
         $this->assertSame('Analis Data', $draft->headline);
-        $this->assertSame('Menyusun laporan bulanan' . "\n" . 'Menganalisis tren penjualan', $draft->experience);
-        $this->assertSame('SQL, Analisis data', $draft->skills);
+        $this->assertSame('Menyusun laporan bulanan', $draft->experience);
+        $this->assertSame('', $draft->skills);
     }
 
     public function testGeneratorRejectsInvalidOrOversizedOutput(): void
@@ -124,6 +124,32 @@ final class CvAiTest extends TestCase
         }
     }
 
+    public function testGeneratorDropsUngroundedAndPlaceholderListItems(): void
+    {
+        $response = $this->createMock(ResponseInterface::class);
+        $response->method('getStatusCode')->willReturn(200);
+        $response->method('getBody')->willReturn(json_encode([
+            'message' => ['content' => json_encode([
+                'headline'   => 'Analis Data',
+                'summary'    => 'Menyusun laporan dari data operasional.',
+                'experience' => ['Inacoo', 'Menyusun laporan bulanan'],
+                'education'  => ['Lorem ipsum'],
+                'skills'     => ['SQL', 'Inacoo'],
+            ], JSON_THROW_ON_ERROR)],
+        ], JSON_THROW_ON_ERROR));
+        $http = $this->createMock(CvAiHttpClientInterface::class);
+        $http->method('post')->willReturn($response);
+        $config = new CvAi();
+        $config->enabled = true;
+
+        $draft = (new OllamaCvAiDraftGenerator($config, $http))
+            ->generate('Menyusun laporan bulanan menggunakan SQL.');
+
+        $this->assertSame('Menyusun laporan bulanan', $draft->experience);
+        $this->assertSame('', $draft->education);
+        $this->assertSame('SQL', $draft->skills);
+    }
+
     public function testGeneratorRejectsNonLocalRuntimeEndpoint(): void
     {
         $http = $this->createMock(CvAiHttpClientInterface::class);
@@ -138,5 +164,42 @@ final class CvAiTest extends TestCase
         } catch (CvAiGenerationException $exception) {
             $this->assertSame('disabled', $exception->reason);
         }
+    }
+
+    public function testStatusReportsReadyModelAndMissingModel(): void
+    {
+        $readyResponse = $this->createMock(ResponseInterface::class);
+        $readyResponse->method('getStatusCode')->willReturn(200);
+        $readyResponse->method('getBody')->willReturn(json_encode([
+            'models' => [['name' => 'qwen2.5:3b']],
+        ], JSON_THROW_ON_ERROR));
+        $http = $this->createMock(CvAiHttpClientInterface::class);
+        $http->expects($this->once())
+            ->method('get')
+            ->with('http://127.0.0.1:11434/api/tags', 3)
+            ->willReturn($readyResponse);
+
+        $config = new CvAi();
+        $config->enabled = true;
+        $generator = new OllamaCvAiDraftGenerator($config, $http);
+
+        $this->assertSame([
+            'available'       => true,
+            'model_installed' => true,
+            'reason'          => 'ready',
+        ], $generator->status());
+
+        $missingResponse = $this->createMock(ResponseInterface::class);
+        $missingResponse->method('getStatusCode')->willReturn(200);
+        $missingResponse->method('getBody')->willReturn(json_encode([
+            'models' => [['name' => 'llama3.2:3b']],
+        ], JSON_THROW_ON_ERROR));
+        $missingHttp = $this->createMock(CvAiHttpClientInterface::class);
+        $missingHttp->method('get')->willReturn($missingResponse);
+        $this->assertSame([
+            'available'       => true,
+            'model_installed' => false,
+            'reason'          => 'model_missing',
+        ], (new OllamaCvAiDraftGenerator($config, $missingHttp))->status());
     }
 }

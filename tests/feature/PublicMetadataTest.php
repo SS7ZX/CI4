@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\FeatureTestTrait;
 use CodeIgniter\Exceptions\PageNotFoundException;
+use Config\App;
 
 /**
  * @internal
@@ -15,16 +16,18 @@ final class PublicMetadataTest extends CIUnitTestCase
 
     public function testRobotsAndSitemapExposeOnlyTheConfiguredPublicHomepage(): void
     {
+        $baseUrl = rtrim((new App())->baseURL, '/');
+
         $robots = $this->get('/robots.txt');
         $robots->assertOK();
         $this->assertStringContainsString('text/plain', $robots->response()->getHeaderLine('Content-Type'));
         $this->assertStringContainsString('Disallow: /dashboard', $robots->getBody());
-        $this->assertStringContainsString('Sitemap: http://example.com/sitemap.xml', $robots->getBody());
+        $this->assertStringContainsString('Sitemap: ' . $baseUrl . '/sitemap.xml', $robots->getBody());
 
         $sitemap = $this->get('/sitemap.xml');
         $sitemap->assertOK();
         $this->assertStringContainsString('application/xml', $sitemap->response()->getHeaderLine('Content-Type'));
-        $this->assertStringContainsString('<loc>http://example.com/</loc>', $sitemap->getBody());
+        $this->assertStringContainsString('<loc>' . $baseUrl . '/</loc>', $sitemap->getBody());
         $this->assertStringNotContainsString('/dashboard', $sitemap->getBody());
         $this->assertStringNotContainsString('/login', $sitemap->getBody());
     }

@@ -2,6 +2,8 @@
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Config\App;
+use Config\ContentSecurityPolicy;
+use Config\Email;
 use Tests\Support\Libraries\ConfigReader;
 
 /**
@@ -63,5 +65,33 @@ final class HealthTest extends CIUnitTestCase
             $validation->check($reader->baseURL, 'valid_url'),
             'baseURL "' . $reader->baseURL . '" in app/Config/App.php is not valid URL',
         );
+    }
+
+    public function testCspAllowsDevelopmentPortsForLocalForms(): void
+    {
+        $config = new ContentSecurityPolicy();
+
+        $this->assertContains('http://127.0.0.1:8088', $config->formAction);
+        $this->assertContains('http://127.0.0.1:8080', $config->formAction);
+        $this->assertContains('self', $config->formAction);
+    }
+
+    public function testPlaceholderAndIncompleteSmtpAreRejected(): void
+    {
+        $config = new Email();
+        $config->protocol = 'smtp';
+        $config->SMTPHost = 'smtp.example.id';
+        $config->SMTPUser = 'sender@example.test';
+        $config->SMTPPass = 'secret';
+        $config->SMTPPort = 587;
+        $config->fromEmail = 'no-reply@example.test';
+
+        $this->assertFalse($config->isSmtpConfigured());
+
+        $config->SMTPHost = 'smtp.gmail.com';
+        $config->SMTPUser = 'sender@gmail.com';
+        $config->fromEmail = 'sender@gmail.com';
+
+        $this->assertTrue($config->isSmtpConfigured());
     }
 }

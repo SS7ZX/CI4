@@ -110,7 +110,7 @@ class Filters extends BaseFilters
      */
     public array $filters = [
         'auth-rates' => [
-            'before' => ['login', 'register', 'login/magic-link'],
+            'before' => ['login', 'register', 'login/magic-link', 'password/reset/*'],
         ],
     ];
 }

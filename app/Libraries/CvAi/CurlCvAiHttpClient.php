@@ -8,6 +8,19 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 final class CurlCvAiHttpClient implements CvAiHttpClientInterface
 {
+    public function get(string $url, int $timeoutSeconds): ResponseInterface
+    {
+        return service('curlrequest')->get($url, [
+            'headers' => [
+                'Accept' => 'application/json',
+            ],
+            'timeout'         => $timeoutSeconds,
+            'connect_timeout' => $timeoutSeconds,
+            'http_errors'     => false,
+            'allow_redirects' => false,
+        ]);
+    }
+
     /**
      * @param array<string, mixed> $json
      */
