@@ -12,14 +12,119 @@
     --color-accent-50: #eff7f8;
     --color-accent-700: #245b65;
     --color-accent-900: #153b43;
+    --radius-ui: 8px;
+    --duration-fast: 160ms;
+    --duration-ui: 240ms;
 }
 
 :root {
+    color-scheme: light;
     --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --motion-ease-standard: cubic-bezier(0.2, 0.75, 0.25, 1);
     --motion-duration-fast: 160ms;
     --motion-duration-ui: 240ms;
     --motion-duration-page: 360ms;
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --color-canvas: #171d1b;
+    --color-paper: #202824;
+    --color-ink: #eef2ef;
+    --color-muted: #b1bbb6;
+    --color-line: #39443f;
+    --color-accent-50: #1a3438;
+    --color-accent-700: #72aeb7;
+    --color-accent-900: #9bcbd1;
+    --color-accent-button: #245b65;
+    --color-accent-button-hover: #153b43;
+    --color-red-50: #3b2021;
+    --color-red-700: #ff8b8b;
+    --color-red-800: #ffaaa5;
+    --color-red-900: #ffd1cc;
+    --color-green-50: #1c3328;
+    --color-green-700: #71d99b;
+    --color-green-800: #97e7b5;
+    --color-green-900: #c2f3d0;
+    --color-green-950: #e4ffeb;
+    --color-amber-50: #392e1b;
+    --color-amber-700: #f2c56b;
+    --color-amber-900: #ffdfa3;
+    --color-amber-950: #fff0c9;
+}
+
+html[data-theme="dark"] .bg-accent-700.text-white,
+html[data-theme="dark"] .bg-accent-800.text-white {
+    background-color: var(--color-accent-button);
+}
+
+html[data-theme="dark"] .bg-accent-700.text-white:hover,
+html[data-theme="dark"] .bg-accent-800.text-white:hover {
+    background-color: var(--color-accent-button-hover);
+}
+
+.ui-icon-button {
+    align-items: center;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    display: inline-flex;
+    height: 2.5rem;
+    justify-content: center;
+    width: 2.5rem;
+}
+
+.ui-icon-button:hover {
+    background: var(--color-accent-50);
+    color: var(--color-accent-900);
+}
+
+.ui-command-dialog {
+    border: 0;
+    background: transparent;
+    margin: 10vh auto 0;
+    max-width: calc(100vw - 2rem);
+    padding: 0;
+    width: 36rem;
+}
+
+.ui-command-dialog::backdrop {
+    background: rgb(23 29 27 / 72%);
+}
+
+.ui-command-shell {
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    background: var(--color-paper);
+    box-shadow: 0 8px 24px rgb(23 29 27 / 18%);
+    color: var(--color-ink);
+    overflow: hidden;
+}
+
+.ui-command-search {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+}
+
+.ui-command-item {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    border-radius: 8px;
+    padding: 0.625rem 0.75rem;
+    color: var(--color-ink);
+}
+
+.ui-command-item:hover,
+.ui-command-item[aria-selected="true"] {
+    background: var(--color-accent-50);
+    color: var(--color-accent-900);
 }
 
 [x-cloak] {
@@ -59,6 +164,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+
     ::view-transition-group(root),
     ::view-transition-old(root),
     ::view-transition-new(root) {
@@ -480,7 +594,7 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
 }
 
 .home-hero {
-    background: #eeeee7;
+    background: var(--color-paper);
 }
 
 .home-hero__title,
@@ -489,14 +603,14 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
 }
 
 .home-hero__art {
-    background-color: #e6e7df;
-    background-image: linear-gradient(to right, #d8dbd2 1px, transparent 1px);
+    background-color: var(--color-canvas);
+    background-image: linear-gradient(to right, var(--color-line) 1px, transparent 1px);
     background-size: 3rem 100%;
 }
 
 .home-hero__art::before {
-    background: #edece5;
-    border: 1px solid #d0d3cb;
+    background: var(--color-paper);
+    border: 1px solid var(--color-line);
     content: "";
     inset: 2.75rem 1rem 2.75rem 2rem;
     position: absolute;

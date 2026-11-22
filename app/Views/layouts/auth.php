@@ -1,8 +1,8 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-    <section class="mx-auto grid w-full max-w-5xl overflow-hidden rounded-md border border-line bg-paper md:grid-cols-[minmax(0,0.9fr)_minmax(22rem,1.1fr)]" data-reveal>
-        <aside class="hidden flex-col justify-between border-r border-line bg-[#eeeee7] p-8 md:flex lg:p-10">
+    <section class="mx-auto grid w-full max-w-5xl overflow-hidden rounded-md border border-line bg-paper md:grid-cols-[minmax(0,0.9fr)_minmax(22rem,1.1fr)]" data-reveal aria-label="<?= esc(lang('Auth.workspace_kicker')) ?>">
+        <aside class="hidden flex-col justify-between border-r border-line bg-accent-50 p-8 md:flex lg:p-10">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Auth.workspace_kicker')) ?></p>
                 <h2 class="mt-5 max-w-sm text-3xl font-semibold leading-tight tracking-tight text-ink"><?= esc(lang('Auth.workspace_title')) ?></h2>

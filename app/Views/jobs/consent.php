@@ -4,16 +4,16 @@
 
 <?= $this->section('content') ?>
     <nav class="mb-5 text-sm" aria-label="<?= esc(lang('Jobs.breadcrumb')) ?>">
-        <a class="font-medium text-accent-800 underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('Dashboard.title')) ?></a>
+        <a class="font-medium text-accent-900 underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('Dashboard.title')) ?></a>
         <span aria-hidden="true"> / </span>
         <span><?= esc(lang('Jobs.find_jobs')) ?></span>
     </nav>
 
-    <section class="max-w-2xl rounded-md border border-neutral-200 bg-white p-5 sm:p-7" data-reveal>
+    <section class="max-w-2xl rounded-md border border-line bg-paper p-5 sm:p-7" data-reveal>
         <h1 class="text-2xl font-semibold"><?= esc(lang('Jobs.consent_title')) ?></h1>
-        <p class="mt-2 text-sm text-neutral-700"><?= esc(lang('Jobs.consent_intro', [$cv->title])) ?></p>
+        <p class="mt-2 text-sm text-muted"><?= esc(lang('Jobs.consent_intro', [$cv->title])) ?></p>
 
-        <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-neutral-700">
+        <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-muted">
             <li><?= esc(lang('Jobs.consent_data_scope')) ?></li>
             <li><?= esc(lang('Jobs.consent_no_personal_data')) ?></li>
             <li><?= esc(lang('Jobs.consent_withdrawal')) ?></li>
@@ -26,8 +26,8 @@
                 <span><?= esc(lang('Jobs.consent_checkbox')) ?></span>
             </label>
             <div class="flex flex-wrap gap-3">
-                <button class="min-h-11 rounded-md bg-accent-800 px-4 font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit"><?= esc(lang('Jobs.consent_continue')) ?></button>
-                <a class="inline-flex min-h-11 items-center rounded-md border border-neutral-400 px-4 text-sm font-medium hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('Jobs.cancel')) ?></a>
+                <button class="min-h-11 rounded-md bg-accent-700 px-4 font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit"><?= esc(lang('Jobs.consent_continue')) ?></button>
+                <a class="inline-flex min-h-11 items-center rounded-md border border-line px-4 text-sm font-medium hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('Jobs.cancel')) ?></a>
             </div>
         </form>
     </section>

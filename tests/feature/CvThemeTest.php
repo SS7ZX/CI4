@@ -61,6 +61,11 @@ final class CvThemeTest extends CIUnitTestCase
         $editor->assertSee('Label ramah ATS menjelaskan struktur dokumen, bukan jaminan lolos seleksi.');
         $editor->assertSee('Gunakan tema ini');
         $editor->assertSee('previewThemeIsAtsFriendly()');
+        $this->assertDoesNotMatchRegularExpression(
+            '/(?:bg|border|text)-neutral-(?:[0-9]+)\b/',
+            $editor->getBody(),
+        );
+        $this->assertStringContainsString('border border-line bg-paper', $editor->getBody());
 
         $preview = $this->get('/dashboard/cv/' . $cvId . '/preview/ats-classic');
         $preview->assertOK();
@@ -136,6 +141,15 @@ final class CvThemeTest extends CIUnitTestCase
         $review->assertSee(lang('Themes.professional_name'));
         $review->assertSee(lang('Themes.non_ats_badge'));
         $review->assertSee(lang('Themes.change_theme'));
+        $review->assertSee('Ringkasan peninjauan');
+        $review->assertSee('Pengaturan dokumen');
+        $review->assertSee('Unduh hanya setelah isi dokumen sudah sesuai.');
+        $review->assertSee('title="Pratinjau dokumen"');
+        $this->assertDoesNotMatchRegularExpression(
+            '/(?:bg|border|text)-neutral-(?:[0-9]+)\b/',
+            $review->getBody(),
+        );
+        $this->assertStringContainsString('border border-line bg-white', $review->getBody());
 
         $this->withSession($_SESSION);
         $currentPreview = $this->get('/dashboard/cv/' . $cvId . '/preview');

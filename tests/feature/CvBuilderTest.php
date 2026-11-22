@@ -58,6 +58,14 @@ final class CvBuilderTest extends CIUnitTestCase
         $editor->assertSee('Langkah 6 dari 8');
         $editor->assertSee('aria-live="polite"');
         $editor->assertSee('data-reveal');
+        $editor->assertSee('Kemajuan penyusunan');
+        $editor->assertSee('role="progressbar"');
+        $editor->assertSee('Tambahkan bagian pendukung dan atur urutan isi CV.');
+        $this->assertDoesNotMatchRegularExpression(
+            '/(?:bg|border|text)-neutral-(?:[0-9]+)\b/',
+            $editor->getBody(),
+        );
+        $this->assertStringContainsString('border border-line bg-white', $editor->getBody());
         $editor->assertSee('x-transition:enter="motion-dialog-enter-active"');
         $builderScriptPosition = strpos($editor->getBody(), 'assets/js/cv-builder.js');
         $alpineScriptPosition = strpos($editor->getBody(), 'assets/js/alpine.min.js');
@@ -66,20 +74,22 @@ final class CvBuilderTest extends CIUnitTestCase
         $this->assertLessThan($alpineScriptPosition, $builderScriptPosition);
         $this->assertStringContainsString('assets/js/motion.js', $editor->getBody());
         $this->assertMatchesRegularExpression(
-            '/<section\s+id="builder-step-6"\s+x-bind:hidden="step !== 6"/',
+            '/<section\s+id="builder-step-6"\s+x-show="step === 6"/',
             $editor->getBody(),
         );
         $this->assertMatchesRegularExpression(
-            '/<section\s+id="builder-step-1"\s+hidden\s+x-bind:hidden="step !== 1"/',
+            '/<section\s+id="builder-step-1"\s+x-cloak\s+x-show="step === 1"/',
             $editor->getBody(),
         );
+        $editor->assertSee('x-transition:enter="motion-step-enter-active"');
+        $editor->assertSee('x-transition:leave="motion-step-leave-active"');
         $editor->assertSee('id="profile-full_name"');
 
         $this->withSession($_SESSION);
         $personalEditor = $this->get('/dashboard/cv/' . $cvId . '/step/1');
         $personalEditor->assertOK();
         $this->assertMatchesRegularExpression(
-            '/<section\s+id="builder-step-1"\s+x-bind:hidden="step !== 1"/',
+            '/<section\s+id="builder-step-1"\s+x-show="step === 1"/',
             $personalEditor->getBody(),
         );
         $personalEditor->assertSee('id="profile-full_name"');

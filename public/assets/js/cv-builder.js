@@ -10,6 +10,7 @@ document.addEventListener('alpine:init', () => {
         previewUrl: config.previewUrl,
         pageCountUrl: config.pageCountUrl,
         downloadUrl: config.downloadUrl,
+        paymentPaid: config.paymentPaid,
         themes: config.themes,
         sectionLabels: config.sectionLabels,
         messages: config.messages,
@@ -29,6 +30,11 @@ document.addEventListener('alpine:init', () => {
         timer: null,
 
         init() {
+            window.addEventListener('beforeunload', (event) => {
+                if (!this.dirty) return;
+                event.preventDefault();
+                event.returnValue = '';
+            });
             this.state.profile ??= { full_name: '', headline: '', email: '', phone: '', city: '', country: '' };
             this.state.profile.summary ??= '';
             for (const key of ['links', 'experiences', 'educations', 'skill_groups', 'projects', 'certifications', 'organizations', 'awards', 'languages', 'custom_sections']) {
@@ -127,11 +133,13 @@ document.addEventListener('alpine:init', () => {
                     const result = await response.json();
                     if (result.csrf) this.token = result.csrf;
                     if (response.status === 422) {
+                        this.dirty = true;
                         this.errors = result.errors ?? {};
                         this.status = 'error';
                         return false;
                     }
                     if (!response.ok || result.status !== 'saved') {
+                        this.dirty = true;
                         this.status = 'error';
                         return false;
                     }
@@ -144,6 +152,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 return true;
             } catch {
+                this.dirty = true;
                 this.status = 'error';
                 return false;
             } finally {

@@ -52,7 +52,7 @@
                     <?= csrf_field() ?>
                     <h2 class="text-lg font-semibold text-ink"><?= esc(lang('Payments.submit_proof_title')) ?></h2>
                     <label class="mt-4 block text-sm font-semibold text-ink" for="payment-proof"><?= esc(lang('Payments.proof_label')) ?></label>
-                    <input class="mt-2 block min-h-11 w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink file:mr-3 file:rounded-sm file:border-0 file:bg-canvas file:px-3 file:py-1.5 file:text-sm file:font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="payment-proof" name="proof" type="file" accept="image/jpeg,image/png,image/webp" required>
+                    <input class="mt-2 block min-h-11 w-full rounded-md border border-line bg-canvas px-3 py-2 text-sm text-ink file:mr-3 file:rounded-sm file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-sm file:font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="payment-proof" name="proof" type="file" accept="image/jpeg,image/png,image/webp" required>
                     <p class="mt-2 text-xs leading-5 text-muted"><?= esc(lang('Payments.proof_help')) ?></p>
                     <button class="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-4 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" type="submit"><?= esc(lang('Payments.proof_submit')) ?></button>
                 </form>

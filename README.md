@@ -87,6 +87,9 @@ Ekstensi `pgsql` dipakai driver Postgre bawaan CodeIgniter. Ekstensi `gd` diperl
 
 - Navigasi same-origin memakai View Transitions API secara progressive enhancement. Browser yang tidak mendukung tetap memakai navigasi dan render server standar.
 - Interaksi memakai transisi CSS singkat berbasis `transform` dan `opacity`; konten reveal tetap terlihat tanpa JavaScript. Preferensi `prefers-reduced-motion` menonaktifkan animasi non-esensial.
+- Perpindahan langkah editor memakai transisi ringan dan tetap menampilkan langkah aktif saat JavaScript tidak berjalan.
+- Tema terang dan gelap memakai token warna bersama. Pilihan tema disimpan lokal di browser dan mengikuti preferensi sistem saat belum dipilih.
+- Palet perintah dibuka dengan Ctrl K atau Meta K, mendukung pencarian, navigasi keyboard, Escape, dan tindakan keluar dengan perlindungan CSRF.
 - Scroll tetap mengikuti kontrol native browser. Aplikasi tidak mengganti scroll dengan inertia, paralaks, atau efek kursor magnetik.
 - Sumber motion ada di `resources/css/app.css` dan `resources/js/motion.js`. `npm run build` menghasilkan aset publik; `npm run test:motion` menjalankan test JavaScript tanpa dependency tambahan.
 

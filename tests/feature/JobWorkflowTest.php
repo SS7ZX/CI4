@@ -168,7 +168,13 @@ final class JobWorkflowTest extends CIUnitTestCase
         $detailPage->assertSee('Buka lowongan asli');
         $this->assertStringContainsString('Sumber lowongan: &lt;b&gt;Sumber&lt;/b&gt;.', $detailPage->getBody());
         $this->assertStringNotContainsString('<script>', $detailPage->getBody());
-        $this->assertStringNotContainsString('<svg', $detailPage->getBody());
+        $this->assertStringContainsString('&lt;svg onload=alert(1)&gt;cuplikan&lt;/svg&gt;', $detailPage->getBody());
+        $this->assertStringContainsString('bg-paper', $detailPage->getBody());
+        $this->assertStringContainsString('text-muted', $detailPage->getBody());
+        $this->assertDoesNotMatchRegularExpression(
+            '/(?:bg|text|border|divide)-neutral-\d+|\bbg-white\b/',
+            $detailPage->getBody(),
+        );
         $applicationUpdate = $this->post('/dashboard/cv/' . $cvId . '/jobs/match/' . $matchId . '/application', [
             'csrf_test_name' => $this->csrfTokenFrom('/dashboard/cv/' . $cvId . '/jobs/match/' . $matchId),
             'application_status' => 'applied',

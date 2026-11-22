@@ -160,6 +160,39 @@ final class PasswordResetTest extends CIUnitTestCase
         }
     }
 
+    public function testAuthViewsRenderAccessibleResponsiveControlsAndLanguageStrings(): void
+    {
+        $login = $this->get('/login');
+        $login->assertOK();
+        $login->assertSee(lang('Auth.loginDescription'));
+        $login->assertSee(lang('Auth.processingLogin'));
+        $this->assertStringContainsString('autocomplete="email"', $login->getBody());
+        $this->assertStringContainsString('csrf_test_name', $login->getBody());
+
+        $register = $this->get('/register');
+        $register->assertOK();
+        $register->assertSee(lang('Auth.registerDescription'));
+        $register->assertSee(lang('Auth.passwordHelp'));
+        $this->assertStringContainsString('autocomplete="new-password"', $register->getBody());
+
+        $forgot = $this->get('/login/magic-link');
+        $forgot->assertOK();
+        $forgot->assertSee(lang('Auth.forgotPasswordDescription'));
+        $forgot->assertSee(lang('Auth.processingResetRequest'));
+
+        $userId = $this->createUser('auth-view@example.test', 'authview');
+        auth()->loginById($userId);
+        $this->withSession($_SESSION);
+
+        $changePassword = $this->get('/dashboard/password');
+        $changePassword->assertOK();
+        $changePassword->assertSee(lang('Auth.changePasswordDescription'));
+        $changePassword->assertSee(lang('Auth.passwordHelp'));
+        $this->assertStringContainsString('autocomplete="current-password"', $changePassword->getBody());
+
+        auth()->logout();
+    }
+
     private function createUser(string $email, string $username): int
     {
         $users = model(UserModel::class);

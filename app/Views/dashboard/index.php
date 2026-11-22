@@ -8,6 +8,7 @@
             <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Dashboard.workspace_kicker')) ?></p>
             <h1 class="mt-2 text-3xl font-semibold tracking-tight text-ink"><?= esc(lang('Dashboard.title')) ?></h1>
             <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.description')) ?></p>
+            <a class="mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-5 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" href="#quick-cv"><?= esc(lang('Dashboard.quick_title')) ?></a>
             <?php if ($canReviewPayments): ?>
                 <a class="mt-3 inline-flex min-h-10 items-center text-sm font-semibold text-accent-900 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-payment-admin')) ?>"><?= esc(lang('Payments.admin_title')) ?></a>
             <?php endif; ?>
@@ -31,53 +32,27 @@
         </ul>
     <?php endif; ?>
 
-    <section class="mb-8 rounded-md border border-line bg-paper p-5 sm:p-7" data-reveal>
-        <h2 class="text-xl font-semibold text-ink"><?= esc(lang('Dashboard.ai_title')) ?></h2>
-        <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.ai_description')) ?></p>
+    <section class="mb-8 flex flex-col gap-5 rounded-md border border-line bg-paper p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7" data-reveal>
+        <div class="max-w-2xl">
+            <div class="flex flex-wrap items-center gap-3">
+                <h2 class="text-xl font-semibold tracking-tight text-ink"><?= esc(lang('Dashboard.ai_title')) ?></h2>
+                <?php if ($cvAiStatus['available'] && $cvAiStatus['model_installed']): ?>
+                    <span class="inline-flex min-h-8 items-center rounded-md border border-green-700 bg-green-50 px-3 text-xs font-semibold text-green-900"><?= esc(lang('Dashboard.ai_local_ready')) ?></span>
+                <?php endif; ?>
+            </div>
+            <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.ai_description')) ?></p>
+            <?php if (! ($cvAiStatus['available'] && $cvAiStatus['model_installed'])): ?>
+                <?php if ($cvAiStatus['reason'] === 'model_missing'): ?>
+                    <p class="mt-3 text-sm leading-6 text-muted" role="status"><?= esc(lang('Dashboard.ai_error_model_missing')) ?></p>
+                <?php elseif ($cvAiStatus['reason'] === 'unavailable'): ?>
+                    <p class="mt-3 text-sm leading-6 text-muted" role="status"><?= esc(lang('Dashboard.ai_error_unavailable')) ?></p>
+                <?php else: ?>
+                    <p class="mt-3 text-sm leading-6 text-muted" role="status"><?= esc(lang('Dashboard.ai_disabled')) ?> <?= esc(lang('Dashboard.ai_setup_help')) ?></p>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
         <?php if ($cvAiStatus['available'] && $cvAiStatus['model_installed']): ?>
-            <form
-                action="<?= esc(same_origin_url((string) url_to('cv-ai-prepare'))) ?>"
-                method="post"
-                class="mt-5 grid gap-4 sm:grid-cols-2"
-                x-data="{ pending: false }"
-                x-on:submit="pending = true"
-                x-bind:aria-busy="pending.toString()"
-            >
-                <?= csrf_field() ?>
-                <div>
-                    <label class="mb-1 block text-sm font-medium" for="ai-full-name"><?= esc(lang('Dashboard.ai_full_name')) ?></label>
-                    <input class="min-h-11 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="ai-full-name" name="full_name" type="text" maxlength="160" autocomplete="name" required>
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium" for="ai-email"><?= esc(lang('Dashboard.ai_email')) ?></label>
-                    <input class="min-h-11 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="ai-email" name="email" type="email" inputmode="email" maxlength="254" value="<?= esc($userEmail) ?>" autocomplete="email">
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium" for="ai-phone"><?= esc(lang('Dashboard.ai_phone')) ?></label>
-                    <input class="min-h-11 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="ai-phone" name="phone" type="tel" maxlength="40" autocomplete="tel">
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium" for="ai-city"><?= esc(lang('Dashboard.ai_city')) ?></label>
-                    <input class="min-h-11 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="ai-city" name="city" type="text" maxlength="120" autocomplete="address-level2">
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="mb-1 block text-sm font-medium" for="ai-story"><?= esc(lang('Dashboard.ai_story')) ?></label>
-                    <textarea class="min-h-40 w-full rounded-md border border-line bg-canvas p-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="ai-story" name="story" maxlength="8000" aria-describedby="ai-story-help" required></textarea>
-                    <p class="mt-1 text-xs leading-5 text-muted" id="ai-story-help"><?= esc(lang('Dashboard.ai_story_help')) ?></p>
-                </div>
-                <div class="sm:col-span-2">
-                    <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-5 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-60" type="submit" x-bind:disabled="pending">
-                        <span x-show="!pending"><?= esc(lang('Dashboard.ai_prepare')) ?></span>
-                        <span x-cloak x-show="pending"><?= esc(lang('Dashboard.ai_preparing')) ?></span>
-                    </button>
-                </div>
-            </form>
-        <?php elseif ($cvAiStatus['reason'] === 'model_missing'): ?>
-            <p class="mt-4 rounded-md border border-amber-700 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900" role="status"><?= esc(lang('Dashboard.ai_error_model_missing')) ?></p>
-        <?php elseif ($cvAiStatus['reason'] === 'unavailable'): ?>
-            <p class="mt-4 rounded-md border border-red-700 bg-red-50 px-4 py-3 text-sm leading-6 text-red-900" role="status"><?= esc(lang('Dashboard.ai_error_unavailable')) ?></p>
-        <?php else: ?>
-            <p class="mt-4 rounded-md border border-line bg-canvas px-4 py-3 text-sm leading-6 text-muted" role="status"><?= esc(lang('Dashboard.ai_disabled')) ?> <?= esc(lang('Dashboard.ai_setup_help')) ?></p>
+            <a class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md border border-accent-700 px-5 text-sm font-semibold text-accent-900 hover:bg-accent-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-ai-start')) ?>"><?= esc(lang('Dashboard.ai_start_action')) ?></a>
         <?php endif; ?>
     </section>
 

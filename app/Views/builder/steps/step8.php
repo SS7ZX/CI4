@@ -12,10 +12,11 @@ foreach ($themes as $theme) {
 <p class="mb-5 max-w-2xl text-sm leading-6 text-muted"><?= esc(lang('CvBuilder.pdf_review_help')) ?></p>
 
 <div class="grid items-start gap-6 xl:grid-cols-[15rem_minmax(0,1fr)]">
-    <div class="space-y-5 rounded-md border border-line bg-canvas p-4 sm:p-5">
+    <aside class="space-y-5 rounded-md border border-line bg-canvas p-4 sm:p-5" aria-label="<?= esc(lang('CvBuilder.review_summary')) ?>">
+        <h3 class="text-sm font-semibold text-ink"><?= esc(lang('CvBuilder.review_settings')) ?></h3>
         <div>
             <label for="paper-size" class="mb-1 block text-sm font-semibold text-ink"><?= esc(lang('CvBuilder.paper_size')) ?></label>
-            <select id="paper-size" class="min-h-11 w-full rounded-md border border-neutral-400 bg-paper px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" x-model="state.cv.paper_size">
+            <select id="paper-size" class="min-h-11 w-full rounded-md border border-line bg-paper px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" x-model="state.cv.paper_size">
                 <option value="a4"><?= esc(lang('CvBuilder.paper_a4')) ?></option>
                 <option value="letter"><?= esc(lang('CvBuilder.paper_letter')) ?></option>
             </select>
@@ -23,7 +24,7 @@ foreach ($themes as $theme) {
         </div>
         <div>
             <label for="font-scale" class="mb-1 block text-sm font-semibold text-ink"><?= esc(lang('CvBuilder.font_scale')) ?></label>
-            <select id="font-scale" class="min-h-11 w-full rounded-md border border-neutral-400 bg-paper px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" x-model="state.cv.font_scale">
+            <select id="font-scale" class="min-h-11 w-full rounded-md border border-line bg-paper px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" x-model="state.cv.font_scale">
                 <option value="small"><?= esc(lang('CvBuilder.font_small')) ?></option>
                 <option value="medium"><?= esc(lang('CvBuilder.font_medium')) ?></option>
                 <option value="large"><?= esc(lang('CvBuilder.font_large')) ?></option>
@@ -53,7 +54,7 @@ foreach ($themes as $theme) {
                 <template x-for="color in selectedPalette()" x-bind:key="color">
                     <label class="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-line bg-paper px-2.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent-700">
                         <input class="size-4 accent-accent-700" type="radio" name="accent_color" x-model="state.cv.accent_color" x-bind:value="color">
-                        <span class="size-4 rounded-sm border border-neutral-400" x-bind:style="`background-color: ${color}`" aria-hidden="true"></span>
+                        <span class="size-4 rounded-sm border border-line" x-bind:style="`background-color: ${color}`" aria-hidden="true"></span>
                         <span class="sr-only" x-text="color"></span>
                     </label>
                 </template>
@@ -63,9 +64,10 @@ foreach ($themes as $theme) {
 
         <div class="border-t border-line pt-4">
             <p class="text-sm text-muted" aria-live="polite" role="status" x-text="pageCountMessage"></p>
+            <p class="mt-2 text-xs leading-5 text-muted"><?= esc(lang('CvBuilder.review_download_help')) ?></p>
             <button class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-accent-700 px-4 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-60" type="button" x-on:click="downloadPdf()" x-bind:disabled="busy" x-text="paymentPaid ? messages.downloadPdf : messages.paymentDownload"><?= esc(lang('Payments.download_action')) ?></button>
         </div>
-    </div>
+    </aside>
 
     <div class="min-w-0">
         <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
@@ -75,9 +77,9 @@ foreach ($themes as $theme) {
             </div>
             <p class="max-w-xs text-right text-xs leading-5 text-muted"><?= esc(lang('CvBuilder.preview_changes_note')) ?></p>
         </div>
-        <div class="overflow-hidden rounded-md border border-neutral-300 bg-neutral-100 p-2 sm:p-4">
+        <div class="overflow-hidden rounded-md border border-line bg-canvas p-2 sm:p-4">
             <iframe
-                class="mx-auto h-[72vh] min-h-[32rem] w-full max-w-[52rem] border border-neutral-300 bg-white"
+                class="mx-auto h-[72vh] min-h-[32rem] w-full max-w-[52rem] border border-line bg-white"
                 title="<?= esc(lang('CvBuilder.pdf_preview_title')) ?>"
                 loading="lazy"
                 x-bind:src="previewFrameUrl"

@@ -25,7 +25,14 @@ final class HomeLayoutTest extends CIUnitTestCase
         $this->assertStringContainsString('<html lang="id">', $result->getBody());
         $result->assertSee('assets/css/app.css');
         $result->assertSee('assets/js/motion.js');
+        $result->assertSee('assets/js/theme.js');
+        $result->assertSee('assets/js/foundation.js');
         $result->assertSee('assets/js/alpine.min.js');
+        $result->assertSee('data-command-palette');
+        $result->assertSee('data-theme-toggle');
+        $this->assertStringContainsString('role="combobox"', $result->getBody());
+        $this->assertStringContainsString('role="listbox"', $result->getBody());
+        $this->assertStringContainsString('aria-live="polite"', $result->getBody());
         $result->assertSee('data-reveal');
         $result->assertSee('CV profesional, disusun dari pengalaman Anda.');
         $result->assertSee('Mulai buat CV');
@@ -62,7 +69,7 @@ final class HomeLayoutTest extends CIUnitTestCase
 
         $dashboard = $this->get('/dashboard');
         $dashboard->assertOK();
-        $this->assertMatchesRegularExpression('/<form action="[^"]*\/logout" method="post"/', $dashboard->getBody());
+        $this->assertMatchesRegularExpression('/<form(?:[^>]*)action="[^"]*\/logout" method="post"/', $dashboard->getBody());
         $this->assertStringContainsString('csrf_test_name', $dashboard->getBody());
 
         $this->withSession($_SESSION);

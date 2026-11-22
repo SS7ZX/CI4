@@ -4,8 +4,10 @@
   "scripts": {
     "build": "npm run build:css && npm run build:js",
     "build:css": "tailwindcss -i resources/css/app.css -o public/assets/css/app.css",
-    "build:js": "node scripts/copy-alpine.cjs && node scripts/copy-builder.cjs && node scripts/copy-motion.cjs",
-    "test:motion": "node --test tests/javascript/motion.test.cjs",
+    "build:js": "node scripts/copy-alpine.cjs && node scripts/copy-builder.cjs && node scripts/copy-motion.cjs && node scripts/copy-foundation.cjs && node scripts/copy-cv-ai-stream.cjs",
+    "test:motion": "node --test tests/javascript/motion.test.cjs tests/javascript/motion-css.test.cjs",
+    "test:foundation-css": "node --test tests/javascript/design-foundation-css.test.cjs",
+    "test:foundation": "node --test tests/javascript/design-foundation-css.test.cjs tests/javascript/foundation-interactions.test.cjs",
     "watch:css": "tailwindcss -i resources/css/app.css -o public/assets/css/app.css --watch"
   },
   "dependencies": {

@@ -18,7 +18,7 @@
         <form action="<?= esc(same_origin_url((string) $qrUploadUrl)) ?>" method="post" enctype="multipart/form-data" class="mt-4 max-w-xl">
             <?= csrf_field() ?>
             <label class="block text-sm font-semibold text-ink" for="payment-qr"><?= esc(lang('Payments.qr_upload_label')) ?></label>
-            <input class="mt-2 block min-h-11 w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink file:mr-3 file:rounded-sm file:border-0 file:bg-canvas file:px-3 file:py-1.5 file:text-sm file:font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="payment-qr" name="qr_image" type="file" accept="image/jpeg,image/png,image/webp" required>
+            <input class="mt-2 block min-h-11 w-full rounded-md border border-line bg-canvas px-3 py-2 text-sm text-ink file:mr-3 file:rounded-sm file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-sm file:font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="payment-qr" name="qr_image" type="file" accept="image/jpeg,image/png,image/webp" required>
             <p class="mt-2 text-xs leading-5 text-muted"><?= esc(lang('Payments.qr_setup_help')) ?></p>
             <button class="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-4 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" type="submit"><?= esc(lang('Payments.qr_upload_action')) ?></button>
         </form>
@@ -46,7 +46,7 @@
                         <form action="<?= esc(same_origin_url((string) $reviewUrl((string) $payment['id']))) ?>" method="post" class="mt-5 border-t border-line pt-4">
                             <?= csrf_field() ?>
                             <label class="block text-sm font-semibold text-ink" for="review-note-<?= esc($payment['id'], 'attr') ?>"><?= esc(lang('Payments.admin_note_label')) ?></label>
-                            <input class="mt-2 min-h-11 w-full rounded-md border border-line bg-white px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="review-note-<?= esc($payment['id'], 'attr') ?>" name="review_note" type="text" maxlength="500" aria-describedby="review-help-<?= esc($payment['id'], 'attr') ?>">
+                            <input class="mt-2 min-h-11 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="review-note-<?= esc($payment['id'], 'attr') ?>" name="review_note" type="text" maxlength="500" aria-describedby="review-help-<?= esc($payment['id'], 'attr') ?>">
                             <p class="mt-1 text-xs text-muted" id="review-help-<?= esc($payment['id'], 'attr') ?>"><?= esc(lang('Payments.admin_note_help')) ?></p>
                             <div class="mt-4 flex flex-wrap gap-3">
                                 <button class="inline-flex min-h-10 items-center rounded-md bg-accent-700 px-4 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900" type="submit" name="status" value="approved"><?= esc(lang('Payments.admin_approve')) ?></button>

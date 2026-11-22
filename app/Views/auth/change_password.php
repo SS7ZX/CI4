@@ -22,7 +22,8 @@
             </div>
             <div>
                 <label for="password" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.newPassword')) ?></label>
-                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="4096" required>
+                <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="4096" aria-describedby="password-help" required>
+                <p class="mt-1 text-xs text-muted" id="password-help"><?= esc(lang('Auth.passwordHelp')) ?></p>
             </div>
             <div>
                 <label for="password_confirm" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.passwordConfirm')) ?></label>
@@ -30,7 +31,7 @@
             </div>
             <button class="min-h-12 w-full rounded-md bg-accent-700 px-4 font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-70" type="submit" x-bind:disabled="pending">
                 <span x-show="!pending" x-transition.opacity.duration.150ms><?= esc(lang('Auth.savePassword')) ?></span>
-                <span x-cloak x-show="pending" x-transition.opacity.duration.150ms>Memproses...</span>
+                <span x-cloak x-show="pending" x-transition.opacity.duration.150ms><?= esc(lang('Auth.processingPassword')) ?></span>
             </button>
         </form>
         <p class="mt-5 text-sm"><a class="font-medium text-accent-900 underline decoration-accent-700 underline-offset-4 hover:text-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('Dashboard.backToDashboard')) ?></a></p>

@@ -29,10 +29,16 @@ $routes->get(
 
 $routes->group('dashboard', ['filter' => 'session'], static function (RouteCollection $routes): void {
     $routes->get('/', 'Dashboard::index', ['as' => 'dashboard']);
+    $routes->get('cv/ai', 'Dashboard::aiStart', ['as' => 'cv-ai-start']);
+    $routes->post('cv/ai/story', 'Dashboard::aiStory', ['as' => 'cv-ai-story']);
+    $routes->post('cv/ai/consent', 'Dashboard::aiConsent', ['as' => 'cv-ai-consent']);
+    $routes->post('cv/ai/live', 'Dashboard::aiLive', ['as' => 'cv-ai-live']);
+    $routes->post('cv/ai/review', 'Dashboard::aiReview', ['as' => 'cv-ai-review']);
     $routes->post('cv', 'Dashboard::create', ['as' => 'cv-create']);
     $routes->post('cv/quick', 'Dashboard::quickCreate', ['as' => 'cv-quick-create']);
     $routes->post('cv/ai/prepare', 'Dashboard::aiPrepare', ['as' => 'cv-ai-prepare']);
     $routes->post('cv/ai/generate', 'Dashboard::aiGenerate', ['as' => 'cv-ai-generate']);
+    $routes->post('cv/ai/summary/refine', 'Dashboard::aiRefineSummary', ['as' => 'cv-ai-summary-refine']);
     $routes->post('cv/ai/save', 'Dashboard::aiSave', ['as' => 'cv-ai-save']);
     $routes->get('cv/(:segment)', 'CvBuilder::edit/$1', ['as' => 'cv-show']);
     $routes->get('cv/(:segment)/step/(:num)', 'CvBuilder::edit/$1/$2', ['as' => 'cv-step']);

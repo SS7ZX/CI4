@@ -12,6 +12,11 @@ const source = fs.readFileSync(
 function createBuilder() {
     let alpineInit;
     let builderFactory;
+    let fetchImpl = async () => ({
+        status: 200,
+        ok: true,
+        json: async () => ({ status: 'saved' }),
+    });
     const focusTarget = { focused: false, focus() { this.focused = true; } };
     const document = {
         activeElement: focusTarget,
@@ -21,7 +26,13 @@ function createBuilder() {
         },
         getElementById: (id) => {
             assert.equal(id, 'cv-builder-state');
-            return { textContent: JSON.stringify({ cv: { theme_key: 'ats-classic' } }) };
+            return {
+                textContent: JSON.stringify({
+                    cv: { title: 'CV', theme_key: 'ats-classic' },
+                    profile: { full_name: '' },
+                    links: [],
+                }),
+            };
         },
     };
     const Alpine = {
@@ -31,10 +42,21 @@ function createBuilder() {
         },
     };
 
-    vm.runInNewContext(source, { Alpine, document });
+    vm.runInNewContext(source, {
+        Alpine,
+        document,
+        fetch: (...args) => fetchImpl(...args),
+        clearTimeout: () => {},
+        setTimeout: () => 1,
+        Date,
+    });
     alpineInit();
 
     const builder = builderFactory({
+        step: 1,
+        saveUrl: '/dashboard/cv/cv-id/autosave/1',
+        tokenName: 'csrf',
+        token: 'token',
         themePreviewUrl: '/dashboard/cv/cv-id/preview/__theme__',
         themes: [
             { key: 'ats-classic', name: 'ATS Klasik', ats_friendly: true },
@@ -44,7 +66,13 @@ function createBuilder() {
     builder.$nextTick = (callback) => callback();
     builder.$refs = { previewClose: { focus() {} } };
 
-    return { builder, focusTarget };
+    return {
+        builder,
+        focusTarget,
+        setFetch(nextFetch) {
+            fetchImpl = nextFetch;
+        },
+    };
 }
 
 test('previews the selected theme and applies it without losing focus restoration', () => {
@@ -67,4 +95,32 @@ test('previews the selected theme and applies it without losing focus restoratio
     assert.equal(builder.previewOpen, false);
     assert.equal(focusTarget.focused, true);
     assert.equal(saveScheduled, true);
+});
+
+test('failed validation and network saves preserve dirty state', async () => {
+    const validation = createBuilder();
+    validation.setFetch(async () => ({
+        status: 422,
+        ok: false,
+        json: async () => ({
+            status: 'error',
+            errors: { 'profile.full_name': 'Nama wajib diisi.' },
+        }),
+    }));
+    validation.builder.dirty = true;
+
+    assert.equal(await validation.builder.save(), false);
+    assert.equal(validation.builder.dirty, true);
+    assert.equal(validation.builder.status, 'error');
+    assert.equal(validation.builder.errors['profile.full_name'], 'Nama wajib diisi.');
+
+    const network = createBuilder();
+    network.setFetch(async () => {
+        throw new Error('network unavailable');
+    });
+    network.builder.dirty = true;
+
+    assert.equal(await network.builder.save(), false);
+    assert.equal(network.builder.dirty, true);
+    assert.equal(network.builder.status, 'error');
 });

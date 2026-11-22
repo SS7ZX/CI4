@@ -39,4 +39,38 @@ final class CvAiDraftService
 
         return $this->generator->generate($sanitizedStory);
     }
+
+    /**
+     * @param callable(string): void $onPartial
+     */
+    public function generateStream(
+        string $sanitizedStory,
+        string $targetRole,
+        callable $onPartial,
+    ): CvAiDraft {
+        if (! $this->isEnabled()) {
+            throw new CvAiGenerationException('disabled');
+        }
+
+        return $this->generator->generateStream($sanitizedStory, $targetRole, $onPartial);
+    }
+
+    /**
+     * @param array{
+     *     summary: string,
+     *     headline: string,
+     *     experience: string,
+     *     education: string,
+     *     skills: string,
+     *     additional_facts: string
+     * } $context
+     */
+    public function refineSummary(string $sanitizedStory, array $context, string $instruction): string
+    {
+        if (! $this->isEnabled()) {
+            throw new CvAiGenerationException('disabled');
+        }
+
+        return $this->generator->refineSummary($sanitizedStory, $context, $instruction);
+    }
 }

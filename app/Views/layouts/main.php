@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="<?= esc(lang('App.home_description')) ?>">
     <title><?= esc($title ?? lang('App.app_name')) ?></title>
+    <script src="/assets/js/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/app.css">
 </head>
 <body class="min-h-screen bg-canvas font-sans text-ink antialiased">
     <div class="flex min-h-screen flex-col" x-data="{ menuOpen: false }">
-        <a class="sr-only rounded-md bg-white px-4 py-2 text-accent-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:outline-2 focus:outline-offset-2 focus:outline-accent-700" href="#content"><?= esc(lang('App.skip_content')) ?></a>
+        <a class="sr-only rounded-md bg-paper px-4 py-2 text-accent-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:outline-2 focus:outline-offset-2 focus:outline-accent-700" href="#content"><?= esc(lang('App.skip_content')) ?></a>
         <header class="border-b border-line bg-canvas">
             <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
                 <a class="inline-flex items-center gap-3 rounded-md text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(site_url('/')) ?>">
@@ -25,6 +26,36 @@
                 >
                     <?= esc(lang('App.menu')) ?>
                 </button>
+                <div class="ml-auto flex items-center gap-2 md:ml-0">
+                    <button
+                        class="ui-icon-button"
+                        type="button"
+                        data-theme-toggle
+                        data-label-light="<?= esc(lang('App.theme_light')) ?>"
+                        data-label-dark="<?= esc(lang('App.theme_dark')) ?>"
+                        aria-label="<?= esc(lang('App.theme_toggle')) ?>"
+                        aria-pressed="false"
+                    >
+                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                            <circle cx="12" cy="12" r="3.5"></circle>
+                            <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"></path>
+                        </svg>
+                        <span class="sr-only" data-theme-label><?= esc(lang('App.theme_toggle')) ?></span>
+                    </button>
+                    <button
+                        class="ui-icon-button"
+                        type="button"
+                        data-command-open
+                        aria-label="<?= esc(lang('App.command_open')) ?>"
+                        title="<?= esc(lang('App.command_shortcut')) ?>"
+                    >
+                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                            <circle cx="11" cy="11" r="6"></circle>
+                            <path d="m16 16 4 4"></path>
+                        </svg>
+                        <span class="sr-only"><?= esc(lang('App.command_open')) ?></span>
+                    </button>
+                </div>
                 <nav
                     class="w-full border-t border-line pt-3 md:w-auto md:border-0 md:pt-0"
                     id="main-navigation"
@@ -43,7 +74,7 @@
                             href="<?= esc(url_to('password-edit')) ?>">
                             <?= esc(lang('Auth.changePassword')) ?>
                         </a>
-                        <form action="<?= esc(same_origin_url((string) url_to('logout'))) ?>" method="post" class="inline-flex">
+                        <form id="logout-form" action="<?= esc(same_origin_url((string) url_to('logout'))) ?>" method="post" class="inline-flex">
                             <?= csrf_field() ?>
                             <button class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit">
                                 <?= esc(lang('Auth.logout')) ?>
@@ -92,7 +123,56 @@
             </div>
         </footer>
     </div>
+    <dialog class="ui-command-dialog" data-command-palette aria-labelledby="command-palette-title">
+        <div class="ui-command-shell">
+            <div class="border-b border-line px-4 py-3">
+                <h2 class="sr-only" id="command-palette-title"><?= esc(lang('App.command_title')) ?></h2>
+                <label class="sr-only" for="command-palette-search"><?= esc(lang('App.command_placeholder')) ?></label>
+                <input
+                    class="ui-command-search"
+                    id="command-palette-search"
+                    type="search"
+                    autocomplete="off"
+                    placeholder="<?= esc(lang('App.command_placeholder')) ?>"
+                    data-command-input
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-controls="command-palette-results"
+                    aria-expanded="false"
+                >
+            </div>
+            <div class="max-h-80 overflow-y-auto p-2" id="command-palette-results" role="listbox" data-command-list>
+                <a class="ui-command-item" id="command-result-themes" role="option" aria-selected="false" tabindex="-1" href="<?= esc(site_url('/#themes')) ?>" data-command-result>
+                    <?= esc(lang('App.command_themes')) ?>
+                </a>
+                <?php if (auth()->loggedIn()): ?>
+                    <a class="ui-command-item" id="command-result-dashboard" role="option" aria-selected="false" tabindex="-1" href="<?= esc(url_to('dashboard')) ?>" data-command-result>
+                        <?= esc(lang('App.command_dashboard')) ?>
+                    </a>
+                    <a class="ui-command-item" id="command-result-password" role="option" aria-selected="false" tabindex="-1" href="<?= esc(url_to('password-edit')) ?>" data-command-result>
+                        <?= esc(lang('App.command_password')) ?>
+                    </a>
+                    <button class="ui-command-item w-full text-left" id="command-result-logout" type="button" role="option" aria-selected="false" tabindex="-1" data-command-result data-command-form="logout-form">
+                        <?= esc(lang('App.command_logout')) ?>
+                    </button>
+                <?php else: ?>
+                    <a class="ui-command-item" id="command-result-login" role="option" aria-selected="false" tabindex="-1" href="<?= esc(url_to('login')) ?>" data-command-result>
+                        <?= esc(lang('App.command_login')) ?>
+                    </a>
+                    <a class="ui-command-item" id="command-result-register" role="option" aria-selected="false" tabindex="-1" href="<?= esc(url_to('register')) ?>" data-command-result>
+                        <?= esc(lang('App.command_register')) ?>
+                    </a>
+                <?php endif; ?>
+                <button class="ui-command-item w-full text-left" id="command-result-theme-toggle" type="button" role="option" aria-selected="false" tabindex="-1" data-command-result data-command-theme>
+                    <?= esc(lang('App.theme_toggle')) ?>
+                </button>
+            </div>
+            <p class="border-t border-line px-4 py-2 text-xs text-muted" data-command-empty role="status" aria-live="polite" aria-atomic="true" hidden><?= esc(lang('App.command_empty')) ?></p>
+            <p class="border-t border-line px-4 py-2 text-xs text-muted"><?= esc(lang('App.command_hint')) ?></p>
+        </div>
+    </dialog>
     <script defer src="/assets/js/motion.js"></script>
+    <script defer src="/assets/js/foundation.js"></script>
     <script defer src="/assets/js/alpine.min.js"></script>
 </body>
 </html>
