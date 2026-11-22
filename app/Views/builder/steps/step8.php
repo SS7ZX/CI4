@@ -79,7 +79,7 @@ foreach ($themes as $theme) {
         </div>
         <div class="overflow-hidden rounded-md border border-line bg-canvas p-2 sm:p-4">
             <iframe
-                class="mx-auto h-[72vh] min-h-[32rem] w-full max-w-[52rem] border border-line bg-white"
+                class="mx-auto h-[72vh] min-h-128 w-full max-w-208 border border-line bg-white"
                 title="<?= esc(lang('CvBuilder.pdf_preview_title')) ?>"
                 loading="lazy"
                 x-bind:src="previewFrameUrl"

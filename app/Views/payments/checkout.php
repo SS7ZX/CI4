@@ -61,7 +61,7 @@
 
         <aside class="h-fit rounded-md border border-line bg-canvas p-5">
             <h2 class="font-semibold text-ink"><?= esc(lang('Payments.title')) ?></h2>
-            <p class="mt-2 break-words text-sm leading-6 text-muted"><?= esc($cvId) ?></p>
+            <p class="mt-2 wrap-break-word text-sm leading-6 text-muted"><?= esc($cvId) ?></p>
             <a class="mt-5 inline-flex min-h-10 items-center text-sm font-semibold text-accent-900 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('cv-step', $cvId, 8)) ?>"><?= esc(lang('Payments.back_to_editor')) ?></a>
         </aside>
     </div>

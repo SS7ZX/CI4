@@ -90,7 +90,7 @@
                 <div class="flex flex-col justify-between border-t border-line p-5 sm:p-7 lg:border-l lg:border-t-0">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-[0.12em] text-muted"><?= esc(lang('Dashboard.latest_document_label')) ?></p>
-                        <h3 class="mt-2 break-words text-xl font-semibold tracking-tight text-ink"><?= esc($featuredCv->title) ?></h3>
+                        <h3 class="mt-2 wrap-break-word text-xl font-semibold tracking-tight text-ink"><?= esc($featuredCv->title) ?></h3>
                         <?php if (is_array($featuredTheme)): ?>
                             <p class="mt-3 text-sm font-medium text-accent-900"><?= esc(lang($featuredTheme['name_key'])) ?></p>
                             <span class="mt-2 inline-flex min-h-8 items-center rounded-md border border-line px-3 text-xs font-semibold text-ink">
@@ -226,7 +226,7 @@
                         <?= view('themes/thumbnail', ['theme' => $theme, 'featured' => false, 'compact' => true]) ?>
                     <?php endif; ?>
                     <div class="flex flex-1 flex-col p-5">
-                        <h3 class="break-words text-lg font-semibold tracking-tight text-ink"><?= esc($cv->title) ?></h3>
+                        <h3 class="wrap-break-word text-lg font-semibold tracking-tight text-ink"><?= esc($cv->title) ?></h3>
                         <p class="mt-1 text-xs text-muted"><?= esc(lang('Dashboard.updated')) ?>: <?= esc((string) $cv->updated_at) ?></p>
                         <?php if (is_array($theme)): ?>
                             <p class="mt-3 text-sm font-medium text-accent-900"><?= esc(lang($theme['name_key'])) ?> <span class="font-normal text-muted">, <?= esc(lang($theme['ats_friendly'] ? 'Themes.ats_badge' : 'Themes.non_ats_badge')) ?></span></p>

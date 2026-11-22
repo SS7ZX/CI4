@@ -31,7 +31,7 @@
         <div class="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5" data-reveal>
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('CvBuilder.title')) ?></p>
-                <h1 class="mt-2 break-words text-2xl font-semibold tracking-tight text-ink sm:text-3xl"><?= esc($state['cv']['title']) ?></h1>
+                <h1 class="mt-2 wrap-break-word text-2xl font-semibold tracking-tight text-ink sm:text-3xl"><?= esc($state['cv']['title']) ?></h1>
                 <p class="mt-2 text-sm text-muted"><?= esc(lang('CvBuilder.description')) ?></p>
             </div>
             <div class="flex items-center gap-3">
