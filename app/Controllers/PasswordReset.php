@@ -137,9 +137,7 @@ final class PasswordReset extends BaseController
             'expires' => Time::now()->addSeconds(self::RESET_LIFETIME_SECONDS),
         ]);
 
-        $resetUrl = same_origin_url(
-            (string) url_to('password-reset', $token),
-        );
+        $resetUrl = (string) url_to('password-reset', $token);
 
         $emailConfig = config(Email::class);
         if (! $emailConfig->isSmtpConfigured()) {

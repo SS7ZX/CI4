@@ -9,6 +9,7 @@ use CodeIgniter\Email\Email as EmailService;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
+use Config\App;
 use Config\Email;
 
 /**
@@ -120,6 +121,7 @@ final class PasswordResetTest extends CIUnitTestCase
         $emailConfig->fromEmail = 'no-reply@cv-maker.test';
         $emailConfig->fromName = 'CV Maker';
 
+        $resetUrlPrefix = rtrim(config(App::class)->baseURL, '/') . '/password/reset/';
         $email = $this->createMock(EmailService::class);
         $email->expects($this->once())
             ->method('setMailType')
@@ -128,11 +130,12 @@ final class PasswordResetTest extends CIUnitTestCase
         $email->expects($this->once())
             ->method('setMessage')
             ->with($this->callback(static fn (string $message): bool => str_contains($message, '<!doctype html>')
+                && str_contains($message, 'href="' . $resetUrlPrefix)
                 && ! str_contains($message, 'DEBUG-VIEW')))
             ->willReturnSelf();
         $email->expects($this->once())
             ->method('setAltMessage')
-            ->with($this->callback(static fn (string $message): bool => str_contains($message, 'password/reset/')
+            ->with($this->callback(static fn (string $message): bool => str_contains($message, $resetUrlPrefix)
                 && str_contains($message, lang('Auth.passwordResetEmailInstructions'))))
             ->willReturnSelf();
         $email->expects($this->once())->method('send')->with(false)->willReturn(true);
