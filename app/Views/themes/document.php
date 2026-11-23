@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= esc(lang('CvRender.preview_title')) ?></title>
+    <link rel="stylesheet" href="<?= esc(base_url('assets/css/cv-preview-motion.css')) ?>" media="screen">
     <style {csp-style-nonce}>
         @page {
             size: <?= $paper === 'letter' ? 'letter' : 'A4' ?>;

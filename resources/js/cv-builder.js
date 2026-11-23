@@ -17,6 +17,7 @@ document.addEventListener('alpine:init', () => {
         tokenName: config.tokenName,
         token: config.token,
         status: '',
+        savedAt: '',
         errors: {},
         photoMessage: '',
         selectedTheme: '',
@@ -24,7 +25,16 @@ document.addEventListener('alpine:init', () => {
         previewTrigger: null,
         previewThemeKey: '',
         previewFrameUrl: '',
+        previewZoom: 1,
+        previewUpdating: true,
+        previewSettled: false,
+        previewPreviousSections: new Map(),
         pageCountMessage: '',
+        exportOpen: false,
+        exportBusy: false,
+        exportStep: 0,
+        exportStatus: '',
+        exportTrigger: null,
         busy: false,
         dirty: false,
         timer: null,
@@ -59,8 +69,20 @@ document.addEventListener('alpine:init', () => {
             if (this.step === 8) {
                 const palette = this.selectedPalette();
                 this.state.cv.accent_color ??= palette[0];
-                this.previewFrameUrl = `${this.previewUrl}?v=${Date.now()}`;
+                this.refreshPreviewFrame();
                 this.refreshPageCount();
+            }
+            if (this.step === 6) {
+                this.$nextTick(() => {
+                    import('/assets/js/section-reorder.js')
+                        .then(({ initializeSectionReorder }) => {
+                            initializeSectionReorder(this.$root.querySelector('[data-section-sort-list]'));
+                        })
+                        .catch(() => {
+                            this.status = 'error';
+                            this.errors.sections = this.messages.reorderError;
+                        });
+                });
             }
         },
 
@@ -146,8 +168,12 @@ document.addEventListener('alpine:init', () => {
                 } while (this.dirty);
 
                 this.status = 'saved';
+                this.savedAt = new Intl.DateTimeFormat('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                }).format(new Date());
                 if (this.step === 8) {
-                    this.previewFrameUrl = `${this.previewUrl}?v=${Date.now()}`;
+                    this.refreshPreviewFrame();
                     await this.refreshPageCount();
                 }
                 return true;
@@ -167,15 +193,74 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        statusLabel() {
+            if (this.status === 'saving') return this.messages.saving;
+            if (this.status === 'saved') {
+                return this.messages.savedAt.replace('{0}', this.savedAt);
+            }
+            if (this.status === 'error') return this.messages.saveError;
+            return this.messages.reviewStatus;
+        },
+
         async downloadPdf() {
             if (this.busy) return;
-            if (await this.save()) {
+            this.exportTrigger = document.activeElement;
+            this.exportOpen = true;
+            this.exportStep = 1;
+            this.exportStatus = this.messages.exportSave;
+            this.$nextTick(() => this.$refs.exportClose?.focus());
+            if (!await this.save()) {
+                this.exportStep = 0;
+                this.exportStatus = this.messages.exportError;
+                return false;
+            }
+            if (!this.paymentPaid) {
                 window.location.assign(this.downloadUrl);
+                return true;
+            }
+
+            this.exportBusy = true;
+            this.exportStep = 2;
+            this.exportStatus = this.messages.exportGenerate;
+            try {
+                const response = await fetch(this.downloadUrl, {
+                    credentials: 'same-origin',
+                    headers: { Accept: 'application/pdf' },
+                });
+                const contentType = response.headers.get('Content-Type') ?? '';
+                if (!response.ok || !contentType.toLowerCase().includes('application/pdf')) {
+                    window.location.assign(response.url || this.downloadUrl);
+                    return false;
+                }
+
+                const blob = await response.blob();
+                const disposition = response.headers.get('Content-Disposition') ?? '';
+                const filenameMatch = disposition.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+                const filename = filenameMatch
+                    ? decodeURIComponent(filenameMatch[1].replace(/["']/g, ''))
+                    : 'cv.pdf';
+                const objectUrl = URL.createObjectURL(blob);
+                const anchor = document.createElement('a');
+                anchor.href = objectUrl;
+                anchor.download = filename;
+                anchor.click();
+                window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+                this.exportStep = 3;
+                this.exportStatus = this.messages.exportReady;
+                window.cvToasts?.show(this.messages.exportSuccess);
+                return true;
+            } catch {
+                this.exportStep = 0;
+                this.exportStatus = this.messages.exportError;
+                return false;
+            } finally {
+                this.exportBusy = false;
             }
         },
 
         previewTheme(themeKey) {
             this.previewThemeKey = themeKey;
+            this.previewUpdating = true;
             this.previewFrameUrl = this.themePreviewUrl.replace('__theme__', encodeURIComponent(themeKey));
             this.previewTrigger = document.activeElement;
             this.previewOpen = true;
@@ -202,6 +287,76 @@ document.addEventListener('alpine:init', () => {
             this.$nextTick(() => this.previewTrigger?.focus());
         },
 
+        closeExport() {
+            if (this.exportBusy) return;
+            this.exportOpen = false;
+            this.$nextTick(() => this.exportTrigger?.focus());
+        },
+
+        trapExportFocus(event) {
+            if (!this.exportOpen || event.key !== 'Tab') return;
+            const focusable = [...this.$refs.exportDialog.querySelectorAll('button:not([disabled])')];
+            if (focusable.length === 0) {
+                event.preventDefault();
+                this.$refs.exportDialog.focus();
+                return;
+            }
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        },
+
+        refreshPreviewFrame() {
+            const frame = this.$refs.previewFrame;
+            const previewDocument = frame?.contentDocument;
+            if (previewDocument) {
+                this.previewPreviousSections = new Map(
+                    [...previewDocument.querySelectorAll('.cv-section')].map((section) => [
+                        section.className,
+                        section.textContent,
+                    ]),
+                );
+            }
+            this.previewUpdating = true;
+            this.previewSettled = false;
+            this.previewFrameUrl = `${this.previewUrl}?v=${Date.now()}`;
+        },
+
+        previewLoaded() {
+            this.previewUpdating = false;
+            this.previewSettled = true;
+            const frame = this.$refs.previewFrame;
+            const previewDocument = frame?.contentDocument;
+            if (!previewDocument) return;
+            for (const section of previewDocument.querySelectorAll('.cv-section')) {
+                if (this.previewPreviousSections.get(section.className) === section.textContent) {
+                    continue;
+                }
+                section.classList.add('cv-change-highlight');
+                section.addEventListener('animationend', () => section.classList.remove('cv-change-highlight'), { once: true });
+            }
+            this.previewPreviousSections.clear();
+        },
+
+        zoomPreview(amount) {
+            this.previewZoom = Math.min(1.25, Math.max(0.75, Math.round((this.previewZoom + amount) * 100) / 100));
+        },
+
+        fitPreview() {
+            const frame = this.$refs.previewFrame;
+            const documentWidth = frame?.contentDocument?.documentElement?.scrollWidth ?? 0;
+            const containerWidth = frame?.parentElement?.clientWidth ?? 0;
+            this.previewZoom = documentWidth > 0 && containerWidth > 0
+                ? Math.min(1, Math.max(0.75, containerWidth / documentWidth))
+                : 1;
+        },
+
         trapPreviewFocus(event) {
             if (!this.previewOpen || event.key !== 'Tab') return;
             const focusable = [...this.$refs.previewDialog.querySelectorAll('button:not([disabled]), iframe')];
@@ -219,6 +374,7 @@ document.addEventListener('alpine:init', () => {
 
         configurePreviewFrame(event) {
             const frame = event.target;
+            this.previewUpdating = false;
             const previewDocument = frame.contentDocument;
             if (!previewDocument) return;
             previewDocument.addEventListener('keydown', (keyEvent) => {
@@ -275,6 +431,20 @@ document.addEventListener('alpine:init', () => {
             this.scheduleSave();
         },
 
+        reorderSections(keys) {
+            const sections = new Map(this.state.sections.map((section) => [section.section_key, section]));
+            if (keys.length !== sections.size || keys.some((key) => !sections.has(key))) {
+                this.errors.sections = this.messages.reorderError;
+                return;
+            }
+
+            this.state.sections = keys.map((section_key, sort_order) => ({
+                ...sections.get(section_key),
+                sort_order,
+            }));
+            this.scheduleSave();
+        },
+
         async uploadPhoto(event) {
             const form = event.target;
             const data = new FormData(form);
@@ -303,6 +473,10 @@ document.addEventListener('alpine:init', () => {
                 this.state.profile.photo_path = result.url;
                 this.photoMessage = result.message;
                 this.status = 'saved';
+                this.savedAt = new Intl.DateTimeFormat('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                }).format(new Date());
                 form.reset();
             } catch {
                 this.status = 'error';

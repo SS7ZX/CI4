@@ -1,0 +1,30 @@
+:root {
+    --duration-highlight: 600ms;
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    .cv-change-highlight {
+        isolation: isolate;
+        position: relative;
+    }
+
+    .cv-change-highlight::after {
+        animation: cv-preview-highlight var(--duration-highlight) var(--ease-standard) both;
+        background: rgb(169 139 79 / 18%);
+        content: "";
+        inset: 0;
+        pointer-events: none;
+        position: absolute;
+        z-index: -1;
+    }
+}
+
+@keyframes cv-preview-highlight {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}

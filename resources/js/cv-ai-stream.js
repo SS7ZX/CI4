@@ -87,15 +87,22 @@
         }
 
         function appendText(text) {
+            root.classList.add('has-output');
             output.textContent += text;
         }
 
-        function submitReview(draft) {
+        function submitReview(draft, csrfToken) {
+            const csrfTokenName = root.dataset.csrfTokenName;
+            if (!csrfTokenName) {
+                throw new Error(dependencies.messages.csrf);
+            }
+
             const reviewForm = document.createElement('form');
             reviewForm.method = 'post';
             reviewForm.action = root.dataset.reviewUrl;
             const sourceData = new FormData(form);
             const fields = new Map(sourceData.entries());
+            fields.set(csrfTokenName, csrfToken);
             Object.entries({
                 full_name: sourceData.get('full_name'),
                 email: sourceData.get('email'),
@@ -123,8 +130,10 @@
             cancelled = false;
             completed = false;
             completedDraft = null;
+            root.classList.remove('has-output');
             output.textContent = '';
             startButton.disabled = true;
+            startButton.setAttribute('aria-busy', 'true');
             cancelButton.disabled = false;
             setStatus(dependencies.messages.generating);
             timeoutId = setTimeout(() => {
@@ -142,6 +151,13 @@
                 });
                 if (!response.ok || !response.body) {
                     throw new Error(dependencies.messages.failed);
+                }
+                const csrfHeaderName = root.dataset.csrfHeaderName;
+                const csrfToken = csrfHeaderName && typeof response.headers?.get === 'function'
+                    ? response.headers.get(csrfHeaderName)
+                    : null;
+                if (!csrfToken) {
+                    throw new Error(dependencies.messages.csrf);
                 }
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
@@ -174,7 +190,7 @@
                 if (!completed || completedDraft === null) {
                     throw new Error(dependencies.messages.disconnected);
                 }
-                submitReview(completedDraft);
+                submitReview(completedDraft, csrfToken);
             } catch (error) {
                 if (cancelled) {
                     setStatus(dependencies.messages.cancelled);
@@ -191,6 +207,7 @@
                 controller = null;
                 cancelButton.disabled = true;
                 startButton.disabled = completed;
+                startButton.setAttribute('aria-busy', 'false');
             }
         }
 
@@ -225,6 +242,7 @@
                 messages: {
                     generating: messages.generating,
                     failed: messages.failed,
+                    csrf: messages.csrfError,
                     disconnected: messages.disconnected,
                     cancelled: messages.cancelled,
                     timeout: messages.timeout,

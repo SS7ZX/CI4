@@ -3,7 +3,7 @@
 <?= $this->section('title') ?><?= esc(lang('Auth.login')) ?><?= $this->endSection() ?>
 
 <?= $this->section('main') ?>
-    <div>
+    <div class="auth-fields reveal-stagger" data-reveal>
         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Auth.form_kicker')) ?></p>
         <h1 class="mb-2 mt-2 text-3xl font-semibold tracking-tight text-ink"><?= esc(lang('Auth.login')) ?></h1>
         <p class="mb-6 text-sm leading-6 text-muted"><?= esc(lang('Auth.loginDescription')) ?></p>
@@ -22,13 +22,13 @@
             <p class="mb-4 rounded-md border border-green-700 bg-green-50 px-4 py-3 text-sm text-green-900" role="status"><?= esc(session('message')) ?></p>
         <?php endif; ?>
 
-        <form action="<?= esc(same_origin_url((string) url_to('login'))) ?>" method="post" class="space-y-4" x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
+        <form action="<?= esc(same_origin_url((string) url_to('login'))) ?>" method="post" class="reveal-stagger space-y-4" data-reveal x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
             <?= csrf_field() ?>
-            <div>
+            <div class="motion-field">
                 <label for="email" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.email')) ?></label>
                 <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" value="<?= esc(old('email')) ?>" autofocus required>
             </div>
-            <div>
+            <div class="motion-field">
                 <label for="password" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.password')) ?></label>
                 <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="password" name="password" type="password" autocomplete="current-password" maxlength="4096" required>
             </div>
@@ -38,9 +38,9 @@
                     <?= esc(lang('Auth.rememberMe')) ?>
                 </label>
             <?php endif; ?>
-            <button class="min-h-12 w-full rounded-md bg-accent-700 px-4 font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-70" type="submit" x-bind:disabled="pending">
-                <span x-show="!pending" x-transition.opacity.duration.150ms><?= esc(lang('Auth.login')) ?></span>
-                <span x-cloak x-show="pending" x-transition.opacity.duration.150ms><?= esc(lang('Auth.processingLogin')) ?></span>
+            <button class="motion-button min-h-12 w-full rounded-md bg-accent-700 px-4 font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-70" type="submit" x-bind:disabled="pending" x-bind:aria-busy="pending.toString()">
+                <span class="motion-button-label" x-show="!pending"><?= esc(lang('Auth.login')) ?></span>
+                <span class="sr-only" x-cloak x-show="pending"><?= esc(lang('Auth.processingLogin')) ?></span>
             </button>
         </form>
 

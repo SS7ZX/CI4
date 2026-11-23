@@ -69,21 +69,61 @@ foreach ($themes as $theme) {
         </div>
     </aside>
 
-    <div class="min-w-0">
+    <div class="editor-preview min-w-0" data-editor-preview data-view-cv-preview>
         <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.14em] text-accent-900"><?= esc(lang('Themes.current_theme')) ?></p>
                 <h3 class="mt-1 text-lg font-semibold text-ink"><?= esc(lang('CvBuilder.pdf_preview_title')) ?></h3>
             </div>
             <p class="max-w-xs text-right text-xs leading-5 text-muted"><?= esc(lang('CvBuilder.preview_changes_note')) ?></p>
+            <div class="flex items-center gap-1" role="group" aria-label="<?= esc(lang('CvBuilder.pdf_preview_title')) ?>">
+                <button class="press min-h-9 rounded-sm border border-line bg-paper px-3 text-sm" type="button" x-on:click="zoomPreview(-0.1)" aria-label="<?= esc(lang('CvBuilder.zoom_out')) ?>">-</button>
+                <button class="press min-h-9 rounded-sm border border-line bg-paper px-3 text-sm" type="button" x-on:click="fitPreview()"><?= esc(lang('CvBuilder.zoom_fit')) ?></button>
+                <button class="press min-h-9 rounded-sm border border-line bg-paper px-3 text-sm" type="button" x-on:click="zoomPreview(0.1)" aria-label="<?= esc(lang('CvBuilder.zoom_in')) ?>">+</button>
+            </div>
         </div>
-        <div class="overflow-hidden rounded-md border border-line bg-canvas p-2 sm:p-4">
+        <div class="editor-preview-paper overflow-hidden rounded-md border border-line bg-canvas p-2 sm:p-4" x-bind:class="previewSettled ? 'is-settled' : ''">
             <iframe
-                class="mx-auto h-[72vh] min-h-128 w-full max-w-208 border border-line bg-white"
+                class="preview-iframe preview-zoom-target mx-auto h-[72vh] min-h-128 w-full max-w-208 border border-line bg-white"
                 title="<?= esc(lang('CvBuilder.pdf_preview_title')) ?>"
                 loading="lazy"
+                x-bind:style="`--preview-zoom: ${previewZoom}`"
                 x-bind:src="previewFrameUrl"
+                x-bind:class="previewUpdating ? 'is-loading' : ''"
+                x-on:load="previewLoaded()"
+                x-ref="previewFrame"
             ></iframe>
         </div>
     </div>
+</div>
+
+<div
+    class="fixed inset-0 z-50 grid place-items-center bg-ink/40 p-4"
+    x-cloak
+    x-show="exportOpen"
+    x-transition:enter="motion-dialog-enter-active"
+    x-transition:enter-start="motion-dialog-enter-start"
+    x-transition:enter-end="motion-dialog-enter-end"
+    x-transition:leave="motion-dialog-leave-active"
+    x-transition:leave-start="motion-dialog-leave-start"
+    x-transition:leave-end="motion-dialog-leave-end"
+    x-on:keydown.escape.window="closeExport()"
+    x-on:keydown.tab="trapExportFocus($event)"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="export-dialog-title"
+    tabindex="-1"
+    x-ref="exportDialog"
+>
+    <section class="w-full max-w-md rounded-md border border-line bg-paper p-5 sm:p-7">
+        <h3 class="text-lg font-semibold" id="export-dialog-title"><?= esc(lang('CvBuilder.export_dialog_title')) ?></h3>
+        <ol class="export-ledger mt-5" aria-label="<?= esc(lang('CvBuilder.export_dialog_title')) ?>">
+            <li class="export-ledger-step" x-bind:class="exportStep >= 1 ? 'is-complete' : ''" x-bind:style="exportStep >= 2 ? '--ledger-progress:1' : ''"><span class="sr-only"><?= esc(lang('CvBuilder.export_save_step')) ?></span>1</li>
+            <li class="export-ledger-step" x-bind:class="exportStep >= 2 ? 'is-complete' : ''" x-bind:style="exportStep >= 3 ? '--ledger-progress:1' : ''"><span class="sr-only"><?= esc(lang('CvBuilder.export_generate_step')) ?></span>2</li>
+            <li class="export-ledger-step" x-bind:class="exportStep >= 3 ? 'is-complete' : ''"><span class="sr-only"><?= esc(lang('CvBuilder.export_ready_step')) ?></span>3</li>
+        </ol>
+        <p class="mt-4 text-sm text-muted" role="status" aria-live="polite" x-text="exportStatus"></p>
+        <p class="export-stamp mt-4 text-sm font-semibold text-accent-900" x-bind:class="exportStep === 3 ? 'is-stamped' : ''" x-show="exportStep === 3"><?= esc(lang('CvBuilder.export_success')) ?></p>
+        <button class="mt-5 min-h-10 rounded-md border border-line px-4 text-sm font-semibold" type="button" x-on:click="closeExport()" x-bind:disabled="exportBusy" x-ref="exportClose"><?= esc(lang('CvBuilder.export_close')) ?></button>
+    </section>
 </div>

@@ -107,8 +107,16 @@ $additionalCollections = [
 <section>
     <h3 class="mb-3 text-lg font-semibold"><?= esc(lang('CvBuilder.section_settings')) ?></h3>
     <p class="mb-3 text-sm text-muted"><?= esc(lang('CvBuilder.section_settings_help')) ?></p>
+    <div class="reveal-stagger" data-section-sort-list>
     <template x-for="(section, index) in state.sections" x-bind:key="section.section_key">
-        <div class="mb-2 flex flex-wrap items-center gap-3 rounded-md border border-line p-3">
+        <div class="mb-2 flex flex-wrap items-center gap-3 rounded-md border border-line p-3" data-sort-item x-bind:data-section-key="section.section_key">
+            <span class="grid size-9 shrink-0 touch-none place-items-center rounded-sm border border-line text-muted" data-sort-handle aria-hidden="true">
+                <svg class="size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <circle cx="5" cy="3" r="1"></circle><circle cx="11" cy="3" r="1"></circle>
+                    <circle cx="5" cy="8" r="1"></circle><circle cx="11" cy="8" r="1"></circle>
+                    <circle cx="5" cy="13" r="1"></circle><circle cx="11" cy="13" r="1"></circle>
+                </svg>
+            </span>
             <label class="flex min-h-10 flex-1 items-center gap-2 text-sm font-medium">
                 <input class="size-4 accent-accent-700" type="checkbox" x-model="section.is_visible">
                 <span x-text="sectionLabels[section.section_key] ?? section.section_key"></span>
@@ -117,4 +125,5 @@ $additionalCollections = [
             <button class="min-h-9 rounded-md border border-line px-3 text-sm" type="button" x-on:click="move(state.sections, index, 1)" x-bind:disabled="index === state.sections.length - 1" aria-label="<?= esc(lang('CvBuilder.move_down')) ?>"><?= esc(lang('CvBuilder.move_down')) ?></button>
         </div>
     </template>
+    </div>
 </section>

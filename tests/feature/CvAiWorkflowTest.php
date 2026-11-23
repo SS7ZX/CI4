@@ -74,7 +74,7 @@ final class CvAiWorkflowTest extends CIUnitTestCase
             $response = $this->get('/dashboard');
 
             $response->assertOK();
-            $response->assertSee(lang('Dashboard.ai_local_ready'));
+            $response->assertSee(lang('Dashboard.ai_status_ready'));
             $response->assertSee(lang('Dashboard.ai_start_action'));
             $this->assertStringContainsString('href="' . url_to('cv-ai-start') . '"', $response->getBody());
         } finally {
@@ -222,6 +222,24 @@ final class CvAiWorkflowTest extends CIUnitTestCase
             $this->assertSame(200, $response->response()->getStatusCode());
             $this->assertStringContainsString('text/event-stream', $response->response()->getHeaderLine('Content-Type'));
             $this->assertStringContainsString('no-store', $response->response()->getHeaderLine('Cache-Control'));
+            $rotatedCsrfToken = $response->response()->getHeaderLine('X-CSRF-TOKEN');
+            $this->assertNotSame('', $rotatedCsrfToken);
+
+            $review = $this->withHeaders(['X-CSRF-TOKEN' => $rotatedCsrfToken])
+                ->post('/dashboard/cv/ai/review', [
+                    'full_name'       => 'Rani Pratama',
+                    'headline'        => 'Koordinator Proyek',
+                    'email'           => 'ai-stream@example.test',
+                    'phone'           => '',
+                    'city'            => '',
+                    'sanitized_story' => 'Mengelola proyek dan menyusun laporan berkala.',
+                    'summary'         => '',
+                    'experience'      => 'Mengelola proyek dan laporan.',
+                    'education'       => '',
+                    'skills'           => '',
+                ]);
+            $review->assertOK();
+            $review->assertSee(lang('Dashboard.ai_review_title'));
             $this->assertSame(0, (new Cv())->where('user_id', $userId)->countAllResults());
         } finally {
             auth()->logout();

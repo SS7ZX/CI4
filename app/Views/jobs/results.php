@@ -24,9 +24,9 @@
                 <a class="inline-flex min-h-11 items-center rounded-md border border-line bg-paper px-4 text-sm font-medium text-ink hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc($insightsUrl) ?>"><?= esc(lang('Jobs.insights_title')) ?></a>
                 <form action="<?= esc(same_origin_url((string) $refreshUrl)) ?>" method="post" x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
                     <?= csrf_field() ?>
-                    <button class="min-h-11 rounded-md bg-accent-700 px-4 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit" x-bind:disabled="pending">
-                        <span x-show="!pending" x-transition.opacity.duration.150ms><?= esc(lang('Jobs.refresh_search')) ?></span>
-                        <span x-cloak x-show="pending" x-transition.opacity.duration.150ms><?= esc(lang('Jobs.loading')) ?></span>
+                    <button class="motion-button min-h-11 rounded-md bg-accent-700 px-4 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="submit" x-bind:disabled="pending" x-bind:aria-busy="pending.toString()">
+                        <span class="motion-button-label" x-show="!pending"><?= esc(lang('Jobs.refresh_search')) ?></span>
+                        <span class="sr-only" x-cloak x-show="pending"><?= esc(lang('Jobs.loading')) ?></span>
                     </button>
                     <span class="sr-only" role="status" aria-live="polite" x-text="pending ? <?= esc(json_encode(lang('Jobs.loading'), JSON_THROW_ON_ERROR), 'attr') ?> : ''"></span>
                 </form>

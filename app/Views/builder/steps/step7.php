@@ -17,12 +17,12 @@
     </div>
 </div>
 
-<fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+<fieldset class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 reveal-stagger">
     <legend class="sr-only"><?= esc(lang('Themes.step_title')) ?></legend>
     <?php foreach ($themes as $theme): ?>
         <?php $themeInputId = 'theme-' . $theme['key']; ?>
         <div
-            class="overflow-hidden rounded-md border border-line hover:bg-canvas focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent-700"
+            class="theme-card overflow-hidden rounded-md border border-line hover:bg-canvas focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent-700"
             x-bind:class="selectedTheme === <?= esc(json_encode($theme['key'], JSON_THROW_ON_ERROR), 'attr') ?> ? 'border-accent-700 bg-accent-50' : ''"
             x-show="(themeQuery === '' || <?= esc(json_encode(mb_strtolower(lang($theme['name_key']) . ' ' . lang($theme['description_key']))), 'attr') ?>.includes(themeQuery.toLowerCase())) && (atsFilter === 'all' || (atsFilter === 'ats' && <?= $theme['ats_friendly'] ? 'true' : 'false' ?>) || (atsFilter === 'visual' && <?= $theme['ats_friendly'] ? 'false' : 'true' ?>))"
         >
@@ -54,15 +54,15 @@
 <p class="mt-3 text-sm text-red-800" x-show="errors.theme_key" x-text="errors.theme_key" role="alert"></p>
 
 <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-ink p-3 sm:p-6"
+    class="theme-drawer-backdrop fixed inset-0 z-50"
     x-cloak
     x-show="previewOpen"
-    x-transition:enter="motion-dialog-enter-active"
-    x-transition:enter-start="motion-dialog-enter-start"
-    x-transition:enter-end="motion-dialog-enter-end"
-    x-transition:leave="motion-dialog-leave-active"
-    x-transition:leave-start="motion-dialog-leave-start"
-    x-transition:leave-end="motion-dialog-leave-end"
+    x-transition:enter="motion-drawer-enter-active"
+    x-transition:enter-start="motion-drawer-enter-start"
+    x-transition:enter-end="motion-drawer-enter-end"
+    x-transition:leave="motion-drawer-leave-active"
+    x-transition:leave-start="motion-drawer-leave-start"
+    x-transition:leave-end="motion-drawer-leave-end"
     x-on:keydown.escape.window="closePreview()"
     x-on:keydown.tab="trapPreviewFocus($event)"
     role="dialog"
@@ -70,7 +70,7 @@
     aria-label="<?= esc(lang('Themes.preview_title')) ?>"
     x-ref="previewDialog"
 >
-    <div class="flex h-full max-h-[92vh] w-full max-w-6xl flex-col rounded-md border border-line bg-paper p-3 sm:p-5">
+    <div class="theme-drawer-panel flex flex-col border-l border-line bg-paper p-3 sm:p-5">
         <div class="mb-3 flex items-center justify-between gap-3">
             <div>
                 <h3 class="text-lg font-semibold"><?= esc(lang('Themes.preview_title')) ?></h3>
@@ -81,7 +81,7 @@
             <button class="min-h-10 rounded-md border border-line px-3 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" type="button" x-on:click="closePreview()" x-ref="previewClose"><?= esc(lang('Themes.close_preview')) ?></button>
         </div>
         <template x-if="previewOpen">
-            <iframe class="min-h-0 w-full flex-1 border border-line" title="<?= esc(lang('Themes.preview_frame_title')) ?>" x-bind:src="previewFrameUrl" x-on:load="configurePreviewFrame($event)" sandbox="allow-same-origin"></iframe>
+            <iframe class="preview-iframe min-h-0 w-full flex-1 border border-line" title="<?= esc(lang('Themes.preview_frame_title')) ?>" x-bind:class="previewUpdating ? 'is-loading' : ''" x-bind:src="previewFrameUrl" x-on:load="configurePreviewFrame($event)" sandbox="allow-same-origin"></iframe>
         </template>
         <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
             <p class="max-w-2xl text-xs leading-5 text-muted"><?= esc(lang('Themes.ats_scope_note')) ?></p>

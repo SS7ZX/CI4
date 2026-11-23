@@ -16,6 +16,7 @@ use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Shield\Entities\User;
 use Config\CvAi;
+use Config\Security;
 
 final class Dashboard extends BaseController
 {
@@ -573,6 +574,7 @@ final class Dashboard extends BaseController
 
     private function beginAiEventStream(): void
     {
+        $this->response->setHeader(config(Security::class)->headerName, csrf_hash());
         service('cvAiEventStream')->begin($this->response);
     }
 

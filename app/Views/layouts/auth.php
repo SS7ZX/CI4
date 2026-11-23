@@ -2,11 +2,27 @@
 
 <?= $this->section('content') ?>
     <section class="mx-auto grid w-full max-w-5xl overflow-hidden rounded-md border border-line bg-paper md:grid-cols-[minmax(0,0.9fr)_minmax(22rem,1.1fr)]" data-reveal aria-label="<?= esc(lang('Auth.workspace_kicker')) ?>">
-        <aside class="hidden flex-col justify-between border-r border-line bg-accent-50 p-8 md:flex lg:p-10">
+        <aside class="auth-atelier hidden flex-col justify-between border-r border-line bg-accent-50 p-8 md:flex lg:p-10">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Auth.workspace_kicker')) ?></p>
                 <h2 class="mt-5 max-w-sm text-3xl font-semibold leading-tight tracking-tight text-ink"><?= esc(lang('Auth.workspace_title')) ?></h2>
                 <p class="mt-4 max-w-sm text-sm leading-6 text-muted"><?= esc(lang('Auth.workspace_description')) ?></p>
+            </div>
+            <div class="auth-paper-stage" data-auth-parallax aria-hidden="true">
+                <div class="auth-paper">
+                    <span class="auth-paper-rule auth-paper-rule--title"></span>
+                    <span class="auth-paper-rule auth-paper-rule--wide"></span>
+                    <span class="auth-paper-rule"></span>
+                    <span class="auth-paper-rule auth-paper-rule--short"></span>
+                    <span class="auth-paper-divider"></span>
+                    <span class="auth-paper-rule auth-paper-rule--wide"></span>
+                    <span class="auth-paper-rule"></span>
+                    <span class="auth-paper-rule auth-paper-rule--short"></span>
+                    <span class="auth-paper-divider"></span>
+                    <span class="auth-paper-rule auth-paper-rule--wide"></span>
+                    <span class="auth-paper-rule"></span>
+                </div>
+                <span class="auth-paper-shadow"></span>
             </div>
             <ul class="mt-10 space-y-3 border-t border-line pt-5 text-sm text-muted">
                 <?php foreach (lang('Auth.workspace_items') as $item): ?>

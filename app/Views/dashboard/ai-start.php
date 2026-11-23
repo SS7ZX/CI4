@@ -3,7 +3,7 @@
 <?= $this->section('title') ?><?= esc($title) ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-    <section class="mx-auto max-w-3xl rounded-md border border-line bg-paper p-5 sm:p-8" data-reveal>
+    <section class="ai-wizard-page mx-auto max-w-3xl rounded-md border border-line bg-paper p-5 sm:p-8" data-reveal data-ai-wizard-page data-ai-step="1">
         <h1 class="text-2xl font-semibold tracking-tight text-ink"><?= esc(lang('Dashboard.ai_start_title')) ?></h1>
         <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.ai_start_description')) ?></p>
         <?= view('dashboard/ai-progress', ['currentStep' => 1]) ?>
@@ -15,7 +15,7 @@
                 <?php foreach ($errors as $error): ?><li><?= esc($error) ?></li><?php endforeach; ?>
             </ul>
         <?php endif; ?>
-        <form action="<?= esc(same_origin_url((string) url_to('cv-ai-story'))) ?>" method="post" class="mt-5 grid gap-4">
+        <form action="<?= esc(same_origin_url((string) url_to('cv-ai-story'))) ?>" method="post" class="mt-5 grid gap-4" data-ai-direction="forward">
             <?= csrf_field() ?>
             <div>
                 <label class="mb-1 block text-sm font-medium" for="ai-profile-name"><?= esc(lang('Dashboard.ai_full_name')) ?></label>

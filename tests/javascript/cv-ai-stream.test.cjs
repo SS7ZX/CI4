@@ -14,11 +14,15 @@ function loadModule() {
     return module.exports;
 }
 
-function createHarness(streamChunks, fetchOverride = null) {
+function createHarness(streamChunks, fetchOverride = null, responseCsrfToken = 'fresh-csrf-token') {
     const { initialize } = loadModule();
     const output = { textContent: '' };
     const status = { textContent: '' };
-    const startButton = { disabled: false };
+    const startButton = {
+        disabled: false,
+        attributes: new Map(),
+        setAttribute(name, value) { this.attributes.set(name, value); },
+    };
     const cancelButton = {
         disabled: true,
         addEventListener(event, callback) {
@@ -27,6 +31,7 @@ function createHarness(streamChunks, fetchOverride = null) {
         },
     };
     const submitted = [];
+    const rootClassNames = new Set();
     const form = {
         action: '/dashboard/cv/ai/generate',
         addEventListener(event, callback) {
@@ -35,7 +40,17 @@ function createHarness(streamChunks, fetchOverride = null) {
         },
     };
     const root = {
-        dataset: { reviewUrl: '/dashboard/cv/ai/review' },
+        classList: {
+            add: (value) => rootClassNames.add(value),
+            remove: (value) => rootClassNames.delete(value),
+            contains: (value) => rootClassNames.has(value),
+        },
+        dataset: {
+            reviewUrl: '/dashboard/cv/ai/review',
+            csrfTokenName: 'csrf_test_name',
+            csrfHeaderName: 'X-CSRF-TOKEN',
+            csrfError: 'Muat ulang halaman dan coba lagi.',
+        },
         querySelector(selector) {
             return ({
                 '[data-cv-ai-stream-form]': form,
@@ -91,6 +106,12 @@ function createHarness(streamChunks, fetchOverride = null) {
         const chunks = [...streamChunks];
         return {
             ok: true,
+            headers: {
+                get(name) {
+                    assert.equal(name, 'X-CSRF-TOKEN');
+                    return responseCsrfToken;
+                },
+            },
             body: {
                 getReader() {
                     return {
@@ -122,6 +143,7 @@ function createHarness(streamChunks, fetchOverride = null) {
         messages: {
             generating: 'Menyusun',
             failed: 'Gagal',
+            csrf: root.dataset.csrfError,
             disconnected: 'Terputus',
             cancelled: 'Dibatalkan',
             timeout: 'Waktu habis',
@@ -191,12 +213,23 @@ test('keeps partial output text-only and posts the validated draft to review', a
     assert.equal(harness.submitted.length, 1);
     assert.equal(harness.submitted[0].action, '/dashboard/cv/ai/review');
     const reviewFields = new Map(harness.submitted[0].children.map((field) => [field.name, field.value]));
-    assert.equal(reviewFields.get('csrf_test_name'), 'csrf-token');
+    assert.equal(reviewFields.get('csrf_test_name'), 'fresh-csrf-token');
     assert.equal(reviewFields.get('sanitized_story'), 'Mengelola proyek dan laporan.');
     assert.equal(reviewFields.get('headline'), 'Koordinator');
     assert.equal(reviewFields.has('action'), false);
     assert.equal(harness.startButton.disabled, true);
     assert.equal(/localStorage|sessionStorage/.test(source), false);
+});
+
+test('does not post the review form if the rotated CSRF token is unavailable', async () => {
+    const harness = createHarness([
+        'event: complete\ndata: {"draft":{"headline":"Koordinator","summary":"","experience":"","education":"","skills":""}}\n\n',
+    ], null, null);
+    await harness.form.onSubmit({ preventDefault() {} });
+
+    assert.equal(harness.status.textContent, 'Muat ulang halaman dan coba lagi.');
+    assert.equal(harness.submitted.length, 0);
+    assert.equal(harness.startButton.disabled, false);
 });
 
 test('does not submit a failed stream partial as a draft', async () => {

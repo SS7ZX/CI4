@@ -3,7 +3,7 @@
 <?= $this->section('title') ?><?= esc(lang('Auth.register')) ?><?= $this->endSection() ?>
 
 <?= $this->section('main') ?>
-    <div>
+    <div class="auth-fields reveal-stagger" data-reveal>
         <p class="text-xs font-semibold uppercase tracking-[0.16em] text-accent-900"><?= esc(lang('Auth.form_kicker')) ?></p>
         <h1 class="mb-2 mt-2 text-3xl font-semibold tracking-tight text-ink"><?= esc(lang('Auth.register')) ?></h1>
         <p class="mb-6 text-sm leading-6 text-muted"><?= esc(lang('Auth.registerDescription')) ?></p>
@@ -19,28 +19,28 @@
             </ul>
         <?php endif; ?>
 
-        <form action="<?= esc(same_origin_url((string) url_to('register'))) ?>" method="post" class="space-y-4" x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
+        <form action="<?= esc(same_origin_url((string) url_to('register'))) ?>" method="post" class="reveal-stagger space-y-4" data-reveal x-data="{ pending: false }" x-on:submit="pending = true" x-bind:aria-busy="pending.toString()">
             <?= csrf_field() ?>
-            <div>
+            <div class="motion-field">
                 <label for="email" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.email')) ?></label>
                 <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" value="<?= esc(old('email')) ?>" autofocus required>
             </div>
-            <div>
+            <div class="motion-field">
                 <label for="username" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.username')) ?></label>
                 <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" minlength="3" maxlength="30" pattern="[a-zA-Z0-9.]+" value="<?= esc(old('username')) ?>" required>
             </div>
-            <div>
+            <div class="motion-field">
                 <label for="password" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.password')) ?></label>
                 <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="4096" aria-describedby="password-help" required>
                 <p class="mt-1 text-xs text-muted" id="password-help"><?= esc(lang('Auth.passwordHelp')) ?></p>
             </div>
-            <div>
+            <div class="motion-field">
                 <label for="password_confirm" class="mb-1 block text-sm font-medium"><?= esc(lang('Auth.passwordConfirm')) ?></label>
                 <input class="min-h-12 w-full rounded-md border border-line bg-canvas px-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="password_confirm" name="password_confirm" type="password" autocomplete="new-password" minlength="8" maxlength="4096" required>
             </div>
-            <button class="min-h-12 w-full rounded-md bg-accent-700 px-4 font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-70" type="submit" x-bind:disabled="pending">
-                <span x-show="!pending" x-transition.opacity.duration.150ms><?= esc(lang('Auth.register')) ?></span>
-                <span x-cloak x-show="pending" x-transition.opacity.duration.150ms><?= esc(lang('Auth.processingRegister')) ?></span>
+            <button class="motion-button min-h-12 w-full rounded-md bg-accent-700 px-4 font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-70" type="submit" x-bind:disabled="pending" x-bind:aria-busy="pending.toString()">
+                <span class="motion-button-label" x-show="!pending"><?= esc(lang('Auth.register')) ?></span>
+                <span class="sr-only" x-cloak x-show="pending"><?= esc(lang('Auth.processingRegister')) ?></span>
             </button>
         </form>
 

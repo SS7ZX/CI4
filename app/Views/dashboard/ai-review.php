@@ -3,7 +3,7 @@
 <?= $this->section('title') ?><?= esc($title) ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-    <section class="mx-auto max-w-5xl rounded-md border border-line bg-paper p-5 sm:p-8" data-reveal>
+    <section class="ai-wizard-page mx-auto max-w-5xl rounded-md border border-line bg-paper p-5 sm:p-8" data-reveal data-ai-wizard-page data-ai-step="5">
         <h1 class="text-2xl font-semibold tracking-tight text-ink"><?= esc(lang('Dashboard.ai_review_title')) ?></h1>
         <p class="mt-2 text-sm leading-6 text-muted"><?= esc(lang('Dashboard.ai_review_description')) ?></p>
         <?= view('dashboard/ai-progress', ['currentStep' => 5]) ?>
@@ -109,7 +109,7 @@
                 <textarea class="min-h-20 w-full rounded-md border border-line bg-canvas p-3 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" id="ai-review-skills" name="skills" maxlength="3000"><?= esc($draft['skills']) ?></textarea>
             </div>
             <div class="sm:col-span-2 flex flex-wrap items-center gap-3">
-                <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-5 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-60" type="submit" name="action" value="save" x-bind:disabled="pendingAction !== ''">
+                <button class="inline-flex min-h-11 items-center justify-center rounded-md bg-accent-700 px-5 text-sm font-semibold text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900 disabled:cursor-wait disabled:opacity-60" type="submit" name="action" value="save" data-ai-direction="forward" x-bind:disabled="pendingAction !== ''">
                     <span x-show="pendingAction !== 'save'"><?= esc(lang('Dashboard.ai_save')) ?></span>
                     <span x-cloak x-show="pendingAction === 'save'"><?= esc(lang('Dashboard.ai_saving')) ?></span>
                 </button>

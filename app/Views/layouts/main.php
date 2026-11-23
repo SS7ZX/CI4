@@ -4,14 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="<?= esc(lang('App.home_description')) ?>">
+    <meta
+        name="csrf-token"
+        content="<?= esc(csrf_hash(), 'attr') ?>"
+        data-field-name="<?= esc(csrf_token(), 'attr') ?>"
+        data-header-name="<?= esc(config(\Config\Security::class)->headerName, 'attr') ?>"
+    >
     <title><?= esc($title ?? lang('App.app_name')) ?></title>
     <script src="/assets/js/theme.js"></script>
     <link rel="stylesheet" href="/assets/css/app.css">
 </head>
 <body class="min-h-screen bg-canvas font-sans text-ink antialiased">
+    <div class="motion-progress-line" data-motion-progress aria-hidden="true"></div>
     <div class="flex min-h-screen flex-col" x-data="{ menuOpen: false }">
         <a class="sr-only rounded-md bg-paper px-4 py-2 text-accent-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:outline-2 focus:outline-offset-2 focus:outline-accent-700" href="#content"><?= esc(lang('App.skip_content')) ?></a>
-        <header class="border-b border-line bg-canvas">
+        <header class="border-b border-line bg-canvas" data-view-topbar>
             <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
                 <a class="inline-flex items-center gap-3 rounded-md text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(site_url('/')) ?>">
                     <span class="flex size-9 items-center justify-center rounded-md bg-accent-700 text-sm font-semibold tracking-tight text-white" aria-hidden="true">CV</span>
@@ -59,20 +66,30 @@
                 <nav
                     class="w-full border-t border-line pt-3 md:w-auto md:border-0 md:pt-0"
                     id="main-navigation"
+                    hx-target="#content"
+                    hx-select="#content > *"
+                    hx-swap="innerHTML transition:true"
+                    data-app-navigation
                     x-bind:class="menuOpen ? 'block' : 'hidden md:block'"
                 >
-                    <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
-                        href="<?= esc(site_url('/#themes')) ?>">
+                    <a class="nav-item relative inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                        href="<?= esc(site_url('/#themes')) ?>" data-nav-key="themes">
                         <?= esc(lang('App.nav_themes')) ?>
                     </a>
                     <?php if (auth()->loggedIn()): ?>
-                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
-                            href="<?= esc(url_to('dashboard')) ?>">
+                        <a class="nav-item relative inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                            href="<?= esc(url_to('dashboard')) ?>" hx-boost="true" data-nav-key="dashboard">
                             <?= esc(lang('Dashboard.title')) ?>
+                            <?php if (str_starts_with(trim(service('request')->getUri()->getPath(), '/'), 'dashboard')): ?>
+                                <span class="nav-active-indicator" aria-hidden="true"></span>
+                            <?php endif; ?>
                         </a>
-                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
-                            href="<?= esc(url_to('password-edit')) ?>">
+                        <a class="nav-item relative inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                            href="<?= esc(url_to('password-edit')) ?>" hx-boost="true" data-nav-key="password">
                             <?= esc(lang('Auth.changePassword')) ?>
+                            <?php if (str_contains(trim(service('request')->getUri()->getPath(), '/'), 'password')): ?>
+                                <span class="nav-active-indicator" aria-hidden="true"></span>
+                            <?php endif; ?>
                         </a>
                         <form id="logout-form" action="<?= esc(same_origin_url((string) url_to('logout'))) ?>" method="post" class="inline-flex">
                             <?= csrf_field() ?>
@@ -81,20 +98,26 @@
                             </button>
                         </form>
                     <?php else: ?>
-                        <a class="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
-                            href="<?= esc(url_to('login')) ?>">
+                        <a class="nav-item relative inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700"
+                            href="<?= esc(url_to('login')) ?>" hx-boost="true" data-nav-key="login">
                             <?= esc(lang('Auth.login')) ?>
+                            <?php if (trim(service('request')->getUri()->getPath(), '/') === 'login'): ?>
+                                <span class="nav-active-indicator" aria-hidden="true"></span>
+                            <?php endif; ?>
                         </a>
-                        <a class="inline-flex min-h-10 items-center rounded-md bg-accent-700 px-3 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900"
-                            href="<?= esc(url_to('register')) ?>">
+                        <a class="nav-item relative inline-flex min-h-10 items-center rounded-md bg-accent-700 px-3 text-sm font-medium text-white hover:bg-accent-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-900"
+                            href="<?= esc(url_to('register')) ?>" hx-boost="true" data-nav-key="register">
                             <?= esc(lang('Auth.register')) ?>
+                            <?php if (trim(service('request')->getUri()->getPath(), '/') === 'register'): ?>
+                                <span class="nav-active-indicator" aria-hidden="true"></span>
+                            <?php endif; ?>
                         </a>
                     <?php endif; ?>
                 </nav>
             </div>
         </header>
 
-        <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10" id="content">
+        <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-10" id="content" data-view-content tabindex="-1">
             <?php foreach (['success', 'error', 'warning', 'info', 'message'] as $type): ?>
                 <?php $message = session()->getFlashdata($type); ?>
                 <?php if (is_string($message) && $message !== ''): ?>
@@ -171,7 +194,17 @@
             <p class="border-t border-line px-4 py-2 text-xs text-muted"><?= esc(lang('App.command_hint')) ?></p>
         </div>
     </dialog>
+    <div
+        class="motion-toast-region"
+        data-motion-toast-region
+        data-dismiss-label="<?= esc(lang('App.toast_dismiss'), 'attr') ?>"
+        aria-live="polite"
+        aria-relevant="additions"
+    ></div>
+    <script defer src="/assets/js/htmx.min.js"></script>
     <script defer src="/assets/js/motion.js"></script>
+    <script defer src="/assets/js/motion-shell.js"></script>
+    <script defer src="/assets/js/toast.js"></script>
     <script defer src="/assets/js/foundation.js"></script>
     <script defer src="/assets/js/alpine.min.js"></script>
 </body>

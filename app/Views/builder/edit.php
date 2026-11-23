@@ -26,7 +26,8 @@
         })"
         x-on:input="scheduleSave()"
         x-on:change="scheduleSave()"
-        class="space-y-6"
+        class="editor-layout space-y-6"
+        data-editor-layout
     >
         <div class="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5" data-reveal>
             <div>
@@ -35,9 +36,10 @@
                 <p class="mt-2 text-sm text-muted"><?= esc(lang('CvBuilder.description')) ?></p>
             </div>
             <div class="flex items-center gap-3">
-                <span class="inline-flex min-h-9 items-center rounded-md border border-line bg-paper px-3 text-xs font-semibold text-ink transition-colors duration-150" aria-live="polite" role="status"
+                <span class="autosave-status inline-flex min-h-9 items-center rounded-md border border-line bg-paper px-3 text-xs font-semibold text-ink" aria-live="polite" aria-atomic="true" role="status"
                     x-bind:class="status === 'error' ? 'border-red-700 text-red-800' : (status === 'saved' ? 'border-green-700 text-green-900' : '')">
-                    <span x-text="status === 'saving' ? '<?= esc(lang('CvBuilder.saving'), 'js') ?>' : (status === 'saved' ? '<?= esc(lang('CvBuilder.saved'), 'js') ?>' : (status === 'error' ? '<?= esc(lang('CvBuilder.save_error'), 'js') ?>' : '<?= esc(lang('CvBuilder.review_status'), 'js') ?>'))"></span>
+                    <span class="autosave-status-dot" aria-hidden="true"></span>
+                    <span class="autosave-status-label" x-text="statusLabel()"></span>
                 </span>
                 <a class="inline-flex min-h-10 items-center rounded-md border border-line bg-paper px-3 text-sm font-medium text-ink hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-700" href="<?= esc(url_to('dashboard')) ?>"><?= esc(lang('CvBuilder.back')) ?></a>
             </div>
@@ -47,8 +49,8 @@
             <p class="rounded-md border border-green-700 bg-green-50 px-4 py-3 text-sm text-green-900" role="status" data-reveal><?= esc(session('success')) ?></p>
         <?php endif; ?>
 
-        <div class="grid items-start gap-5 lg:grid-cols-[15rem_minmax(0,1fr)]">
-            <aside class="min-w-0 rounded-md border border-line bg-paper p-3 lg:sticky lg:top-4">
+        <div class="grid items-start gap-5 lg:grid-cols-[15rem_minmax(0,1fr)] reveal-stagger">
+            <aside class="editor-zone min-w-0 rounded-md border border-line bg-paper p-3 lg:sticky lg:top-4" data-editor-navigation>
                 <div class="flex items-baseline justify-between px-2 pb-3">
                     <h2 class="text-sm font-semibold text-ink"><?= esc(lang('CvBuilder.steps_title')) ?></h2>
                     <span class="text-xs text-muted"><?= esc(lang('CvBuilder.step_progress', [$step, 8])) ?></span>
@@ -56,7 +58,7 @@
                 <div class="mb-3 px-2">
                     <span class="sr-only"><?= esc(lang('CvBuilder.progress_label')) ?></span>
                     <div class="h-1.5 overflow-hidden rounded-sm bg-canvas" role="progressbar" aria-label="<?= esc(lang('CvBuilder.progress_label')) ?>" aria-valuemin="1" aria-valuemax="8" aria-valuenow="<?= (int) $step ?>">
-                        <div class="h-full bg-accent-700" style="width: <?= (int) (($step / 8) * 100) ?>%"></div>
+                        <div class="motion-progress-fill h-full bg-accent-700" style="--progress-value: <?= esc((string) ($step / 8)) ?>"></div>
                     </div>
                 </div>
                 <nav aria-label="<?= esc(lang('CvBuilder.title')) ?>">
@@ -78,14 +80,14 @@
                         <?php endforeach; ?>
                     </ol>
                 </nav>
-                <p class="mt-3 min-h-12 border-t border-line px-2 pt-3 text-xs leading-5 text-muted transition-colors duration-150" aria-live="polite" role="status"
+                <p class="mt-3 min-h-12 border-t border-line px-2 pt-3 text-xs leading-5 text-muted" aria-live="polite" role="status"
                     x-bind:class="status === 'error' ? 'text-red-800' : (status === 'saved' ? 'text-accent-900' : '')">
                     <span><?= esc(lang('CvBuilder.save_status')) ?>:</span>
                     <span x-text="status === 'saving' ? '<?= esc(lang('CvBuilder.saving'), 'js') ?>' : (status === 'saved' ? '<?= esc(lang('CvBuilder.saved'), 'js') ?>' : (status === 'error' ? '<?= esc(lang('CvBuilder.save_error'), 'js') ?>' : ''))"></span>
                 </p>
             </aside>
 
-            <div class="min-w-0 space-y-5">
+            <div class="editor-zone min-w-0 space-y-5" data-editor-form>
                 <?php for ($stepNumber = 1; $stepNumber <= 8; $stepNumber++): ?>
                     <section
                         id="builder-step-<?= $stepNumber ?>"

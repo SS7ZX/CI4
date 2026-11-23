@@ -209,6 +209,8 @@ final class DashboardAccessTest extends CIUnitTestCase
         $dashboard->assertSee('Lanjutkan');
         $dashboard->assertSee('Pratinjau');
         $dashboard->assertSee('Posisi terakhir: langkah 1 dari 8.');
+        $dashboard->assertSee('role="progressbar"');
+        $dashboard->assertSee('aria-valuenow="13"');
         $dashboard->assertSee('Struktur ramah ATS');
         $dashboard->assertSee(lang('Dashboard.stat_documents'));
         $dashboard->assertSee(lang('Dashboard.cv_count', [1]));

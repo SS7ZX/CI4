@@ -40,8 +40,8 @@ final class HomeLayoutTest extends CIUnitTestCase
         $result->assertSee('Struktur ramah ATS');
         preg_match_all('/class="theme-preview(?:\\s|")/', $result->getBody(), $matches);
         $this->assertSame(22, count($matches[0]));
-        preg_match_all('/class="theme-preview theme-preview--featured"/', $result->getBody(), $featuredPreviews);
-        preg_match_all('/class="theme-preview theme-preview--compact"/', $result->getBody(), $compactPreviews);
+        preg_match_all('/class="theme-preview theme-preview--featured(?:\\s|")/', $result->getBody(), $featuredPreviews);
+        preg_match_all('/class="theme-preview theme-preview--compact(?:\\s|")/', $result->getBody(), $compactPreviews);
         $this->assertCount(1, $featuredPreviews[0]);
         $this->assertCount(21, $compactPreviews[0]);
         $result->assertSee('Lewati ke konten utama');

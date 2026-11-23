@@ -29,6 +29,11 @@ final class QuickCvTest extends CIUnitTestCase
             $dashboard = $this->get('/dashboard');
             $dashboard->assertOK();
             $dashboard->assertSee('Buat CV cepat');
+            $dashboard->assertSee(lang('Dashboard.quick_section_profile'));
+            $dashboard->assertSee(lang('Dashboard.quick_section_experience'));
+            $dashboard->assertSee(lang('Dashboard.quick_section_skills'));
+            $dashboard->assertSee('aria-label="' . lang('Dashboard.workspace_summary') . '"');
+            $this->assertStringContainsString('x-on:click="$refs.quickCv.open = true"', $dashboard->getBody());
             $dashboard->assertSee('name="email" type="email"');
             $dashboard->assertSee('value="quick-cv@example.test"');
 

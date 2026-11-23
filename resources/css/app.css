@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./motion.css";
 
 @source "../../app/Views/**/*.php";
 
@@ -13,17 +14,10 @@
     --color-accent-700: #245b65;
     --color-accent-900: #153b43;
     --radius-ui: 8px;
-    --duration-fast: 160ms;
-    --duration-ui: 240ms;
 }
 
-:root {
+html {
     color-scheme: light;
-    --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --motion-ease-standard: cubic-bezier(0.2, 0.75, 0.25, 1);
-    --motion-duration-fast: 160ms;
-    --motion-duration-ui: 240ms;
-    --motion-duration-page: 360ms;
 }
 
 html[data-theme="dark"] {
@@ -132,17 +126,12 @@ html[data-theme="dark"] .bg-accent-800.text-white:hover {
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-    outline: 2px solid var(--color-accent-700);
-    outline-offset: 2px;
+    outline: 2px solid var(--motion-brass);
+    outline-offset: 3px;
 }
 
 :where(a, button, input, select, textarea, [role="button"]) {
-    transition:
-        color var(--motion-duration-fast) var(--motion-ease-standard),
-        background-color var(--motion-duration-fast) var(--motion-ease-standard),
-        border-color var(--motion-duration-fast) var(--motion-ease-standard),
-        outline-color var(--motion-duration-fast) var(--motion-ease-standard),
-        transform var(--motion-duration-fast) var(--motion-ease-out);
+    transition: transform var(--motion-duration-fast) var(--motion-ease-out);
 }
 
 :where(button, [role="button"]):active:not(:disabled) {
@@ -150,134 +139,11 @@ html[data-theme="dark"] .bg-accent-800.text-white:hover {
 }
 
 .motion-card {
-    transition:
-        border-color var(--motion-duration-ui) var(--motion-ease-standard),
-        transform var(--motion-duration-ui) var(--motion-ease-out);
+    transition: transform var(--motion-duration-ui) var(--motion-ease-out);
 }
 
-@view-transition {
-    navigation: auto;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-        transition-duration: 0.01ms !important;
-    }
-
-    ::view-transition-group(root),
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-        animation-duration: 0.01ms !important;
-    }
-}
-
-::view-transition-old(root) {
-    animation: motion-page-exit 180ms var(--motion-ease-standard) both;
-}
-
-::view-transition-new(root) {
-    animation: motion-page-enter var(--motion-duration-page) var(--motion-ease-out) both;
-}
-
-html.theme-transitioning::view-transition-old(root) {
-    animation: motion-theme-exit 140ms var(--motion-ease-standard) both;
-}
-
-html.theme-transitioning::view-transition-new(root) {
-    animation: motion-theme-enter 220ms var(--motion-ease-out) both;
-}
-
-@keyframes motion-page-exit {
-    to {
-        opacity: 0;
-        transform: translateY(-0.35rem);
-    }
-}
-
-@keyframes motion-page-enter {
-    from {
-        opacity: 0;
-        transform: translateY(0.5rem);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes motion-theme-exit {
-    to {
-        opacity: 0;
-    }
-}
-
-@keyframes motion-theme-enter {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-html.motion-ready [data-reveal]:not(.motion-visible) {
-    opacity: 0;
-    transform: translateY(0.75rem);
-}
-
-[data-reveal] {
-    transition:
-        opacity 520ms var(--motion-ease-out),
-        transform 520ms var(--motion-ease-out);
-    transition-delay: var(--motion-reveal-delay, 0ms);
-}
-
-[data-reveal].motion-visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.motion-step-enter-active,
-.motion-step-leave-active {
-    transition:
-        opacity var(--motion-duration-ui) var(--motion-ease-standard),
-        transform var(--motion-duration-ui) var(--motion-ease-out);
-}
-
-.motion-step-enter-start,
-.motion-step-leave-end {
-    opacity: 0;
-    transform: translateY(0.5rem);
-}
-
-.motion-step-enter-end,
-.motion-step-leave-start {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.motion-dialog-enter-active,
-.motion-dialog-leave-active {
-    transition:
-        opacity var(--motion-duration-ui) var(--motion-ease-standard),
-        transform var(--motion-duration-ui) var(--motion-ease-out);
-}
-
-.motion-dialog-enter-start,
-.motion-dialog-leave-end {
-    opacity: 0;
-    transform: translateY(0.5rem);
-}
-
-.motion-dialog-enter-end,
-.motion-dialog-leave-start {
-    opacity: 1;
-    transform: translateY(0);
+.motion-action-icon {
+    transition: transform var(--motion-duration-fast) var(--motion-ease-out);
 }
 
 .theme-preview {
@@ -288,6 +154,14 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
     justify-content: center;
     overflow: hidden;
     padding: 1rem 1rem 0.75rem;
+}
+
+.motion-card-thumbnail {
+    overflow: visible;
+}
+
+.dashboard-cv-card .theme-preview {
+    border-radius: 0.5rem 0.5rem 0 0;
 }
 
 .theme-preview__page {
@@ -648,7 +522,7 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
 }
 
 .theme-card {
-    transition: border-color var(--motion-duration-ui) var(--motion-ease-standard), transform var(--motion-duration-ui) var(--motion-ease-out);
+    transition: transform var(--motion-duration-ui) var(--motion-ease-out);
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -656,6 +530,11 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
     .theme-card:hover {
         border-color: var(--color-accent-700);
         transform: translateY(-2px);
+    }
+
+    .motion-action:hover .motion-action-icon,
+    .motion-action:focus-visible .motion-action-icon {
+        transform: translateX(0.125rem);
     }
 }
 
@@ -775,34 +654,5 @@ html.motion-ready [data-reveal]:not(.motion-visible) {
     .theme-preview--featured .theme-preview__page[data-theme="executive"] .theme-preview__header {
         margin: -0.8rem -0.8rem 0;
         padding: 0.8rem 0.8rem 0.55rem;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    :root {
-        --motion-duration-fast: 0ms;
-        --motion-duration-ui: 0ms;
-        --motion-duration-page: 0ms;
-    }
-
-    *,
-    *::before,
-    *::after {
-        scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        transition-delay: 0ms !important;
-    }
-
-    .motion-card:hover,
-    .theme-card:hover,
-    :where(button, [role="button"]):active:not(:disabled) {
-        transform: none;
-    }
-
-    html.motion-ready [data-reveal] {
-        opacity: 1;
-        transform: none;
     }
 }

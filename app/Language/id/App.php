@@ -7,6 +7,7 @@ return [
     'home'             => 'Beranda',
     'menu'             => 'Menu',
     'skip_content'     => 'Lewati ke konten utama',
+    'toast_dismiss'    => 'Tutup pemberitahuan',
     'nav_themes'       => 'Tema CV',
     'theme_toggle'     => 'Ganti tema',
     'theme_light'      => 'Aktifkan tema terang',
